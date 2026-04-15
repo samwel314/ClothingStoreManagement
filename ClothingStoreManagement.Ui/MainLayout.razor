@@ -1,0 +1,39 @@
+@inherits LayoutComponentBase
+
+<div class="d-flex" style="height: 100vh;" dir="rtl">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class="fs-4 fw-bold">نظام الملابس PRO</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto p-0">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white active mb-2" href="" Match="NavLinkMatch.All">
+                    الرئيسية
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="nav-link text-white mb-2" href="inventory">
+                    المخزن
+                </NavLink>
+            </li>
+            <li>
+                <NavLink class="nav-link text-white mb-2" href="sales">
+                    كاشير البيع
+                </NavLink>
+            </li>
+        </ul>
+        <hr>
+        <div class="dropdown">
+            <span class="d-flex align-items-center text-white text-decoration-none">
+                <strong>المسؤول: admin</strong>
+            </span>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 bg-light" style="overflow-y: auto;">
+        <div class="p-4">
+            @Body
+        </div>
+    </div>
+</div>
