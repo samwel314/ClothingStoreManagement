@@ -1,4 +1,4 @@
-﻿namespace ClothingStoreManagement.Data.Entities
+﻿namespace ClothingStoreManagement.Domain.Entities
 {
     public class Category
     {

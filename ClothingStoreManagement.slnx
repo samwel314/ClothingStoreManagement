@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="ClothingStoreManagement.Data/ClothingStoreManagement.Data.csproj" Id="2cdab546-0088-4ecd-8583-85699cd5d52b" />
+  <Project Path="ClothingStoreManagement.Domain/ClothingStoreManagement.Domain.csproj" Id="8b3a57b9-7b74-4694-87df-75ab215d7b08" />
   <Project Path="ClothingStoreManagement.Ui/ClothingStoreManagement.Ui.csproj" />
 </Solution>

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,7 +10,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Microsoft.Extensions.DependencyInjection;
+using ClothingStoreManagement.Data;
+
 namespace ClothingStoreManagement.Ui
 {
     /// <summary>
@@ -21,7 +24,23 @@ namespace ClothingStoreManagement.Ui
             InitializeComponent();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddWpfBlazorWebView();
-            Resources.Add("services", serviceCollection.BuildServiceProvider());
+            var dbPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app.db");
+
+            serviceCollection.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlite($"Data Source={dbPath}");
+            });
+
+
+            //-*****************************************
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                db.Database.Migrate();
+            }
+
+            Resources.Add("services", serviceProvider);
         }
     }
 }

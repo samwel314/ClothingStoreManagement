@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace ClothingStoreManagement.Data.Entities
+namespace ClothingStoreManagement.Domain.Entities
 {
     public class ProductVariant
     {
@@ -15,6 +15,10 @@ namespace ClothingStoreManagement.Data.Entities
             SizeId = sizeId;
             ColorId = colorId;
             StockQuantity = stockQuantity;
+        }
+        private ProductVariant()
+        {
+            
         }
         public Guid Id { get; private set; }
         public Guid ProductId { get; private set; } // الربط بالموديل الأب

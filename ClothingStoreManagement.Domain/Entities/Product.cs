@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ClothingStoreManagement.Data.Entities
+namespace ClothingStoreManagement.Domain.Entities
 {
     public class Product
     {
