@@ -1,0 +1,116 @@
+﻿@page "/colors"
+
+
+<div class="row align-items-center mb-4 g-3" dir="rtl">
+    <div class="col-md-4 text-end">
+        <h3 class="fw-bold mb-0">إدارة الألوان</h3>
+        <p class="text-muted small">تحكم في قائمة الألوان المتاحة للمنتجات</p>
+    </div>
+    <div class="col-md-5">
+        <div class="input-group shadow-sm border-0">
+            <span class="input-group-text bg-white border-start-0"><i class="bi bi-search"></i></span>
+            <input @bind="searchTerm" @bind:event="oninput" type="text" class="form-control border-end-0" placeholder="ابحث باسم اللون..." />
+        </div>
+    </div>
+    <div class="col-md-3 text-md-start">
+        <button class="btn btn-primary shadow-sm px-4" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg ms-2"></i>لون جديد
+        </button>
+    </div>
+</div>
+
+<ColorGrid Colors="FilteredColors" OnEdit="Edit" />
+
+@if (isModalOpen)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-end" dir="rtl">
+                <EditForm Model="colorModel" OnValidSubmit="HandleSaveColor">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="fw-bold text-primary">
+                            <i class="bi bi-palette-fill ms-2"></i>
+                            @(isEditMode ? "تعديل لون" : "إضافة لون جديد")
+                        </h5>
+                        <button type="button" class="btn-close ms-0 me-auto" @onclick="CloseModal"></button>
+                    </div>
+
+                    <div class="modal-body py-4">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger border-0 small rounded-3 mb-3">@errorMessage</div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">اسم اللون</label>
+                            <InputText @bind-Value="colorModel.Name" class="form-control form-control-lg bg-light border-0" placeholder="مثلاً: أحمر ملكي" />
+                            <ValidationMessage For="@(() => colorModel.Name)" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">كود اللون (Hex)</label>
+                            <div class="d-flex gap-2">
+                                <InputText @bind-Value="colorModel.Code" class="form-control form-control-lg bg-light border-0" placeholder="#FF0000" />
+                                <input type="color" class="form-control form-control-color border-0 p-1 bg-light"
+                                       style="width: 60px; height: 48px;"
+                                       @onchange="(e) => colorModel.Code = e.Value.ToString()"
+                                       value="@colorModel.Code" />
+                            </div>
+                            <ValidationMessage For="@(() => colorModel.Code)" class="text-danger small mt-1" />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light px-4 rounded-3 fw-bold" @onclick="CloseModal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold shadow-sm">حفظ البيانات</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ColorListDTO> allColors = new();
+    private string searchTerm = "";
+    private bool isModalOpen = false;
+    private bool isEditMode = false;
+    private CreateUpdateColorDto colorModel = new();
+    private string? errorMessage;
+
+    // Filter Logic
+    private IEnumerable<ColorListDTO> FilteredColors =>
+        allColors.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        // نادى الـ Api بتاعك هنا
+        // allColors = await Http.GetFromJsonAsync<List<ColorListDTO>>("api/colors");
+    }
+
+    private void OpenAddModal()
+    {
+        colorModel = new();
+        isEditMode = false;
+        isModalOpen = true;
+    }
+
+    private void Edit(ColorListDTO color)
+    {
+        colorModel = new CreateUpdateColorDto { Id = color.Id, Name = color.Name, Code = color.Code };
+        isEditMode = true;
+        isModalOpen = true;
+    }
+
+    private void CloseModal() => isModalOpen = false;
+
+    private async Task HandleSaveColor()
+    {
+        // منطق الحفظ (Post/Put)
+        CloseModal();
+    }
+}
