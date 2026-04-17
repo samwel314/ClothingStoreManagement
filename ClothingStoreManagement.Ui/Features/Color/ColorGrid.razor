@@ -1,0 +1,53 @@
+﻿<div class="card shadow-sm border-0 mt-3" dir="rtl">
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="py-3 ps-4" style="width: 35%;">اسم اللون</th>
+                    <th class="py-3 text-center" style="width: 25%;">كود اللون</th>
+                    <th class="py-3 text-center" style="width: 20%;">المعاينة</th>
+                    <th class="py-3 text-center pe-4" style="width: 20%;">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Colors != null && Colors.Any())
+                {
+                    @foreach (var color in Colors)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-bold">@color.Name</span>
+                            </td>
+                            <td class="text-center">
+                                <small class="text-secondary font-monospace">@color.Code</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="mx-auto border shadow-sm"
+                                     style="width: 25px; height: 25px; background-color: @color.Code; border-radius: 4px;">
+                                </div>
+                            </td>
+                            <td class="text-center pe-4">
+                                <button class="btn btn-outline-primary btn-sm border-0" @onclick="() => OnEdit.InvokeAsync(color)">
+                                    <i class="bi bi-pencil-square fs-5"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted small">
+                            لا توجد بيانات لعرضها حالياً
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@code {
+    [Parameter, EditorRequired] public IEnumerable<ColorListDTO> Colors { get; set; } 
+    [Parameter, EditorRequired] public EventCallback<ColorListDTO> OnEdit { get; set; }
+
+}

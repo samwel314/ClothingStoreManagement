@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.51" />
+	  <PackageReference Include="AutoMapper" Version="16.1.1" />
+
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +34,7 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\ClothingStoreManagement.Application\ClothingStoreManagement.Application.csproj" />
 	  <ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
 	</ItemGroup>
 </Project>

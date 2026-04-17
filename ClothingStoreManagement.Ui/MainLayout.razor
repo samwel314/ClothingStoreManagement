@@ -1,38 +1,86 @@
 @inherits LayoutComponentBase
 
-<div class="d-flex" style="height: 100vh;" dir="rtl">
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+<div class="d-flex vh-100" dir="rtl">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark shadow-lg" style="width: 280px;">
+        <a href="/" class="d-flex align-items-center mb-4 text-white text-decoration-none">
+            <i class="bi bi-cpu-fill fs-3 text-primary ms-2"></i>
             <span class="fs-4 fw-bold">نظام الملابس PRO</span>
         </a>
         <hr>
+        
         <ul class="nav nav-pills flex-column mb-auto p-0">
-            <li class="nav-item">
-                <NavLink class="nav-link text-white active mb-2" href="" Match="NavLinkMatch.All">
-                    الرئيسية
+            <li class="nav-item mb-2">
+                <NavLink class="nav-link text-white py-2" href="" Match="NavLinkMatch.All">
+                    <i class="bi bi-grid-1x2-fill ms-2"></i> الرئيسية
                 </NavLink>
             </li>
-            <li>
-                <NavLink class="nav-link text-white mb-2" href="inventory">
-                    المخزن
+
+            <li class="mt-3 mb-1">
+                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">إدارة المخزن</small>
+            </li>
+            <li class="mb-1">
+                <NavLink class="nav-link text-white py-2" href="admin/products">
+                    <i class="bi bi-box-seam-fill ms-2"></i> المنتجات
                 </NavLink>
             </li>
-            <li>
-                <NavLink class="nav-link text-white mb-2" href="sales">
-                    كاشير البيع
+            <li class="mb-1">
+                <NavLink class="nav-link text-white py-2" href="admin/categories">
+                    <i class="bi bi-diagram-3-fill ms-2"></i> الأقسام
+                </NavLink>
+            </li>
+
+            <li class="mt-3 mb-1">
+                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">خصائص الموديلات</small>
+            </li>
+            <li class="mb-1">
+                <NavLink class="nav-link text-white py-2" href="/colors">
+                    <i class="bi bi-palette-fill ms-2"></i> الألوان
+                </NavLink>
+            </li>
+            <li class="mb-1">
+                <NavLink class="nav-link text-white py-2" href="admin/sizes">
+                    <i class="bi bi-rulers ms-2"></i> المقاسات
+                </NavLink>
+            </li>
+
+            <li class="mt-3 mb-1">
+                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">العمليات اليومية</small>
+            </li>
+            <li class="mb-1">
+                <NavLink class="nav-link text-white py-2" href="sales">
+                    <i class="bi bi-pc-display-horizontal ms-2"></i> كاشير البيع
                 </NavLink>
             </li>
         </ul>
+        
         <hr>
-        <div class="dropdown">
-            <span class="d-flex align-items-center text-white text-decoration-none">
-                <strong>المسؤول: admin</strong>
-            </span>
+        <div class="d-flex align-items-center p-2 bg-light bg-opacity-10 rounded">
+            <i class="bi bi-person-badge-fill fs-5 ms-2"></i>
+            <div class="small">
+                <div class="fw-bold">أدمن النظام</div>
+                <div class="text-secondary" style="font-size: 0.75rem;">متصل الآن</div>
+            </div>
         </div>
     </div>
 
-    <div class="flex-grow-1 bg-light" style="overflow-y: auto;">
-        <div class="p-4">
+    <div class="flex-grow-1 bg-light overflow-auto">
+        <header class="navbar navbar-expand bg-white shadow-sm px-4 py-2 border-bottom">
+            <div class="container-fluid d-flex justify-content-between">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item small text-primary">لوحة التحكم</li>
+                        <li class="breadcrumb-item small active">الرئيسية</li>
+                    </ol>
+                </nav>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                        <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToShortDateString()
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <div class="container-fluid p-4">
             @Body
         </div>
     </div>
