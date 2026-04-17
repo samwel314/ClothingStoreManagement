@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ClothingStoreManagement.Data.Repository.implementation
 {
-    public class BaseRepository<T, Tkey> : IBaseRepository<T> where T : class
+    public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private readonly ApplicationDbContext _db;
         private readonly DbSet<T> _dbSet;
