@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ClothingStoreManagement.Data;
+using ClothingStoreManagement.Application.Mapping;
 
 namespace ClothingStoreManagement.Ui
 {
@@ -30,7 +31,10 @@ namespace ClothingStoreManagement.Ui
             {
                 options.UseSqlite($"Data Source={dbPath}");
             });
-
+            serviceCollection.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
 
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
