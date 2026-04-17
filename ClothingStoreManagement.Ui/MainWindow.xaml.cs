@@ -12,6 +12,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ClothingStoreManagement.Data;
 using ClothingStoreManagement.Application.Mapping;
+using ClothingStoreManagement.Data.Repository;
+using ClothingStoreManagement.Data.Repository.implementation;
+using ClothingStoreManagement.Application.Services;
 
 namespace ClothingStoreManagement.Ui
 {
@@ -35,7 +38,8 @@ namespace ClothingStoreManagement.Ui
             {
                 cfg.AddProfile<MappingProfile>();
             });
-
+            serviceCollection.AddScoped<IUnitOfWork , UnitOfWork>();
+            serviceCollection.AddScoped<ColorService , ColorService>(); 
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

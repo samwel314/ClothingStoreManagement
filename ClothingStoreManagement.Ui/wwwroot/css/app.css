@@ -46,3 +46,33 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+/* تأثير الهوفر على اللينكات */
+.nav-link {
+    transition: all 0.3s ease-in-out !important; /* لجعل الحركة ناعمة */
+    border-radius: 8px !important; /* تقويس الحواف */
+    margin: 0 5px; /* مسافة بسيطة من الجوانب */
+}
+
+    /* حالة الوقوف بالماوس */
+    .nav-link:hover {
+        background-color: rgba(13, 110, 253, 0.15) !important; /* لون أزرق خفيف شفاف */
+        color: #0d6efd !important; /* تغيير لون النص للأزرق */
+        transform: translateX(-5px); /* تحريك بسيط لليمين عشان إحنا RTL */
+        padding-right: 1.2rem !important; /* تزويد المسافة من اليمين مع الحركة */
+    }
+
+    /* حالة اللينك النشط (المختار حالياً) */
+    .nav-link.active {
+        background-color: #0d6efd !important; /* اللون الأزرق الصريح */
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3); /* ظل خفيف للزرار النشط */
+    }
+
+    /* تأثير للأيقونات */
+    .nav-link i {
+        transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover i {
+        transform: scale(1.2); /* تكبير الأيقونة سنة بسيطة عند الهوفر */
+    }

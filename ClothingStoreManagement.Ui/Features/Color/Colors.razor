@@ -1,25 +1,61 @@
 ﻿@page "/colors"
-
+@inject ColorService ColorService
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+        <div>
+            @errorMessage
+        </div>
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
+    </div>
+}
+@if (showSuccessAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" dir="rtl">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+            <div>
+                <strong>تم بنجاح!</strong> تم حفظ البيانات وتحديث القائمة.
+            </div>
+        </div>
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false"></button>
+    </div>
+}
 
 <div class="row align-items-center mb-4 g-3" dir="rtl">
-    <div class="col-md-4 text-end">
+    <div class="col-lg-4 col-md-12 text-end">
         <h3 class="fw-bold mb-0">إدارة الألوان</h3>
-        <p class="text-muted small">تحكم في قائمة الألوان المتاحة للمنتجات</p>
+        <p class="text-muted small mb-0">تحكم في قائمة الألوان المتاحة للمنتجات</p>
     </div>
-    <div class="col-md-5">
-        <div class="input-group shadow-sm border-0">
-            <span class="input-group-text bg-white border-start-0"><i class="bi bi-search"></i></span>
-            <input @bind="searchTerm" @bind:event="oninput" type="text" class="form-control border-end-0" placeholder="ابحث باسم اللون..." />
+
+    <div class="col-lg-5 col-md-8" dir="rtl">
+        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <button @onclick="ApplyFilter"
+                    class="btn btn-primary px-4 border-0"
+                    type="button"
+                    style="z-index: 2;">
+                بحث
+            </button>
+
+            <input @bind="searchTerm"
+                   type="text"
+                   class="form-control border-0 bg-white"
+                   placeholder="ابحث باسم اللون..."
+                   style="box-shadow: none;">
+
+                <span class="input-group-text bg-white border-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+            </div>
         </div>
-    </div>
-    <div class="col-md-3 text-md-start">
-        <button class="btn btn-primary shadow-sm px-4" @onclick="OpenAddModal">
+    <div class="col-lg-3 col-md-4 text-md-start text-center">
+        <button class="btn btn-success shadow-sm px-4 fw-bold" @onclick="OpenAddModal">
             <i class="bi bi-plus-lg ms-2"></i>لون جديد
         </button>
     </div>
 </div>
-
-<ColorGrid Colors="FilteredColors" OnEdit="Edit" />
+<ColorGrid Colors="allColors" OnEdit="Edit" />
 
 @if (isModalOpen)
 {
@@ -38,11 +74,7 @@
                     </div>
 
                     <div class="modal-body py-4">
-                        @if (!string.IsNullOrEmpty(errorMessage))
-                        {
-                            <div class="alert alert-danger border-0 small rounded-3 mb-3">@errorMessage</div>
-                        }
-
+          
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">اسم اللون</label>
                             <InputText @bind-Value="colorModel.Name" class="form-control form-control-lg bg-light border-0" placeholder="مثلاً: أحمر ملكي" />
@@ -73,26 +105,30 @@
 }
 
 @code {
-    private List<ColorListDTO> allColors = new();
+    private IEnumerable<ColorListDTO> allColors;
     private string searchTerm = "";
     private bool isModalOpen = false;
     private bool isEditMode = false;
     private CreateUpdateColorDto colorModel = new();
     private string? errorMessage;
 
-    // Filter Logic
-    private IEnumerable<ColorListDTO> FilteredColors =>
-        allColors.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync() => await LoadData();
 
     private async Task LoadData()
     {
-        // نادى الـ Api بتاعك هنا
-        // allColors = await Http.GetFromJsonAsync<List<ColorListDTO>>("api/colors");
+        var result = await ColorService.GetColorsAsync(searchTerm) ; 
+        if (result.IsSuccess)
+        {
+            allColors = result.Data!;
+        }
+        else
+        {
+            errorMessage = "فشل تحميل الألوان. حاول مرة أخرى لاحقاً.";
+        }
     }
 
-    private void OpenAddModal()
+    private async Task OpenAddModal()
     {
         colorModel = new();
         isEditMode = false;
@@ -106,11 +142,51 @@
         isModalOpen = true;
     }
 
-    private void CloseModal() => isModalOpen = false;
+    private void CloseModal()
+    {
+        colorModel = new(); 
+        isModalOpen = false;
+
+    }
+
 
     private async Task HandleSaveColor()
     {
-        // منطق الحفظ (Post/Put)
+
+        if (isEditMode)
+        {
+            var result = await ColorService.UpdateColorAsync(colorModel.Id!.Value, colorModel);
+            if (result.IsSuccess)
+            {
+                showSuccessAlert = true ;
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage; 
+            }
+
+        }
+        else
+        {
+            
+            var result = await ColorService.CreateColorAsync(colorModel);
+            if (result.IsSuccess)
+            {
+                showSuccessAlert = true;
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage;
+            }
+        }
+        await LoadData();
         CloseModal();
+        StateHasChanged();
     }
+    private async Task ApplyFilter()
+    {
+        await LoadData();   
+        StateHasChanged();  
+    }
+    private bool showSuccessAlert = false;
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
@@ -19,7 +20,7 @@ namespace ClothingStoreManagement.Application.Services
             _db = db;
             _mapper = mapper;
         }
-        public async Task<Result<ColorListDTO>> CreateCategoryAsync(CreateUpdateColorDto model)
+        public async Task<Result<ColorListDTO>> CreateColorAsync(CreateUpdateColorDto model)
         {
             var exist = await _db.Colors.ExistsAsync((c) =>  c.Name ==  model.Name.Trim());
             if (exist)
@@ -38,29 +39,24 @@ namespace ClothingStoreManagement.Application.Services
         }
        
         public async Task<Result<IEnumerable<ColorListDTO>>>
-            GetCategoriesAsync(string? searchTerm = null, CancellationToken ct = default)
+            GetColorsAsync(string? searchTerm = null, CancellationToken ct = default)
         {
             var ColorsQuery = _db.Colors.GetAll();
             
             if (searchTerm != null)
                 ColorsQuery = ColorsQuery.Where(c => c.Name.Contains(searchTerm));
-            var ColorsDtoQuery = ColorsQuery
-                .Select(c => new ColorListDTO
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                });
+            var ColorsDtoQuery = ColorsQuery.ProjectTo<ColorListDTO>(_mapper.ConfigurationProvider);
             var Colors = await ColorsDtoQuery.ToListAsync();
             return Result<IEnumerable<ColorListDTO>>.Success(Colors);
         }
-        public async Task<Result<string>> UpdateCategoryAsync(int id, CreateUpdateColorDto model )
+        public async Task<Result<string>> UpdateColorAsync(int id, CreateUpdateColorDto model )
         {
             var color = await _db.Colors.FirstOrDefaultAsync( (c) => c.Id == id  , true);
             if (color == null)
                 return Result<string>.Failure("هذا اللون غير موجود", ErrorType.notFound);
             if (!color.Name.Equals(model.Name.Trim()) || !color.Code.Equals(model.Code.Trim()))  //**---
             {
-                var exist = await _db.Colors.ExistsAsync((c) => c.Name ==  model.Name.Trim());
+                var exist = await _db.Colors.ExistsAsync((c) => c.Name ==  model.Name.Trim() && c.Id != id);
                 if (exist)
                     return Result<string>.Failure("هذا اللون موجود بالفعل", ErrorType.conflict);
                 color.Update(model.Name, model.Code);
