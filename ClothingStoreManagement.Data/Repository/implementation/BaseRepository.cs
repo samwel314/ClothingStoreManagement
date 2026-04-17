@@ -1,0 +1,42 @@
+﻿using ClothingStoreManagement.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text;
+
+namespace ClothingStoreManagement.Data.Repository.implementation
+{
+    public class BaseRepository<T, Tkey> : IBaseRepository<T> where T : class
+    {
+        private readonly ApplicationDbContext _db;
+        private readonly DbSet<T> _dbSet;
+        public BaseRepository(ApplicationDbContext db)
+        {
+            _db = db;
+            _dbSet = _db.Set<T>();  
+        }
+        public async Task CreateAsync(T model)
+        {
+            await _dbSet.AddAsync(model);
+        }
+        public Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        {
+            return _dbSet.AnyAsync(predicate);
+        }
+
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.AsNoTracking();
+        }
+        public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, bool track = false)
+        {
+            if (track)
+                 return await _dbSet.FirstOrDefaultAsync(predicate);
+
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
+        }
+
+  
+    }
+}
