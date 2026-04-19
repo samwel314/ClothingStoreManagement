@@ -1,0 +1,139 @@
+﻿@page "/sizes"
+@inject SizeService SizeService
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+        <div class="flex-grow-1">
+            &nbsp;    @errorMessage
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
+    </div>
+}
+@if (showSuccessAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+
+        <div>
+            &nbsp;
+            <strong class="ms-1">تم بنجاح!</strong>
+            <span>تم حفظ البيانات وتحديث القائمة بنجاح.</span>
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
+    </div>
+}
+<div class="row align-items-center mb-4 g-3" dir="rtl">
+    <div class="col-lg-4 text-end">
+        <h3 class="fw-bold mb-0">إدارة المقاسات</h3>
+    </div>
+    <div class="col-lg-5">
+        <div class="input-group shadow-sm rounded-3">
+            <button @onclick="LoadData" class="btn btn-primary px-4">بحث</button>
+            <input @bind="searchTerm" type="text" class="form-control border-0" placeholder="ابحث عن مقاس..." />
+        </div>
+    </div>
+    <div class="col-lg-3 text-start">
+        <button class="btn btn-success px-4 fw-bold" @onclick="() => OpenAddModal()">
+            <i class="bi bi-plus-lg ms-2"></i>مقاس جديد
+        </button>
+    </div>
+</div>
+
+<SizeGrid Sizes="allSizes" OnEdit="Edit" />
+
+@if (isModalOpen)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-end" dir="rtl">
+                <EditForm Model="sizeModel" OnValidSubmit="HandleSave">
+                    <DataAnnotationsValidator />
+                    <div class="modal-header border-0">
+                        <h5 class="fw-bold text-primary">@(isEditMode ? "تعديل مقاس" : "إضافة مقاس")</h5>
+                        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => isModalOpen = false"></button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">اسم المقاس</label>
+                            <InputText @bind-Value="sizeModel.Name" class="form-control bg-light border-0" placeholder="مثلاً: Large" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">كود المقاس</label>
+                            <InputText @bind-Value="sizeModel.Code" class="form-control bg-light border-0" placeholder="مثلاً: L" />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold">حفظ</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<SizeListDTO> allSizes;
+    private string searchTerm = "";
+    private bool isModalOpen = false;
+    private bool isEditMode = false;
+    private CreateUpdateSizeDto sizeModel = new();
+    private string? errorMessage;  
+    private bool showSuccessAlert = false;
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        var result = await SizeService.GetSizesAsync(searchTerm);
+        if (result.IsSuccess) allSizes = result.Data!;
+    }
+
+    private async Task OpenAddModal()
+    {
+        sizeModel = new();
+        isEditMode = false;
+        isModalOpen = true;
+    }
+
+    private void Edit(SizeListDTO size)
+    {
+        sizeModel = new CreateUpdateSizeDto { Id = size.Id, Name = size.Name, Code = size.Code };
+        isEditMode = true;
+        isModalOpen = true;
+    }
+    private async Task HandleSave()
+    {
+        if (isEditMode)
+        {
+            var result = await SizeService.UpdateSizeAsync(sizeModel.Id!.Value, sizeModel);
+            if (result.IsSuccess)
+            {
+                await LoadData();
+                showSuccessAlert = true;
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "حدث خطأ أثناء تحديث المقاس.";    
+            }
+        }
+        else
+        {
+            var result = await SizeService.CreateSizeAsync(sizeModel);
+            if (result.IsSuccess)
+            {
+                await LoadData();
+                showSuccessAlert = true;
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "حدث خطأ أثناء إنشاء المقاس.";
+            }
+
+        }
+        isModalOpen = false;
+
+    }
+}

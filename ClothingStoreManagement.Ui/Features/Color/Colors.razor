@@ -3,23 +3,26 @@
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> 
-        <div>
-            @errorMessage
+        <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+        <div class="flex-grow-1">
+            &nbsp;@errorMessage
         </div>
+
         <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
     </div>
 }
 @if (showSuccessAlert)
 {
-    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" dir="rtl">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-check-circle-fill me-2 fs-4"></i>
-            <div>
-                <strong>تم بنجاح!</strong> تم حفظ البيانات وتحديث القائمة.
-            </div>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+        &nbsp;
+        <div>
+            <strong class="ms-1">تم بنجاح!</strong>
+            <span>تم حفظ البيانات وتحديث القائمة بنجاح.</span>
         </div>
-        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false"></button>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
     </div>
 }
 
@@ -95,7 +98,6 @@
                     </div>
 
                     <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-light px-4 rounded-3 fw-bold" @onclick="CloseModal">إلغاء</button>
                         <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold shadow-sm">حفظ البيانات</button>
                     </div>
                 </EditForm>

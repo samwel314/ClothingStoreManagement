@@ -12,6 +12,7 @@ namespace ClothingStoreManagement.Application.Mapping
         public MappingProfile()
         {
             CreateMap<Color, ColorListDTO>();
+            CreateMap<Size, SizeListDTO>(); 
         }
     }
 }

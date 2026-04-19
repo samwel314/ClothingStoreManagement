@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
+using ClothingStoreManagement.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
