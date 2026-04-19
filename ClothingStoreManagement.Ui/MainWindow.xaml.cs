@@ -40,6 +40,7 @@ namespace ClothingStoreManagement.Ui
             });
             serviceCollection.AddScoped<IUnitOfWork , UnitOfWork>();
             serviceCollection.AddScoped<ColorService , ColorService>(); 
+            serviceCollection.AddScoped<SizeService , SizeService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())
