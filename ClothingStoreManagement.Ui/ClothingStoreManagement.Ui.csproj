@@ -7,6 +7,9 @@
     <UseWPF>true</UseWPF>
 	  <RootNamespace>ClothingStoreManagement.Ui</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.51" />
@@ -36,5 +39,10 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\ClothingStoreManagement.Application\ClothingStoreManagement.Application.csproj" />
 	  <ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Resource Include="Assets\app.ico">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Resource>
 	</ItemGroup>
 </Project>

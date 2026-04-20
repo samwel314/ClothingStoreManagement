@@ -76,3 +76,25 @@ a, .btn-link {
     .nav-link:hover i {
         transform: scale(1.2); /* تكبير الأيقونة سنة بسيطة عند الهوفر */
     }
+
+.input-group:focus-within {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+    .transition-all:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(25, 135, 84, 0.2) !important;
+    }
+
+/* ضبط اتجاه السهم في السلكت للعربي */
+.form-select {
+    background-position: left 0.75rem center !important;
+    padding-left: 2.5rem !important;
+    padding-right: 0.75rem !important;
+}

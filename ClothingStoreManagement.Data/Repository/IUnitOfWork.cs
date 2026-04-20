@@ -8,6 +8,7 @@ namespace ClothingStoreManagement.Data.Repository
     { 
         IColorRepository Colors { get; }
         ISizeRepository Sizes { get; }  
+        ICategoryRepository Categories { get; }  
         Task Save();
     }
     

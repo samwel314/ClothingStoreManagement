@@ -1,20 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using ClothingStoreManagement.Application.Mapping;
+using ClothingStoreManagement.Application.Services;
 using ClothingStoreManagement.Data;
-using ClothingStoreManagement.Application.Mapping;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Data.Repository.implementation;
-using ClothingStoreManagement.Application.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace ClothingStoreManagement.Ui
 {
@@ -26,7 +18,9 @@ namespace ClothingStoreManagement.Ui
         public MainWindow()
         {
             InitializeComponent();
-            var serviceCollection = new ServiceCollection();
+            WindowState = WindowState.Maximized;
+         //  Icon = new BitmapImage(new Uri("Assets/app.ico", UriKind.Relative));
+            Title = $"🧥 Clothing Store System | Developed by Eng. Samuel Marzouk © {DateTime.Now.Year}"; var serviceCollection = new ServiceCollection();
             serviceCollection.AddWpfBlazorWebView();
             var dbPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app.db");
 
@@ -41,6 +35,7 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<IUnitOfWork , UnitOfWork>();
             serviceCollection.AddScoped<ColorService , ColorService>(); 
             serviceCollection.AddScoped<SizeService , SizeService>();
+            serviceCollection.AddScoped<CategoryService , CategoryService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())
