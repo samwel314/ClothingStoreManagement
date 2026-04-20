@@ -1,15 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ClothingStoreManagement.Data;
 using ClothingStoreManagement.Application.Mapping;
 using ClothingStoreManagement.Data.Repository;
@@ -41,6 +32,7 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<IUnitOfWork , UnitOfWork>();
             serviceCollection.AddScoped<ColorService , ColorService>(); 
             serviceCollection.AddScoped<SizeService , SizeService>();
+            serviceCollection.AddScoped<CategoryService , CategoryService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

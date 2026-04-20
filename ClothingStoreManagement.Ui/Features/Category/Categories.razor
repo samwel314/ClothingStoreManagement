@@ -1,0 +1,175 @@
+﻿@page "/categories"
+@inject CategoryService CategoryService
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+        <div class="flex-grow-1">
+            &nbsp;@errorMessage
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
+    </div>
+}
+@if (showSuccessAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-errorMessagesm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+        &nbsp;
+        <div>
+            <strong class="ms-1">تم بنجاح!</strong>
+            <span>تم حفظ البيانات وتحديث القائمة بنجاح.</span>
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
+    </div>
+}
+
+@* --- رأس الصفحة والبحث --- *@
+<div class="row align-items-center mb-4 g-3" dir="rtl">
+    <div class="col-lg-4 text-end">
+        <h3 class="fw-bold mb-0">إدارة الفئات</h3>
+        <p class="text-muted small">تنظيم المنتجات حسب الأقسام</p>
+    </div>
+    <div class="col-lg-5">
+        <div class="input-group shadow-sm rounded-3">
+            <button class="btn btn-primary px-4" @onclick="LoadData">بحث</button>
+            <input @bind="searchTerm" @bind:event="oninput" type="text" class="form-control border-0" placeholder="ابحث باسم الفئة..." />
+            <select @bind="statusFilter" class="form-select border-start-1" style="max-width: 120px;">
+                <option value="">الكل</option>
+                <option value="true">نشط</option>
+                <option value="false">غير نشط</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-3 text-start">
+        <button class="btn btn-success px-4 fw-bold shadow-sm" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg ms-2"></i>فئة جديدة
+        </button>
+    </div>
+</div>
+
+@* --- الجدول --- *@
+<CategoryGrid Categories="allCategories" OnEdit="Edit" OnToggleStatus="ToggleStatus" />
+
+@* --- Modal الإضافة والتعديل --- *@
+@if (isModalOpen)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-end" dir="rtl">
+                <EditForm Model="categoryModel" OnValidSubmit="HandleSaveCategory">
+                    <DataAnnotationsValidator />
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="fw-bold text-primary">@(isEditMode ? "تعديل الفئة" : "إضافة فئة جديدة")</h5>
+                        <button type="button" class="btn-close ms-0 me-auto" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body py-4">
+               
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">اسم الفئة</label>
+                            <InputText @bind-Value="categoryModel.Name" class="form-control bg-light border-0" placeholder="مثال: ملابس رجالي" />
+                            <ValidationMessage For="@(() => categoryModel.Name)" class="text-danger small" />
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold w-100">حفظ البيانات</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<CategoryListDTO> allCategories;
+    private string searchTerm = "";
+    private string statusFilter = "";
+    private bool isModalOpen = false;
+    private bool isEditMode = false;
+    private bool showSuccessAlert = false;
+    private string? errorMessage;
+    private CreateUpdateCategoryDto categoryModel = new();
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        bool? active = string.IsNullOrEmpty(statusFilter) ? null : bool.Parse(statusFilter);
+        var result = await CategoryService.GetCategoriesAsync(searchTerm, active);
+        if (result.IsSuccess) allCategories = result.Data!;
+    }
+
+    private void OpenAddModal()
+    {
+        categoryModel = new();
+        isEditMode = false;
+        errorMessage = null;
+        isModalOpen = true;
+    }
+
+    private void Edit(CategoryListDTO category)
+    {
+        categoryModel = new CreateUpdateCategoryDto { Id = category.Id, Name = category.Name };
+        isEditMode = true;
+        errorMessage = null;
+        isModalOpen = true;
+    }
+
+    private void CloseModal() => isModalOpen = false;
+
+    private async Task HandleSaveCategory()
+    {
+        errorMessage = null;
+        if (isEditMode)
+        {
+            var result
+          = await CategoryService.UpdateCategoryAsync(categoryModel.Id!.Value, categoryModel);
+            if (result.IsSuccess)
+            {
+                showSuccessAlert = true;
+                await LoadData();   
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage;
+            }
+        }
+        else
+        {
+            var result
+          = await CategoryService.CreateCategoryAsync(categoryModel);
+            if (result.IsSuccess)
+            {
+                showSuccessAlert = true;
+                await LoadData();
+
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage;
+            }
+            CloseModal();
+        }
+        CloseModal() ; 
+    }
+    private async Task ToggleStatus(CategoryListDTO category)
+    {
+        var result = category.IsActive
+            ? await CategoryService.DeActiveCategoryAsync(category.Id)
+            : await CategoryService.ActiveCategoryAsync(category.Id);
+
+        if (result.IsSuccess)
+        {
+            showSuccessAlert = true;
+            await LoadData();
+            //StateHasChanged();
+        }
+        else
+        {
+            errorMessage = result.ErrorMessage;
+        }
+    }
+}

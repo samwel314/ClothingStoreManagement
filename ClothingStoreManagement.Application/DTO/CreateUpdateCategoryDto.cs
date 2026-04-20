@@ -7,6 +7,7 @@ namespace ClothingStoreManagement.Application.DTO
 {
     public class CreateUpdateCategoryDto
     {
+        public int ? Id { get; set; }   
         [MaxLength (100 , ErrorMessage = "اقصي عدد من الحروف هو 100 حرف ") ]
         [Required (ErrorMessage = "ادخل اسم الفئة")]
         public string Name { get; set; } = null!; 

@@ -1,0 +1,70 @@
+﻿<div class="card shadow-sm border-0 mt-3" dir="rtl">
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead style="background-color: #0d6efd; color: white;">
+                <tr>
+                    <th class="py-3 ps-4" style="width: 30%;">اسم الفئة</th>
+                    <th class="py-3 text-center" style="width: 15%;">الحالة</th>
+                    <th class="py-3 text-center" style="width: 15%;">المنتجات</th>
+                    <th class="py-3 text-center" style="width: 25%;">آخر تحديث</th>
+                    <th class="py-3 text-center pe-4" style="width: 15%;">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Categories != null && Categories.Any())
+                {
+                    @foreach (var cat in Categories)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">@cat.Name</td>
+                            <td class="text-center">
+                                @if (cat.IsActive)
+                                {
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3">نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary px-3">غير نشط</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-primary border px-2">@cat.ProductsCount منتج</span>
+                            </td>
+                            <td class="text-center small text-muted">
+                                @cat.UpdatedAt?.ToString("yyyy/MM/dd HH:mm")
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-2">
+                                    @* زر التفعيل / التعطيل *@
+                                    <button class="btn btn-sm btn-light border" title="@(cat.IsActive ? "تعطيل" : "تفعيل")"
+                                            @onclick="() => OnToggleStatus.InvokeAsync(cat)">
+                                        <i class="bi @(cat.IsActive ? "bi-toggle-on text-success" : "bi-toggle-off text-muted") fs-5"></i>
+                                    </button>
+
+                                    @* زر التعديل *@
+                                    <button class="btn btn-sm btn-light border" @onclick="() => OnEdit.InvokeAsync(cat)">
+                                        <i class="bi bi-pencil-square text-primary fs-5"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted small">
+                            لا توجد فئات لعرضها حالياً
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<CategoryListDTO> Categories { get; set; }
+    [Parameter, EditorRequired] public EventCallback<CategoryListDTO> OnEdit { get; set; }
+    [Parameter, EditorRequired] public EventCallback<CategoryListDTO> OnToggleStatus { get; set; }
+}

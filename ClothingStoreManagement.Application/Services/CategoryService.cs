@@ -5,7 +5,7 @@ using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-namespace InventoryManagement.Application.Services
+namespace ClothingStoreManagement.Application.Services
 {
     public class CategoryService
     {
