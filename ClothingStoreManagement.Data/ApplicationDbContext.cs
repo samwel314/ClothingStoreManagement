@@ -25,13 +25,8 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().Property(p => p.SKU).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().HasIndex(p => p.SKU).IsUnique();
-            modelBuilder.Entity<Product>().ToTable(t =>
-            {
-                t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
-                t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
-            });
-            modelBuilder.Entity<Product>().Property(p => p.SellingPrice).IsRequired().HasPrecision(18, 2);
-            modelBuilder.Entity<Product>().Property(p => p.PurchasePrice).IsRequired().HasPrecision(18, 2);
+   
+
             //- *-*-* -Color
 
             modelBuilder.Entity<Color>().Property(p => p.Name).IsRequired().HasMaxLength(50);
@@ -52,9 +47,14 @@ namespace ClothingStoreManagement.Data
 
                 entity.HasOne(pv => pv.Color).WithMany().HasForeignKey(pv => pv.ColorId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(pv => pv.Size).WithMany().HasForeignKey(pv => pv.SizeId).OnDelete(DeleteBehavior.Restrict);
-            
-            
-            
+
+                modelBuilder.Entity<ProductVariant>().Property(p => p.SellingPrice).IsRequired().HasPrecision(18, 2);
+                modelBuilder.Entity<ProductVariant>().Property(p => p.PurchasePrice).IsRequired().HasPrecision(18, 2);
+                modelBuilder.Entity<ProductVariant>().ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
+                    t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
+                });
             });
         }
     }

@@ -83,17 +83,9 @@ namespace ClothingStoreManagement.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PurchasePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("SKU")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("SellingPrice")
-                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -106,12 +98,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("SKU")
                         .IsUnique();
 
-                    b.ToTable("Products", t =>
-                        {
-                            t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
-
-                            t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
-                        });
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ProductVariant", b =>
@@ -124,6 +111,14 @@ namespace ClothingStoreManagement.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("ProductId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("SizeId")
@@ -148,7 +143,12 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("VariantSKU")
                         .IsUnique();
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductVariants", t =>
+                        {
+                            t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
+
+                            t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
+                        });
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Size", b =>
