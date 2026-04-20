@@ -28,29 +28,58 @@
 }
 
 @* --- رأس الصفحة والبحث --- *@
-<div class="row align-items-center mb-4 g-3" dir="rtl">
+<!-- الكود المحدث للجزء الخاص بالبحث والعناوين -->
+<div class="row align-items-center mb-4 g-4" dir="rtl">
+    <!-- العنوان ووصف القسم -->
     <div class="col-lg-4 text-end">
-        <h3 class="fw-bold mb-0">إدارة الفئات</h3>
-        <p class="text-muted small">تنظيم المنتجات حسب الأقسام</p>
+        <div class="d-flex align-items-center justify-content-start flex-row-reverse">
+            <div class="bg-info bg-opacity-10 p-3 rounded-3 shadow-sm">
+                <i class="bi bi-grid-3x3-gap-fill text-primary fs-4"></i>
+            </div>
+            <div class="ms-4 text-end">
+                <h3 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">إدارة الفئات</h3>
+                <p class="text-muted small mb-0">تنظيم المنتجات حسب الأقسام الأساسية</p>
+            </div>
+
+        </div>
     </div>
+
     <div class="col-lg-5">
-        <div class="input-group shadow-sm rounded-3">
-            <button class="btn btn-primary px-4" @onclick="LoadData">بحث</button>
-            <input @bind="searchTerm" @bind:event="oninput" type="text" class="form-control border-0" placeholder="ابحث باسم الفئة..." />
-            <select @bind="statusFilter" class="form-select border-start-1" style="max-width: 120px;">
+        <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
+            <!-- زر البحث بشكل دائري بسيط -->
+            <button class="btn btn-primary rounded-pill px-4" @onclick="LoadData">
+                <i class="bi bi-search me-1"></i> بحث
+            </button>
+            
+            <!-- حقل الإدخال -->
+            <input @bind="searchTerm"
+                   @bind:event="oninput"
+                   type="text"
+                   class="form-control border-0 bg-transparent text-end"
+                   placeholder="ابحث عن فئة معينة..."
+                   style="box-shadow: none;" />
+            
+            <!-- قائمة الفلترة -->
+            <select @bind="statusFilter"
+                    class="form-select border-0 bg-transparent text-muted fw-bold border-start"
+                    style="max-width: 110px; box-shadow: none; cursor: pointer;">
                 <option value="">الكل</option>
                 <option value="true">نشط</option>
-                <option value="false">غير نشط</option>
+                <option value="false">معطل</option>
             </select>
         </div>
     </div>
+
+    <!-- زر الإضافة -->
     <div class="col-lg-3 text-start">
-        <button class="btn btn-success px-4 fw-bold shadow-sm" @onclick="OpenAddModal">
-            <i class="bi bi-plus-lg ms-2"></i>فئة جديدة
+        <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all"
+                @onclick="OpenAddModal"
+                style="height: 48px;">
+            <i class="bi bi-plus-circle fs-5"></i>
+            <span>إضافة فئة جديدة</span>
         </button>
     </div>
 </div>
-
 @* --- الجدول --- *@
 <CategoryGrid Categories="allCategories" OnEdit="Edit" OnToggleStatus="ToggleStatus" />
 

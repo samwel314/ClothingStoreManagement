@@ -26,19 +26,50 @@
         <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
     </div>
 }
-<div class="row align-items-center mb-4 g-3" dir="rtl">
-    <div class="col-lg-4 text-end">
-        <h3 class="fw-bold mb-0">إدارة المقاسات</h3>
-    </div>
-    <div class="col-lg-5">
-        <div class="input-group shadow-sm rounded-3">
-            <button @onclick="LoadData" class="btn btn-primary px-4">بحث</button>
-            <input @bind="searchTerm" type="text" class="form-control border-0" placeholder="ابحث عن مقاس..." />
+<div class="row align-items-center mb-4 g-4" dir="rtl">
+    <!-- العنوان ووصف القسم - مطرف لليسار مع أيقونة المقاسات -->
+    <div class="col-lg-4 text-start">
+        <div class="d-flex align-items-center justify-content-end">
+            <!-- النص مع المسافة المظبوطة ms-4 للفصل عن الأيقونة -->
+            <div class="ms-4 text-end">
+                <h3 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">إدارة المقاسات</h3>
+                <p class="text-muted small mb-0">ضبط وتعديل مقاسات الملابس (S, M, L, XL...)</p>
+            </div>
+            <!-- أيقونة المقاسات مع خلفية بنفسجي هادية -->
+            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
+                <i class="bi bi-rulers text-primary fs-4"></i>
+            </div>
         </div>
     </div>
+
+    <!-- منطقة البحث (Input Group) بتصميم الـ Pill الموحد -->
+    <div class="col-lg-5">
+        <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
+            <button @onclick="LoadData"
+                    class="btn btn-primary rounded-pill px-4 fw-bold"
+                    type="button">
+                بحث
+            </button>
+            
+            <input @bind="searchTerm"
+                   type="text"
+                   class="form-control border-0 bg-transparent text-end"
+                   placeholder="ابحث عن مقاس (مثل: XL)..."
+                   style="box-shadow: none;" />
+            
+            <span class="input-group-text bg-transparent border-0 text-muted px-3">
+                <i class="bi bi-search"></i>
+            </span>
+        </div>
+    </div>
+
+    <!-- زر إضافة مقاس جديد -->
     <div class="col-lg-3 text-start">
-        <button class="btn btn-success px-4 fw-bold" @onclick="() => OpenAddModal()">
-            <i class="bi bi-plus-lg ms-2"></i>مقاس جديد
+        <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all hover-lift"
+                @onclick="() => OpenAddModal()"
+                style="height: 48px;">
+            <i class="bi bi-plus-lg fs-5"></i>
+            <span>مقاس جديد</span>
         </button>
     </div>
 </div>
@@ -60,10 +91,13 @@
                         <div class="mb-3">
                             <label class="form-label small fw-bold">اسم المقاس</label>
                             <InputText @bind-Value="sizeModel.Name" class="form-control bg-light border-0" placeholder="مثلاً: Large" />
+                            <ValidationMessage For="@(() => sizeModel.Name)" class="text-danger small mt-1" />
+
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-bold">كود المقاس</label>
                             <InputText @bind-Value="sizeModel.Code" class="form-control bg-light border-0" placeholder="مثلاً: L" />
+                            <ValidationMessage For="@(() => sizeModel.Code)" class="text-danger small mt-1" />
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -81,7 +115,7 @@
     private bool isModalOpen = false;
     private bool isEditMode = false;
     private CreateUpdateSizeDto sizeModel = new();
-    private string? errorMessage;  
+    private string? errorMessage;
     private bool showSuccessAlert = false;
     protected override async Task OnInitializedAsync() => await LoadData();
 
@@ -116,7 +150,7 @@
             }
             else
             {
-                errorMessage = result.ErrorMessage ?? "حدث خطأ أثناء تحديث المقاس.";    
+                errorMessage = result.ErrorMessage ?? "حدث خطأ أثناء تحديث المقاس.";
             }
         }
         else
