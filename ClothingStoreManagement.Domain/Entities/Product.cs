@@ -18,7 +18,7 @@ namespace ClothingStoreManagement.Domain.Entities
         {
 
         }
-        public Product(string Name, string SKU, decimal SellingPrice, decimal PurchasePrice, int CategoryId)
+        public Product(string Name, string SKU, int CategoryId)
         {
             ValidateName(Name);
             ValidateSKU(SKU);
@@ -79,6 +79,8 @@ namespace ClothingStoreManagement.Domain.Entities
                 throw new ArgumentNullException(nameof(variant));
             if (variant.ProductId != Id)
                 throw new ArgumentException("Variant does not belong to this product");
+            if (Variants == null)
+                Variants = new List<ProductVariant>();
             var variants = new List<ProductVariant>(Variants) { variant };
             Variants = variants;
             UpdatedAt = DateTime.UtcNow;

@@ -2,6 +2,7 @@
 @inject CategoryService CategoryService
 @inject ColorService ColorService
 @inject SizeService SizeService
+@inject ProductService ProductService   
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -14,6 +15,21 @@
         <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
     </div>
 }
+@if (showSuccessAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+
+        <div>
+            &nbsp;
+            <strong class="ms-1">تم بنجاح!</strong>
+            <span>تم حفظ المنتج الجديد بنجاح .</span>
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
+    </div>
+}
+
 <div class="container-fluid py-4" dir="rtl">
     <EditForm Model="productDto" OnValidSubmit="HandleValidSubmit">
         <FluentValidationValidator />
@@ -70,12 +86,6 @@
                         <ValidationMessage For="@(() => productDto.CategoryId)" class="text-danger small" />
                     </div>
                 </div>
-
-                <!-- نصيحة ذكية -->
-                <div class="alert alert-warning border-0 rounded-4 mt-4 small shadow-sm">
-                    <i class="bi bi-lightbulb-fill ms-2"></i>
-                    سيتم توليد باركود فريد لكل مقاس ولون تلقائياً بناءً على الـ SKU الأساسي.
-                </div>
             </div>
 
             <!-- الجزء الشمال: إدارة التنوعات -->
@@ -97,7 +107,7 @@
                                     <th class="text-center" style="width: 20%;">سعر الشراء</th>
                                     <th class="text-center" style="width: 20%;">سعر البيع</th>
                                     <th class="text-center" style="width: 15%;">الكمية</th>
-                                    <th style="width: 10%;"></th>
+                                    <th style="width: 10%;"></th> 
                                 </tr>
                             </thead>
                             <tbody>
@@ -109,7 +119,7 @@
                                                 <option value="0">-- اختر لون --</option>
                                                 @foreach (var color in Colors)
                                                 {
-                                                    <option value="@color.Id">@color.Name</option>
+                                                    <option  value="@color.Id"> @color.Name </option>
                                                 }
                                             </InputSelect>
                                             <ValidationMessage For="@(() => variant.ColorId)" class="text-danger small" />
@@ -170,7 +180,7 @@
     private List<CategoryDTO> Categories = new();
     private List<ColorListDTO> Colors = new();
     private List<SizeListDTO> Sizes = new();
-
+    private bool showSuccessAlert = false;  
     private async Task LoadData()
     {
         var CategoriesResult = await CategoryService.GetCategoriesLookUpAsync();
@@ -229,7 +239,16 @@
 
     private async Task HandleValidSubmit()
     {
-        // هنا يتم استدعاء الـ API أو الـ Service لحفظ المنتج والـ Variants
+        var result = await ProductService.CreateProductAsync(productDto);
+        if (result.IsSuccess)
+        {
+            showSuccessAlert = true;
+            Reset();
+        }
+        else
+        {
+            errorMessage = result.ErrorMessage;
+        }
     }
 }
 
