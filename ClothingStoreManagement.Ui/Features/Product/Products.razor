@@ -1,7 +1,7 @@
 ﻿@page "/products"
-
+@inject CategoryService CategoryService 
+@inject ProductService ProductService   
 <div class="container-fluid py-4 bg-light min-vh-100" dir="rtl">
-    
     <div class="row align-items-center mb-5 g-4">
         <div class="col-lg-4">
             <div class="d-flex align-items-center justify-content-start">
@@ -17,9 +17,9 @@
 
         <div class="col-lg-5">
             <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
-                <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button">بحث</button>
-                <input type="text" class="form-control border-0 bg-transparent text-end" 
-                       placeholder="ابحث باسم المنتج أو SKU..." style="box-shadow: none;">
+                <button @onclick="OnApplyFilter" class="btn btn-primary rounded-pill px-4 fw-bold" type="button">بحث</button>
+                <input @bind:event="oninput" @bind="filter.SearchTerm" type="text" class="form-control border-0 bg-transparent text-end" 
+                     @bind:after="OnApplyFilter"  placeholder="ابحث باسم المنتج أو SKU..." style="box-shadow: none;">
                 <span class="input-group-text bg-transparent border-0 text-muted px-3">
                     <i class="bi bi-search"></i>
                 </span>
@@ -37,80 +37,142 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <nav aria-label="Page navigation">
             <ul class="pagination pagination-sm mb-0 gap-1">
-                <li class="page-item"><a class="page-link border-0 shadow-sm rounded-2 text-muted" href="#"><i class="bi bi-chevron-right"></i></a></li>
-                <li class="page-item active"><a class="page-link border-0 shadow-sm rounded-2 px-3" href="#">1</a></li>
-                <li class="page-item"><a class="page-link border-0 shadow-sm rounded-2 px-3" href="#">2</a></li>
-                <li class="page-item"><a class="page-link border-0 shadow-sm rounded-2 text-muted" href="#"><i class="bi bi-chevron-left"></i></a></li>
+            @* زر السابق - السهم لليمين في الـ RTL *@
+        @if (filter.PageNumber > 1)
+        {
+            <li class="page-item">
+                <button @onclick="@(async () => await GoToPage(filter.PageNumber - 1))" 
+                        class="page-link border-0 shadow-sm rounded-2 text-muted">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link border-0 shadow-sm rounded-2 text-light bg-transparent">
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+            </li>
+        }
+
+        @* أرقام الصفحات *@
+        @for (int i = 1; i <= filter.TotalPages; i++)
+        {
+            var pageNumber = i;
+            <li class="page-item @(filter.PageNumber == i ? "active" : "")">
+                <button @onclick="@(async () => await GoToPage(pageNumber))" 
+                        class="page-link border-0 shadow-sm rounded-2 px-3 fw-bold">
+                    @i
+                </button>
+            </li>
+        }
+
+        @* زر التالي - السهم لليسار في الـ RTL *@
+        @if (filter.PageNumber < filter.TotalPages)
+        {
+            <li class="page-item">
+                <button @onclick="@(async () => await GoToPage(filter.PageNumber + 1))" 
+                        class="page-link border-0 shadow-sm rounded-2 text-muted">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link border-0 shadow-sm rounded-2 text-light bg-transparent">
+                    <i class="bi bi-chevron-left"></i>
+                </span>
+            </li>
+        }
             </ul>
         </nav>
 
         <div class="d-flex gap-2">
-            <select class="form-select border-0 shadow-sm rounded-pill px-4 py-2 fw-semibold small">
-                <option>كل الحالات</option>
-                <option>نشط</option>
-                <option>غير نشط</option>
+            <select @bind:after="OnApplyFilter" @bind="IsActive" class="form-select border-0 shadow-sm rounded-pill px-4 py-2 fw-semibold small">
+                <option value="">كل الحالات</option>
+                <option value="true">نشط</option>
+                <option value="false">غير نشط</option>
             </select>
-            <select class="form-select border-0 shadow-sm rounded-pill px-4 py-2 fw-semibold small">
-                <option>كل الفئات</option>
-                <option>ملابس</option>
-                <option>أحذية</option>
+            <select @bind:after="OnApplyFilter" @bind="filter.CategoryId" class="form-select border-0 shadow-sm rounded-pill px-4 py-2 fw-semibold small">
+                <option value="">كل الفئات</option>
+                @if (categories != null)
+                {
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
             </select>
         </div>
     </div>
 
     <div class="product-list">
-        @for (int i = 0; i < 2; i++)
+        @if (products != null )
         {
-<div class="product-card bg-white rounded-4 shadow-sm border-0 mb-3 overflow-hidden transition-all">
+      foreach (var product in products)
+            {
+                <div class="product-card bg-white rounded-4 shadow-sm border-0 mb-3 overflow-hidden transition-all">
     <div class="p-4">
         <div class="row align-items-center">
             <div class="col-md-3">
                 <div class="text-end">
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <h5 class="fw-bold mb-0 text-dark">قميص كتان كاجوال</h5>
+                        <h5 class="fw-bold mb-0 text-dark">@product.Name</h5>
                         <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">نشط</span>
                     </div>
-                    <span class="text-muted small font-monospace">SKU: SH-LINEN-2024</span>
+                    <span class="text-muted small font-monospace"> @product.SKU</span>
                 </div>
             </div>
 
             <div class="col-md-3 text-center border-start border-end border-light">
                 <span class="text-muted small d-block mb-1">الفئة</span>
-                <span class="fw-semibold badge bg-light text-dark rounded-pill px-3">ملابس رجالي</span>
+                <span class="fw-semibold badge bg-light text-dark rounded-pill px-3"> @product.CategoryName</span>
             </div>
 
             <div class="col-md-3 text-center">
                 <span class="text-muted small d-block mb-1">آخر تحديث</span>
                 <div class="d-flex align-items-center justify-content-center gap-1 text-dark fw-medium small">
                     <i class="bi bi-clock-history text-muted"></i>
-                    <span>منذ ساعتين</span>
+                    <span> @product.LastUpdate.ToString("yyyy/MM/dd HH:mm")</span>
                 </div>
             </div>
 
             <div class="col-md-3">
-                <div class="d-flex align-items-center justify-content-end gap-3">
-                    <div class="form-check form-switch m-0 p-0 d-flex align-items-center gap-2">
-                        <input class="form-check-input ms-0 custom-switch" type="checkbox" checked>
-                    </div>
-                    <div class="d-flex gap-1">
-                        <button class="btn btn-outline-danger border-0 rounded-circle p-2" title="حذف"><i class="bi bi-trash3"></i></button>
-                        <button class="btn btn-outline-primary border-0 rounded-circle p-2" title="تعديل"><i class="bi bi-pencil-square"></i></button>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center justify-content-end gap-3">
+    <div class="form-check form-switch m-0 p-0 d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-light border d-flex align-items-center justify-content-center" 
+               
+                @onclick="() => OnToggleStatus(product)"
+                style="width: 42px; height: 32px;">
+            <i class="bi @(product.IsActive ? "bi-toggle-on text-success" : "bi-toggle-off text-muted") fs-4"></i>
+        </button>
+    </div>
+
+    <div class="d-flex gap-1">
+        <button class="btn btn-outline-danger border-0 rounded-circle p-2" title="حذف">
+            <i class="bi bi-trash3"></i>
+        </button>
+        <button class="btn btn-outline-primary border-0 rounded-circle p-2" title="تعديل">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+    </div>
+</div>
             </div>
         </div>
     </div>
 
     <div class="bg-light bg-opacity-25 border-top p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2 px-2 cursor-pointer" data-bs-toggle="collapse" href="#variants-1">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-2 cursor-pointer" data-bs-toggle="collapse" href="#variants-@product.Id">
             <div class="text-primary small fw-bold">
                 <i class="bi bi-layers-half ms-1"></i>
-                التنوعات المتاحة (4)
+                التنوعات المتاحة (@product.Variants.Count())
             </div>
             <i class="bi bi-chevron-down text-muted small"></i>
         </div>
 
-        <div class="collapse show mt-2" id="variants-1">
+        <div class="collapse  mt-2" id="variants-@product.Id">
             <div class="table-responsive rounded-3 border bg-white mx-2">
                 <table class="table table-sm table-hover mb-0 text-end align-middle">
                     <thead class="table-light">
@@ -122,26 +184,40 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        @foreach (var variant in product.Variants)
+                                        {
+                                                                    <tr>
                             <td class="pe-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="shadow-sm border border-light-subtle" 
-                                         style="width: 18px; height: 18px; background-color: #00FFFF; border-radius: 4px;"></div>
-                                    <span class="fw-bold text-dark small">أبيض</span>
+                                         style="width: 18px; height: 18px; background-color: @variant.Color; border-radius: 4px;"></div>
                                     <span class="text-muted">/</span>
-                                    <span class="badge bg-secondary-subtle text-secondary small">XL</span>
+                                    <span class="badge bg-secondary-subtle text-secondary small">@variant.Size</span>
                                 </div>
                             </td>
-                            <td><span class="text-success fw-bold">20 قطعة</span></td>
-                            <td class="fw-medium">450 ج.م</td>
-                            <td class="text-center text-muted small font-monospace">SH-LN-W-XL</td>
+                            @if (variant.StockQuantity > 0)
+                            {
+                                <td><span class="text-success fw-bold">@variant.StockQuantity قطعة</span></td>
+                            }
+                            else
+                            {
+                                <td><span class="text-danger fw-bold">نفذت</span></td>
+                            }
+                            <td class="fw-medium">@variant.Price ج.م</td>
+                            <td class="text-center text-muted small font-monospace">@variant.Sku</td>
                         </tr>
-                    </tbody>
+
+                                        }
+                                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>        }
+</div>        
+
+            }
+
+        }
     </div>
 </div>
 
@@ -163,3 +239,69 @@
     .table thead th { font-weight: 600; color: #475569; border-bottom: 1px solid #f1f5f9; }
     .table td { vertical-align: middle; border-bottom: 1px solid #f8fafc; }
 </style>
+
+
+
+@code{
+    public IEnumerable<CategoryDTO> categories { get; set; }
+    public IEnumerable <ProductListDto> products { get; set; }  
+    private string IsActive = "" ; 
+    private ProductSearchFilter filter = new ProductSearchFilter(); 
+    private async Task OnApplyFilter ()
+    {
+        if (string.IsNullOrEmpty(IsActive))
+            filter.IsActive = null ; 
+        else
+            filter.IsActive = IsActive == "true";
+        filter.PageNumber = 1 ; 
+        await LoadData();   
+    }
+    async Task GoToPage (int pageNumber)
+    {
+        filter.PageNumber = pageNumber ;    
+        await LoadData();    
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result  = await CategoryService.GetCategoriesLookUpAsync() ; 
+        if (result.IsSuccess)
+            categories  = result.Data !; 
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrEmpty(IsActive))
+            filter.IsActive = null ; 
+        else
+            filter.IsActive = IsActive == "true";      
+        await LoadData();
+    }
+    async Task LoadData ()
+    {
+        var result =   await  ProductService.
+           GetAllProductsAsync(filter.PageNumber , filter.PageSize , filter.IsActive , filter.CategoryId , filter.SearchTerm) ; 
+        if (result.IsSuccess)
+        {
+            products = result.Data.Items ; 
+            filter.TotalPages = result.Data.TotalPages ; 
+        }
+    }
+    
+        void OnToggleStatus (ProductListDto item )
+        {
+            item.IsActive = !item.IsActive ;
+        }
+    public class ProductSearchFilter
+    {
+        public string? SearchTerm { get; set; }
+        public int? CategoryId { get; set; }
+        public bool? IsActive { get; set; }
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 5;
+        public int Next { get; set; }
+        public int Previous { get; set; }
+        public int TotalPages { get; set; }
+
+    }
+}
