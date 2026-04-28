@@ -108,5 +108,28 @@ namespace ClothingStoreManagement.Application.Services
             pagination.Items = products;
             return Result<Pagination<ProductListDto>>.Success(pagination);
         }
+        public async Task<Result<string>> ActiveProductAsync(Guid Id)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync((p)=> p.Id ==  Id , true);
+            if (product == null)
+                return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+            product.Activate();
+            await _db.Save();
+            return Result<string>.Success();
+        }
+        public async Task<Result<string>> DeActiveProductAsync(Guid Id)
+        {
+
+            var product = await _db.Products.FirstOrDefaultAsync((p) => p.Id == Id , true);
+            if (product == null)
+                return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+            product.Deactivate();
+            await _db.Save();
+            return Result<string>.Success();
+        }
+
     }
+
+
+    
 }

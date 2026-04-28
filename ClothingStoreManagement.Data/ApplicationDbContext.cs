@@ -25,8 +25,12 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().Property(p => p.SKU).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().HasIndex(p => p.SKU).IsUnique();
-   
 
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Id)
+                .HasConversion(
+                    v => v.ToString().ToLower(),        
+                    v => Guid.Parse(v));    
             //- *-*-* -Color
 
             modelBuilder.Entity<Color>().Property(p => p.Name).IsRequired().HasMaxLength(50);

@@ -37,7 +37,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <nav aria-label="Page navigation">
             <ul class="pagination pagination-sm mb-0 gap-1">
-            @* زر السابق - السهم لليمين في الـ RTL *@
         @if (filter.PageNumber > 1)
         {
             <li class="page-item">
@@ -56,7 +55,6 @@
             </li>
         }
 
-        @* أرقام الصفحات *@
         @for (int i = 1; i <= filter.TotalPages; i++)
         {
             var pageNumber = i;
@@ -67,8 +65,6 @@
                 </button>
             </li>
         }
-
-        @* زر التالي - السهم لليسار في الـ RTL *@
         @if (filter.PageNumber < filter.TotalPages)
         {
             <li class="page-item">
@@ -120,8 +116,15 @@
                 <div class="text-end">
                     <div class="d-flex align-items-center gap-2 mb-1">
                         <h5 class="fw-bold mb-0 text-dark">@product.Name</h5>
-                        <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">نشط</span>
-                    </div>
+                                        @if (product.IsActive)
+                                        {
+                                            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">نشط</span>
+                                        }
+                        else
+                        {
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">غير نشط</span>
+                        }
+                                    </div>
                     <span class="text-muted small font-monospace"> @product.SKU</span>
                 </div>
             </div>
@@ -283,15 +286,23 @@
            GetAllProductsAsync(filter.PageNumber , filter.PageSize , filter.IsActive , filter.CategoryId , filter.SearchTerm) ; 
         if (result.IsSuccess)
         {
-            products = result.Data.Items ; 
+            products = result.Data!.Items ; 
             filter.TotalPages = result.Data.TotalPages ; 
         }
     }
-    
-        void OnToggleStatus (ProductListDto item )
+
+    async Task OnToggleStatus (ProductListDto item )
+    {
+        if (item.IsActive)
         {
-            item.IsActive = !item.IsActive ;
+            await  ProductService.DeActiveProductAsync(item.Id);
         }
+        else
+        {
+            await  ProductService.ActiveProductAsync(item.Id);
+        }
+await LoadData();
+    }
     public class ProductSearchFilter
     {
         public string? SearchTerm { get; set; }
