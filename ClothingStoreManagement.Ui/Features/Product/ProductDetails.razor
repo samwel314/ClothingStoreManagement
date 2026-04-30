@@ -1,0 +1,411 @@
+﻿@page "/product-details/{ProductId}"
+@inject ProductService productService 
+@inject CategoryService categoryService
+@inject ColorService colorService 
+@inject SizeService sizeService 
+
+@if (OpenUpdateModel)
+{
+    <div class="update-modal-overlay" dir="rtl">
+        <div class="card shadow-lg border-0 rounded-4 w-100 animate-slide-up" style="max-width: 450px; background: white;">
+            <div class="card-header bg-primary text-white text-center py-4 rounded-top-4 position-relative">
+                <div class="mb-2">
+                    <i class="bi bi-pencil-square fs-1"></i>
+                </div>
+                <h3 class="fw-bold mb-0">تعديل البيانات</h3>
+                <p class="small opacity-75">قم بتحديث اسم المنتج والصنف</p>
+            </div>
+
+            <div class="card-body p-4">
+                @if (showSuccess)
+                {
+                    <div class="alert alert-success d-flex align-items-center animate-fade-in" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <div>تم حفظ التغييرات بنجاح!</div>
+                    </div>
+                }
+
+                <EditForm Model="@UpdateProduct" OnValidSubmit="SaveUpdateProduct">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-4">
+                        <label for="name" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-tag-fill ms-1 text-primary"></i> اسم المنتج
+                        </label>
+                        <InputText id="name" @bind-Value="UpdateProduct.Name" class="form-control form-control-lg rounded-3 border-2" placeholder="مثلاً: قميص أبيض" />
+                        <ValidationMessage For="@(() => UpdateProduct.Name)" class="text-danger small" />
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label for="category" class="form-label fw-bold text-secondary">
+                            <i class="bi bi-grid-fill ms-1 text-primary"></i> الصنف
+                        </label>
+                        <InputSelect @bind-Value="UpdateProduct.CategoryId" class="form-select form-control-lg rounded-3 border-2">
+                            <option value="">اختر الصنف...</option>
+                            @if (Categories != null)
+                            {
+                                @foreach(var category in Categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => UpdateProduct.CategoryId)" class="text-danger small" />
+                    </div>
+
+           
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 rounded-pill shadow-sm transition-btn">
+                            <i class="bi bi-save2-fill ms-2"></i> حفظ التعديلات
+                        </button>
+                        <button type="button" @onclick="() => OpenUpdateModel = false" class="btn btn-light btn-lg rounded-pill border px-4">
+                            إلغاء
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (OpneSkuForm)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold">تحديث كود SKU</h5>
+                    <button type="button" class="btn-close ms-0 me-auto" @onclick="() => OpneSkuForm = false"></button>
+                </div>
+                
+                @* استخدام EditForm مع الموديل *@
+                <EditForm Model="@skuModel" OnValidSubmit="SaveUpdateSku">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="modal-body">
+                        <div class="mb-3 text-right">
+                            <label class="form-label text-secondary">كود الـ SKU الجديد</label>
+                            <InputText class="form-control form-control-lg bg-light" 
+                                       @bind-Value="skuModel.SKU" 
+                                       placeholder="أدخل الكود هنا..." />
+                            <ValidationMessage For="@(() => skuModel.SKU)" class="text-danger small mt-1" />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                            <i class="bi bi-check-lg"></i> حفظ التغييرات
+                        </button>
+                        <button type="button" class="btn btn-link text-muted mt-2" @onclick="() => OpneSkuForm = false">
+                            إلغاء
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (product != null )
+{
+    <div class="container-fluid py-4 bg-light" dir="rtl">
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-lg-7">
+            <div class="d-flex align-items-center gap-4">
+                <div class="bg-primary bg-opacity-10 p-4 rounded-4 shadow-sm border border-primary border-opacity-10">
+                    <i class="bi bi-box-seam text-primary fs-1"></i>
+                </div>
+                <div class="text-end">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <h2 class="fw-bold mb-0 text-dark">@product.Name</h2>
+                        @if (product.IsActive)
+                            {
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 border border-success border-opacity-10">نشط</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 border border-danger border-opacity-10">غير نشط</span>
+                            }
+                        </div>
+                    <p class="text-muted mb-0">
+                        <span class="fw-bold text-secondary">SKU:</span> @product.SKU | 
+                        <span class="fw-bold text-secondary">الفئة : </span> @product.CategoryName | 
+                        <span class="text-primary fw-semibold"><i class="bi bi-clock-history"></i> آخر تحديث: @product.LastUpdate.ToShortDateString()</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 text-start">
+      <div class="d-flex flex-wrap justify-content-start gap-2">
+
+    <button class="btn btn-outline-danger rounded-pill px-4 fw-bold">
+        <i class="bi bi-trash3 me-2"></i> حذف المنتج
+    </button>
+
+
+    <button @onclick="()=> UpdateModel()" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+        <i class="bi bi-pencil-square me-2"></i> تعديل البيانات الأساسية
+    </button>
+
+    <button @onclick="()=> UpdateSku()" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-sm">
+        <i class="bi bi-barcode me-2"></i> تعديل كود SKU
+    </button>
+</div>
+        </div>
+    </div>
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted small fw-bold mb-2">إجمالي المبيعات</h6>
+                        <h4 class="fw-bold mb-1 text-dark">15,420 ج.م</h4>
+                        <span class="text-success small fw-bold"><i class="bi bi-arrow-up"></i> 12% هذا الشهر</span>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-cash-stack text-primary fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up border-start border-success border-5">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted small fw-bold mb-2">صافي الربح التقديري</h6>
+                        <h4 class="fw-bold mb-1 text-success">4,200 ج.م</h4>
+                        <span class="text-muted small">هامش ربح: 27%</span>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-graph-up-arrow text-success fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted small fw-bold mb-2">عدد مرات البيع</h6>
+                        <h4 class="fw-bold mb-1 text-dark">84 فاتورة</h4>
+                        <span class="text-muted small">متوسط 2 قطعة/طلب</span>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-receipt text-info fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted small fw-bold mb-2">المخزون الكلي</h6>
+                        <h4 class="fw-bold mb-1 text-warning">45 قطعة</h4>
+                        <span class="text-muted small">موزعة على 6 تنوعات</span>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-archive text-warning fs-4"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-layers-half me-2"></i> إدارة التنوعات (المخزون والأسعار)</h5>
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">+ إضافة تنوع جديد</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-end">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 px-4 text-secondary small">اللون والمقاس</th>
+                            <th class="py-3 text-secondary small">SKU / الباركود</th>
+                            <th class="py-3 text-secondary small text-center">المخزون</th>
+                            <th class="py-3 text-secondary small text-center">السعر</th>
+                            <th class="py-3 text-secondary small text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in product.Variants)
+                        {
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center gap-2 flex-row-reverse justify-content-end">
+                                        <span class="fw-bold text-dark">@v.Size</span>
+                                        <div class="rounded-circle shadow-sm border" 
+                                             style="width:18px; height:18px; background-color: @v.Color;"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="font-monospace text-dark fw-semibold">@v.Sku</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="fw-bold @(v.StockQuantity <= 5 ? "text-danger" : "text-dark")">@v.StockQuantity</span>
+                                    <small class="text-muted ms-1">قطعة</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="fw-bold text-primary">@v.Price.ToString("N0")</span>
+                                    <small class="text-muted ms-1">ج.م</small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <button class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart me-2"></i> الأكثر مبيعاً</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-4">تحليل مبيعات التنوعات خلال الـ 30 يوم الماضية:</p>
+                    <div class="mb-4 text-end">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">مقاس XL - أسود</span>
+                            <span class="text-primary fw-bold">42%</span>
+                        </div>
+                        <div class="progress rounded-pill shadow-none" style="height: 10px;">
+                            <div class="progress-bar bg-primary" style="width: 42%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+else
+{
+    <div class="container-fluid d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="card shadow-sm border-0 rounded-4 text-center p-5" style="max-width: 550px; background-color: #fcfcfc;">
+        <div class="card-body">
+            <div class="mb-4 d-inline-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10" style="width: 100px; height: 100px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-box-seam text-warning" viewBox="0 0 16 16">
+                    <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.722V6.828L1 4.24v7.922l6.5 2.6zM4.268 3.074a.5.5 0 0 1-.742-.596L4.545 1.32a.5.5 0 0 1 .742.596L4.268 3.074z"/>
+                </svg>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">عذراً.. هذا المنتج غير متاح</h3>
+            <p class="text-muted mb-4 fs-6">
+                يبدو أنك تحاول الوصول لمنتج غير موجود في قاعدة البيانات.
+            </p>
+        </div>
+    </div>
+</div>
+}
+
+<style>
+    .rounded-4 { border-radius: 1.25rem !important; }
+    .bg-success-subtle { background-color: #ecfdf5; }
+    .hover-up { transition: transform 0.2s; cursor: default; }
+    .hover-up:hover { transform: translateY(-5px); }
+    .font-monospace { font-family: 'SFMono-Regular', Consolas, monospace; }
+
+    /* Modal Overlay Styles */
+    .update-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* خلفية معتمة */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* لضمان الظهور فوق كل شيء */
+        backdrop-filter: blur(4px); /* إضافة غبش خفيف للخلفية */
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+        .rounded-4 { border-radius: 1rem !important; }
+    .font-monospace { font-family: monospace; font-size: 1.1rem; }
+    /* منع تداخل الـ CSS مع الـ Razor */
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string ProductId { get; set; }
+    private ProductListDto product = null!;
+    private bool showSuccess = false; 
+    private UpdateProductBasicDto UpdateProduct = new UpdateProductBasicDto(); 
+    private UpdateProductSkuDto skuModel = new () ; 
+    private List<CategoryDTO> Categories = new();
+    private List<ColorListDTO> Colors = new();
+    private List<SizeListDTO> Sizes = new();
+    private bool OpenUpdateModel = false;
+    private bool OpneSkuForm = false ; 
+    protected async override Task OnInitializedAsync()
+    {
+        var CategoriesResult = await categoryService.GetCategoriesLookUpAsync();
+        if (CategoriesResult.IsSuccess)
+            Categories = CategoriesResult.Data!.ToList();
+
+        var ColorsResult = await colorService.GetColorsAsync();
+        if (ColorsResult.IsSuccess)
+            Colors = ColorsResult.Data!.ToList();
+
+        var SizesResult = await sizeService.GetSizesAsync();
+        if (SizesResult.IsSuccess)
+            Sizes = SizesResult.Data!.ToList();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Guid.TryParse(ProductId, out Guid actualId))
+        {
+            var result = await productService.GetProductAsync(actualId); 
+            if (result.IsSuccess)
+                product = result.Data!; 
+            else
+                product = null!; 
+        }
+    }
+
+    private void UpdateModel()
+    {
+        OpenUpdateModel = true;
+        UpdateProduct.CategoryId = product.CategoryId;
+        UpdateProduct.Name = product.Name; 
+        UpdateProduct.ProductId = product.Id; 
+    }
+    
+    private void UpdateSku()
+    {
+        OpneSkuForm = true;
+        skuModel.ProductId = product.Id;
+        skuModel.SKU = product.SKU; 
+    }
+    private void SaveUpdateProduct()
+    {
+        // تم تعديل InputText ليرتبط بـ UpdateProduct.Name ليعمل الـ Binding بشكل صحيح
+        throw new NotImplementedException();
+    }
+    private void SaveUpdateSku(EditContext args)
+    {
+        throw new NotImplementedException();
+    }
+}
