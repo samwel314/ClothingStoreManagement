@@ -128,6 +128,34 @@ namespace ClothingStoreManagement.Application.Services
             return Result<string>.Success();
         }
 
+        // 
+        public async Task<Result<ProductListDto>>
+    GetProductAsync(Guid Id)
+        {
+            var product = await _db.Products.GetAll().
+                Select(p => new ProductListDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CategoryName = p.Category.Name,
+                    CategoryId = p.Category.Id, 
+                    SKU = p.SKU,
+                    IsActive = p.IsActive,
+                    LastUpdate = p.UpdatedAt == null ? p.CreatedAt : p.UpdatedAt.Value,
+                    Variants = p.Variants.Select(v => new ProductVariantListDto
+                    {
+                        Id = v.Id,
+                        Color = v.Color.Code,
+                        Size = v.Size.Code,
+                        StockQuantity = v.StockQuantity,
+                        Price = v.SellingPrice,
+                        Sku = v.VariantSKU
+                    })
+                }).FirstOrDefaultAsync((p) => p.Id == Id);
+            if (product == null)
+                return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+            return Result<ProductListDto>.Success(product);
+        }
     }
 
 
