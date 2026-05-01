@@ -25,8 +25,10 @@ namespace ClothingStoreManagement.Data.Repository.implementation
             return _dbSet.AnyAsync(predicate);
         }
 
-        public IQueryable<T> GetAll()
+        public IQueryable<T> GetAll(bool track  = false)
         {
+            if (track)
+                return _dbSet; 
             return _dbSet.AsNoTracking();
         }
         public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, bool track = false)

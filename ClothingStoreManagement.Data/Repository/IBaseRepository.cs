@@ -10,7 +10,7 @@ namespace ClothingStoreManagement.Data.Repository
     {
         Task CreateAsync(T model);
         Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate ,  bool track = false);
-        IQueryable<T> GetAll();
+        IQueryable<T> GetAll(bool track = false);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
     }
 }

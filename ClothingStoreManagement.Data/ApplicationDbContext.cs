@@ -59,7 +59,21 @@ namespace ClothingStoreManagement.Data
                     t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
                     t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
                 });
+
+                modelBuilder.Entity<ProductVariant>()
+    .Property(p => p.Id)
+    .HasConversion(
+        v => v.ToString().ToLower(),
+        v => Guid.Parse(v));
             });
+
+                        modelBuilder.Entity<ProductVariant>()
+.Property(p => p.ProductId)
+.HasConversion(
+v => v.ToString().ToLower(),
+v => Guid.Parse(v));
+        
+
         }
     }
 }

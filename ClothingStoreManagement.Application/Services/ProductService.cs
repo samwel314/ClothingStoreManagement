@@ -147,7 +147,7 @@ namespace ClothingStoreManagement.Application.Services
                         Id = v.Id,
                         Color = v.Color.Code,
                         Size = v.Size.Code,
-                        Purchase = v.PurchasePrice , 
+                        Purchase = v.PurchasePrice,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
                         Sku = v.VariantSKU
@@ -158,7 +158,7 @@ namespace ClothingStoreManagement.Application.Services
             return Result<ProductListDto>.Success(product);
         }
 
-        public async Task<Result<string>> UpdateProductBasicAsync(UpdateProductBasicDto dto )
+        public async Task<Result<string>> UpdateProductBasicAsync(UpdateProductBasicDto dto)
         {
             var product = await _db.Products.FirstOrDefaultAsync
                 ((p) => p.Id == dto.ProductId, true);
@@ -198,14 +198,22 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
             dto.SKU = dto.SKU.Trim();
 
-            if (product.SKU != dto.SKU )
+            if (product.SKU != dto.SKU)
             {
                 var sameSDKExist = await _db.Products.ExistsAsync((p) => p.SKU == dto.SKU);
                 if (sameSDKExist)
                     return Result<string>.Failure("هذا الباركود موجود بالفعل ", ErrorType.conflict);
                 product.UpdateSKU(dto.SKU);
+                var variants =
+                      await _db.ProductVariants.GetAll(true).Include(pr => pr.Size)
+                     .Include(pr => pr.Color).Where((pv) => pv.ProductId == dto.ProductId).ToListAsync();
+                foreach (var variant in variants)
+                {
+                    variant.UpdateVariant(variant.SizeId, variant.Size.Code,
+                        variant.ColorId, variant.Color.Code, product.SKU);
+                }
             }
-            
+
             await _db.Save();
             return Result<string>.Success();
         }

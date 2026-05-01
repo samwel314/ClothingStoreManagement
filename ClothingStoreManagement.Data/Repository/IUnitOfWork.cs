@@ -9,7 +9,8 @@ namespace ClothingStoreManagement.Data.Repository
         IColorRepository Colors { get; }
         ISizeRepository Sizes { get; }
         IProductRepository Products {  get; }
-        ICategoryRepository Categories { get; }  
+        ICategoryRepository Categories { get; }
+        IProductProductVariantRepository ProductVariants { get; }  
         Task Save();
     }
     
