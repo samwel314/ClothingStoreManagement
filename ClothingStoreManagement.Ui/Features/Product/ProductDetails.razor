@@ -3,7 +3,7 @@
 @inject CategoryService categoryService
 @inject ColorService colorService 
 @inject SizeService sizeService 
-
+@inject NavigationManager navigation
 @if (OpenUpdateModel)
 {
     <div class="update-modal-overlay" dir="rtl">
@@ -17,14 +17,6 @@
             </div>
 
             <div class="card-body p-4">
-                @if (showSuccess)
-                {
-                    <div class="alert alert-success d-flex align-items-center animate-fade-in" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <div>تم حفظ التغييرات بنجاح!</div>
-                    </div>
-                }
-
                 <EditForm Model="@UpdateProduct" OnValidSubmit="SaveUpdateProduct">
                     <DataAnnotationsValidator />
 
@@ -112,6 +104,20 @@
 @if (product != null )
 {
     <div class="container-fluid py-4 bg-light" dir="rtl">
+                    @if (showSuccess)
+                {
+                    <div class="alert alert-success d-flex align-items-center animate-fade-in" role="alert">
+                        <i class="bi bi-check-circle-fill me-2">&nbsp;&nbsp; </i>
+                        <div> تم حفظ التغييرات بنجاح! </div>
+                    </div>
+                }
+                             @if (erroMessage != null )
+                {
+                    <div class="alert alert-danger d-flex align-items-center animate-fade-in" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"> &nbsp;&nbsp;</i>
+                        <div>   @erroMessage  </div>
+                    </div>
+                }
     <div class="row align-items-center mb-4 g-3">
         <div class="col-lg-7">
             <div class="d-flex align-items-center gap-4">
@@ -221,6 +227,8 @@
                             <th class="py-3 px-4 text-secondary small">اللون والمقاس</th>
                             <th class="py-3 text-secondary small">SKU / الباركود</th>
                             <th class="py-3 text-secondary small text-center">المخزون</th>
+                                                        <th class="py-3 text-secondary small text-center">سعر الشراء </th>
+
                             <th class="py-3 text-secondary small text-center">السعر</th>
                             <th class="py-3 text-secondary small text-center">الإجراءات</th>
                         </tr>
@@ -244,6 +252,10 @@
                                 <td class="text-center">
                                     <span class="fw-bold @(v.StockQuantity <= 5 ? "text-danger" : "text-dark")">@v.StockQuantity</span>
                                     <small class="text-muted ms-1">قطعة</small>
+                                </td>
+                                       <td class="text-center">
+                                    <span class="fw-bold text-danger">@v.Purchase.ToString("N0")</span>
+                                    <small class="text-muted ms-1">ج.م</small>
                                 </td>
                                 <td class="text-center">
                                     <span class="fw-bold text-primary">@v.Price.ToString("N0")</span>
@@ -358,6 +370,7 @@ else
     private List<SizeListDTO> Sizes = new();
     private bool OpenUpdateModel = false;
     private bool OpneSkuForm = false ; 
+    private string erroMessage = null! ; 
     protected async override Task OnInitializedAsync()
     {
         var CategoriesResult = await categoryService.GetCategoriesLookUpAsync();
@@ -372,8 +385,7 @@ else
         if (SizesResult.IsSuccess)
             Sizes = SizesResult.Data!.ToList();
     }
-
-    protected override async Task OnParametersSetAsync()
+    private async Task loadProduct ()
     {
         if (Guid.TryParse(ProductId, out Guid actualId))
         {
@@ -384,6 +396,10 @@ else
                 product = null!; 
         }
     }
+    protected override async Task OnParametersSetAsync()
+    {
+        await loadProduct() ; 
+    }
 
     private void UpdateModel()
     {
@@ -392,20 +408,65 @@ else
         UpdateProduct.Name = product.Name; 
         UpdateProduct.ProductId = product.Id; 
     }
-    
+
     private void UpdateSku()
     {
         OpneSkuForm = true;
         skuModel.ProductId = product.Id;
         skuModel.SKU = product.SKU; 
     }
-    private void SaveUpdateProduct()
+    private async Task SaveUpdateProduct()
     {
-        // تم تعديل InputText ليرتبط بـ UpdateProduct.Name ليعمل الـ Binding بشكل صحيح
-        throw new NotImplementedException();
+        var result = await productService.UpdateProductBasicAsync(UpdateProduct) ; 
+        if(result.IsSuccess)
+        {
+            showSuccess = true ;
+                                OpenUpdateModel = false ; 
+        
+
+             await loadProduct() ; 
+            await  Task.Delay(3000) ; 
+            showSuccess = false ;
+        }
+        else
+        {
+                         
+
+            erroMessage = result.ErrorMessage! ; 
+                            OpenUpdateModel = false ; 
+
+            await  Task.Delay(3000) ; 
+            erroMessage = null! ; 
+        }
+
+
+
     }
-    private void SaveUpdateSku(EditContext args)
+    private async Task  SaveUpdateSku()
     {
-        throw new NotImplementedException();
+        var result = await productService.UpdateProductSkuAsync(skuModel) ; 
+        
+        if(result.IsSuccess)
+        {
+            showSuccess = true ;
+                    OpneSkuForm = false ; 
+
+            await loadProduct() ; 
+            await  Task.Delay(3000) ; 
+            showSuccess = false ;
+        }
+        else
+        {
+
+            erroMessage = result.ErrorMessage! ; 
+            OpneSkuForm = false ; 
+
+            await  Task.Delay(3000) ; 
+            erroMessage = null! ; 
+        }
+
+
     }
+
+
 }

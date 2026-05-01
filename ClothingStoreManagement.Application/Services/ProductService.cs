@@ -56,8 +56,8 @@ namespace ClothingStoreManagement.Application.Services
                     sizes[variantDto.SizeId].Code,
                     variantDto.ColorId,
                     colors[variantDto.ColorId].Code,
-                    variantDto.StockQuantity ,
-                    variantDto.SellingPrice ,
+                    variantDto.StockQuantity,
+                    variantDto.SellingPrice,
                     variantDto.PurchasePrice);
                 Product.AddVariant(variant);
             }
@@ -67,8 +67,8 @@ namespace ClothingStoreManagement.Application.Services
             return Result<string>.Success("تم إضافة المنتج بنجاح ");
         }
 
-        public async Task<Result<Pagination<ProductListDto>>> 
-            GetAllProductsAsync(int page, int pageSize = 5, bool? active = null, int? categoryId = null, 
+        public async Task<Result<Pagination<ProductListDto>>>
+            GetAllProductsAsync(int page, int pageSize = 5, bool? active = null, int? categoryId = null,
             string? searchTerm = null)
         {
             var baseQuery = _db.Products.GetAll();
@@ -93,7 +93,7 @@ namespace ClothingStoreManagement.Application.Services
                     CategoryName = p.Category.Name,
                     SKU = p.SKU,
                     IsActive = p.IsActive,
-                    LastUpdate = p.UpdatedAt == null ? p.CreatedAt : p.UpdatedAt.Value , 
+                    LastUpdate = p.UpdatedAt == null ? p.CreatedAt : p.UpdatedAt.Value,
                     Variants = p.Variants.Select(v => new ProductVariantListDto
                     {
                         Id = v.Id,
@@ -101,7 +101,7 @@ namespace ClothingStoreManagement.Application.Services
                         Size = v.Size.Code,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
-                        Sku = v.VariantSKU 
+                        Sku = v.VariantSKU
                     })
                 }).ToListAsync();
 
@@ -110,7 +110,7 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<Result<string>> ActiveProductAsync(Guid Id)
         {
-            var product = await _db.Products.FirstOrDefaultAsync((p)=> p.Id ==  Id , true);
+            var product = await _db.Products.FirstOrDefaultAsync((p) => p.Id == Id, true);
             if (product == null)
                 return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
             product.Activate();
@@ -120,7 +120,7 @@ namespace ClothingStoreManagement.Application.Services
         public async Task<Result<string>> DeActiveProductAsync(Guid Id)
         {
 
-            var product = await _db.Products.FirstOrDefaultAsync((p) => p.Id == Id , true);
+            var product = await _db.Products.FirstOrDefaultAsync((p) => p.Id == Id, true);
             if (product == null)
                 return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
             product.Deactivate();
@@ -138,7 +138,7 @@ namespace ClothingStoreManagement.Application.Services
                     Id = p.Id,
                     Name = p.Name,
                     CategoryName = p.Category.Name,
-                    CategoryId = p.Category.Id, 
+                    CategoryId = p.Category.Id,
                     SKU = p.SKU,
                     IsActive = p.IsActive,
                     LastUpdate = p.UpdatedAt == null ? p.CreatedAt : p.UpdatedAt.Value,
@@ -147,6 +147,7 @@ namespace ClothingStoreManagement.Application.Services
                         Id = v.Id,
                         Color = v.Color.Code,
                         Size = v.Size.Code,
+                        Purchase = v.PurchasePrice , 
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
                         Sku = v.VariantSKU
@@ -156,8 +157,60 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
             return Result<ProductListDto>.Success(product);
         }
+
+        public async Task<Result<string>> UpdateProductBasicAsync(UpdateProductBasicDto dto )
+        {
+            var product = await _db.Products.FirstOrDefaultAsync
+                ((p) => p.Id == dto.ProductId, true);
+            if (product == null)
+                return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+            if (product.CategoryId != dto.CategoryId)
+                product.ChangeCategory(dto.CategoryId);
+            dto.Name = dto.Name.Trim();
+
+            bool nameChanged = product.Name != dto.Name;
+            bool categoryChanged = product.CategoryId != dto.CategoryId;
+
+            if (nameChanged || categoryChanged)
+            {
+                var sameNameExist = await _db.Products.ExistsAsync(p =>
+                    p.Name == dto.Name &&
+                    p.CategoryId == dto.CategoryId &&
+                    p.Id != dto.ProductId);
+
+                if (sameNameExist)
+                    return Result<string>.Failure("هذا الاسم موجود بالفعل في هذه الفئة", ErrorType.conflict);
+            }
+
+            if (categoryChanged)
+                product.ChangeCategory(dto.CategoryId);
+
+            if (nameChanged)
+                product.UpdateName(dto.Name);
+            await _db.Save();
+            return Result<string>.Success();
+        }
+        public async Task<Result<string>> UpdateProductSkuAsync(UpdateProductSkuDto dto)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync
+                ((p) => p.Id == dto.ProductId, true);
+            if (product == null)
+                return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+            dto.SKU = dto.SKU.Trim();
+
+            if (product.SKU != dto.SKU )
+            {
+                var sameSDKExist = await _db.Products.ExistsAsync((p) => p.SKU == dto.SKU);
+                if (sameSDKExist)
+                    return Result<string>.Failure("هذا الباركود موجود بالفعل ", ErrorType.conflict);
+                product.UpdateSKU(dto.SKU);
+            }
+            
+            await _db.Save();
+            return Result<string>.Success();
+        }
+
+
     }
 
-
-    
 }
