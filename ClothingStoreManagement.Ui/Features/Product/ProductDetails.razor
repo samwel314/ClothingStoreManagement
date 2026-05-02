@@ -3,7 +3,99 @@
 @inject CategoryService categoryService
 @inject ColorService colorService 
 @inject SizeService sizeService 
-@inject NavigationManager navigation
+@if (showVariantModal)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-light rounded-top-4">
+                    <h5 class="modal-title fw-bold">
+                        @(isEditVariantMode ? "تعديل نسخة المنتج" : "إضافة تنوع جديد ")
+                   </h5>
+                    <button type="button" class="btn-close ms-0 me-auto" @onclick="()=>showVariantModal=false "></button>
+                </div>
+
+                <EditForm Model="@variantModel" OnValidSubmit="SaveVariant">
+                    <FluentValidationValidator />
+                    
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            @* اختيار اللون *@
+                            <div class="col-md-6 text-end">
+                                <label class="form-label fw-semibold">اللون</label>
+                                <InputSelect @bind-Value="variantModel.ColorId" class="form-select shadow-sm">
+                                    <option selected value="">اختر اللون...</option>
+                                    @if (Colors != null)
+                                    {
+                                        foreach(var c in Colors)
+                                        {
+                                            <option value="@c.Id">@c.Name</option>
+
+                                        }
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => variantModel.ColorId)" class="text-danger small" />
+                            </div>
+
+                            @* اختيار المقاس *@
+                            <div class="col-md-6 text-end">
+                                <label class="form-label fw-semibold">المقاس</label>
+                                <InputSelect @bind-Value="variantModel.SizeId" class="form-select shadow-sm">
+                                    <option selected value="">اختر المقاس...</option>
+                                        @if (Sizes != null)
+                                    {
+                                        foreach(var c in Sizes)
+                                        {
+                                            <option value="@c.Id">@c.Name</option>
+
+                                        }
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => variantModel.SizeId)" class="text-danger small" />
+                            </div>
+
+                            @* سعر الشراء *@
+                            <div class="col-md-4 text-end">
+                                <label class="form-label fw-semibold">سعر الشراء</label>
+                                <div class="input-group">
+                                    <InputNumber @bind-Value="variantModel.PurchasePrice" class="form-control" />
+                                    <span class="input-group-text">ج.م</span>
+                                </div>
+                                <ValidationMessage For="@(() => variantModel.PurchasePrice)" class="text-danger small" />
+                            </div>
+
+                            @* سعر البيع *@
+                            <div class="col-md-4 text-end">
+                                <label class="form-label fw-semibold">سعر البيع</label>
+                                <div class="input-group">
+                                    <InputNumber @bind-Value="variantModel.SellingPrice" class="form-control" />
+                                    <span class="input-group-text">ج.م</span>
+                                </div>
+                                <ValidationMessage For="@(() => variantModel.SellingPrice)" class="text-danger small" />
+                            </div>
+
+                            @* عدد القطع *@
+                            <div class="col-md-4 text-end">
+                                <label class="form-label fw-semibold">عدد القطع (المخزون)</label>
+                                <InputNumber @bind-Value="variantModel.StockQuantity" class="form-control" />
+                                <ValidationMessage For="@(() => variantModel.StockQuantity)" class="text-danger small" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light rounded-bottom-4">
+                        <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm fw-bold">
+                            @(isEditVariantMode ? "حفظ التعديلات" : "إضافة النسخة")
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" @onclick="()=> showVariantModal = false">إلغاء</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
 @if (OpenUpdateModel)
 {
     <div class="update-modal-overlay" dir="rtl">
@@ -60,7 +152,6 @@
         </div>
     </div>
 }
-
 
 @if (OpneSkuForm)
 {
@@ -133,7 +224,7 @@
                             }
                             else
                             {
-                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 border border-danger border-opacity-10">غير نشط</span>
+                                <span class="badge bg-success-subtle text-danger rounded-pill px-3 py-2 border border-danger border-opacity-10">غير نشط</span>
                             }
                         </div>
                     <p class="text-muted mb-0">
@@ -218,7 +309,7 @@
             <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-layers-half me-2"></i> إدارة التنوعات (المخزون والأسعار)</h5>
-                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3">+ إضافة تنوع جديد</button>
+                    <button @onclick="()=> AddVariant()" class="btn btn-sm btn-outline-primary rounded-pill px-3">+ إضافة تنوع جديد</button>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-end">
@@ -263,7 +354,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
-                                        <button class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
+                                        <button @onclick="()=> UpdateVariant(v)"  class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
@@ -357,6 +448,25 @@ else
         from { opacity: 0; }
         to { opacity: 1; }
     }
+
+      .modal-content {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .form-select, .form-control {
+        border-radius: 0.75rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
 </style>
 
 @code {
@@ -371,6 +481,10 @@ else
     private bool OpenUpdateModel = false;
     private bool OpneSkuForm = false ; 
     private string erroMessage = null! ; 
+    private bool showVariantModal = false ; 
+    private bool isEditVariantMode = false ; 
+    private CreateProductVariantDto variantModel = new () ; 
+
     protected async override Task OnInitializedAsync()
     {
         var CategoriesResult = await categoryService.GetCategoriesLookUpAsync();
@@ -421,19 +535,19 @@ else
         if(result.IsSuccess)
         {
             showSuccess = true ;
-                                OpenUpdateModel = false ; 
-        
+            OpenUpdateModel = false ; 
 
-             await loadProduct() ; 
+
+            await loadProduct() ; 
             await  Task.Delay(3000) ; 
             showSuccess = false ;
         }
         else
         {
-                         
+
 
             erroMessage = result.ErrorMessage! ; 
-                            OpenUpdateModel = false ; 
+            OpenUpdateModel = false ; 
 
             await  Task.Delay(3000) ; 
             erroMessage = null! ; 
@@ -445,11 +559,11 @@ else
     private async Task  SaveUpdateSku()
     {
         var result = await productService.UpdateProductSkuAsync(skuModel) ; 
-        
+
         if(result.IsSuccess)
         {
             showSuccess = true ;
-                    OpneSkuForm = false ; 
+            OpneSkuForm = false ; 
 
             await loadProduct() ; 
             await  Task.Delay(3000) ; 
@@ -467,6 +581,58 @@ else
 
 
     }
+    private void AddVariant ()
+    {
+        variantModel = new()
+        {
+            ProductId = product.Id
+        } ; 
+        isEditVariantMode = false ; 
+        showVariantModal = true ; 
+    }
+    private void UpdateVariant(ProductVariantListDto model)
+    {
+        showVariantModal = true ; 
+        isEditVariantMode = true ; 
+        variantModel.ProductId = product.Id ; 
+        variantModel.Id = model.Id ; 
+        variantModel.StockQuantity = model.StockQuantity ; 
+        variantModel.SellingPrice = model.Price ; 
+        variantModel.PurchasePrice = model.Purchase ; 
+        variantModel.StockQuantity = model.StockQuantity ; 
+        variantModel.ColorId = model.ColorId ; 
+        variantModel.SizeId = model.SizeId ; 
+    }
 
+    private async Task SaveVariant()
+    {
+                showVariantModal = false ; 
 
+        Result<string> result ; 
+        if (isEditVariantMode)
+        {
+            result =   await productService.UpdateVariantAsync(variantModel) ; 
+        }
+        else
+        {
+            result =   await productService.CreateVariantAsync(variantModel) ; 
+
+        }
+        if (result.IsSuccess)
+        {
+            showSuccess = true ; 
+            await loadProduct() ; 
+
+            await  Task.Delay(3000) ; 
+            showSuccess = false ; 
+        }
+        else
+        {
+              erroMessage = result.ErrorMessage! ;         
+              await  Task.Delay(3000) ; 
+              erroMessage = null ; 
+
+        }
+
+    }
 }

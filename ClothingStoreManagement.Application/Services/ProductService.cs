@@ -6,6 +6,7 @@ using ClothingStoreManagement.Application.Validation;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -146,7 +147,9 @@ namespace ClothingStoreManagement.Application.Services
                     {
                         Id = v.Id,
                         Color = v.Color.Code,
+                        ColorId = v.Color.Id,
                         Size = v.Size.Code,
+                        SizeId = v.Size.Id, 
                         Purchase = v.PurchasePrice,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
@@ -219,6 +222,89 @@ namespace ClothingStoreManagement.Application.Services
         }
 
 
+        public async Task<Result<string>> CreateVariantAsync(CreateProductVariantDto dto)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync
+                                          ((p) => p.Id == dto.ProductId, true);
+            if (product == null)
+                return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+
+            var color = await _db.Colors.FirstOrDefaultAsync
+                              ((c) => c.Id == dto.ColorId, true);
+            if (color == null)
+                return Result<string>.Failure("هذا اللون غير موجود", ErrorType.notFound);
+
+            var size = await _db.Sizes.FirstOrDefaultAsync
+                              ((s) => s.Id == dto.SizeId, true);
+            if (size == null)
+                return Result<string>.Failure("هذا المقاس  غير موجود", ErrorType.notFound);
+
+            var isVariantExist =  await _db.ProductVariants.ExistsAsync( pv => product.Id == pv.ProductId && pv.ColorId  == dto.ColorId && pv.SizeId == dto.SizeId);
+            if (isVariantExist)
+                return Result<string>.Failure("هذا التنوع موجود بالفعل ", ErrorType.conflict);
+            var variant = new ProductVariant
+                (product.Id , product.SKU , dto.SizeId , 
+                size.Code, dto.ColorId, color.Code, dto.StockQuantity , dto.SellingPrice , dto.PurchasePrice); 
+
+            await  _db.ProductVariants.CreateAsync(variant);  
+            product.UpdateChanges();    
+            await _db.Save();
+            return Result<string>.Success("تم إضافة التنوع بنجاح ");
+        }
+
+        public async Task<Result<string>> UpdateVariantAsync(CreateProductVariantDto dto)
+        {
+            var variant = await _db.ProductVariants.FirstOrDefaultAsync(p => p.Id == dto.Id, true);
+            if (variant == null) return Result<string>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
+
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == dto.ProductId, true);
+            if (product == null) return Result<string>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+
+            bool isChanged = false;
+
+            if (variant.PurchasePrice != dto.PurchasePrice)
+            {
+                variant.UpdatePurchasePrice(dto.PurchasePrice);
+                isChanged = true;
+            }
+            if (variant.SellingPrice != dto.SellingPrice)
+            {
+                variant.UpdateSellingPrice(dto.SellingPrice);
+                isChanged = true;
+            }
+            if (variant.StockQuantity != dto.StockQuantity)
+            {
+                variant.UpdateStockQuantity(dto.StockQuantity);
+                isChanged = true;
+            }
+
+            if (variant.ColorId != dto.ColorId || variant.SizeId != dto.SizeId)
+            {
+                var isVariantExist = await _db.ProductVariants.ExistsAsync(pv =>
+                    product.Id == pv.ProductId && pv.ColorId == dto.ColorId &&
+                    pv.SizeId == dto.SizeId && pv.Id != variant.Id);
+
+                if (isVariantExist)
+                    return Result<string>.Failure("هذا التنوع موجود بالفعل", ErrorType.conflict);
+
+                var color = await _db.Colors.FirstOrDefaultAsync(c => c.Id == dto.ColorId, true);
+                var size = await _db.Sizes.FirstOrDefaultAsync(s => s.Id == dto.SizeId, true);
+
+                if (color != null && size != null)
+                {
+                    variant.UpdateVariant(dto.SizeId, size.Code, dto.ColorId, color.Code, product.SKU);
+                    isChanged = true;
+                }
+            }
+
+            if (isChanged)
+            {
+                product.UpdateChanges(); 
+                await _db.Save();
+            }
+
+            return Result<string>.Success("تم تحديث التنوع بنجاح");
+        }
     }
 
 }
