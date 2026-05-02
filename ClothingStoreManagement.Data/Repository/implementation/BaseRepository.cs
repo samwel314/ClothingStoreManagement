@@ -39,6 +39,13 @@ namespace ClothingStoreManagement.Data.Repository.implementation
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
-  
+        public void Delete(T model)
+        {
+            _db.Remove(model); 
+        }
+        public void Delete(IEnumerable <T> models)
+        {
+            _db.RemoveRange(models);
+        }
     }
 }

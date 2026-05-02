@@ -3,6 +3,38 @@
 @inject CategoryService categoryService
 @inject ColorService colorService 
 @inject SizeService sizeService 
+@if (showDeleteVariantConfirm)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block animate-in fade-in" tabindex="-1" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3 text-danger">
+                        <i class="bi bi-exclamation-triangle-fill display-4"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">هل أنت متأكد؟</h5>
+                    <p class="text-secondary small mb-4">
+                        سيتم حذف هذا التنوع نهائياً من المخزون. لا يمكن التراجع عن هذا الإجراء.
+                    </p>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" 
+                                class="btn btn-danger w-100 rounded-pill py-2 fw-bold" 
+                                @onclick="ConfirmDeleteVariant">
+                            نعم، احذف
+                        </button>
+                        <button type="button" 
+                                class="btn btn-light w-100 rounded-pill py-2 border" 
+                                @onclick="() => showDeleteVariantConfirm = false">
+                            إلغاء
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @if (showVariantModal)
 {
     <div class="modal-backdrop fade show"></div>
@@ -25,7 +57,7 @@
                             <div class="col-md-6 text-end">
                                 <label class="form-label fw-semibold">اللون</label>
                                 <InputSelect @bind-Value="variantModel.ColorId" class="form-select shadow-sm">
-                                    <option selected value="">اختر اللون...</option>
+                                    <option selected value="0">اختر اللون...</option>
                                     @if (Colors != null)
                                     {
                                         foreach(var c in Colors)
@@ -42,7 +74,7 @@
                             <div class="col-md-6 text-end">
                                 <label class="form-label fw-semibold">المقاس</label>
                                 <InputSelect @bind-Value="variantModel.SizeId" class="form-select shadow-sm">
-                                    <option selected value="">اختر المقاس...</option>
+                                    <option selected value="0">اختر المقاس...</option>
                                         @if (Sizes != null)
                                     {
                                         foreach(var c in Sizes)
@@ -357,7 +389,7 @@
                                         <button @onclick="()=> UpdateVariant(v)"  class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
+                                        <button  @onclick="() => DeleteVariant(v)" class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
                                             <i class="bi bi-trash3"></i>
                                         </button>
                                     </div>
@@ -483,6 +515,8 @@ else
     private string erroMessage = null! ; 
     private bool showVariantModal = false ; 
     private bool isEditVariantMode = false ; 
+    private bool showDeleteVariantConfirm = false ; 
+    private Guid VariantIdToDelete ; 
     private CreateProductVariantDto variantModel = new () ; 
 
     protected async override Task OnInitializedAsync()
@@ -544,17 +578,11 @@ else
         }
         else
         {
-
-
             erroMessage = result.ErrorMessage! ; 
             OpenUpdateModel = false ; 
-
             await  Task.Delay(3000) ; 
             erroMessage = null! ; 
         }
-
-
-
     }
     private async Task  SaveUpdateSku()
     {
@@ -564,17 +592,14 @@ else
         {
             showSuccess = true ;
             OpneSkuForm = false ; 
-
             await loadProduct() ; 
             await  Task.Delay(3000) ; 
             showSuccess = false ;
         }
         else
         {
-
             erroMessage = result.ErrorMessage! ; 
             OpneSkuForm = false ; 
-
             await  Task.Delay(3000) ; 
             erroMessage = null! ; 
         }
@@ -606,7 +631,7 @@ else
 
     private async Task SaveVariant()
     {
-                showVariantModal = false ; 
+        showVariantModal = false ; 
 
         Result<string> result ; 
         if (isEditVariantMode)
@@ -628,11 +653,39 @@ else
         }
         else
         {
-              erroMessage = result.ErrorMessage! ;         
-              await  Task.Delay(3000) ; 
-              erroMessage = null ; 
+            erroMessage = result.ErrorMessage! ;         
+            await  Task.Delay(3000) ; 
+            erroMessage = null ; 
 
         }
 
     }
+    void DeleteVariant (ProductVariantListDto model)
+    {
+        VariantIdToDelete = model.Id ; 
+        showDeleteVariantConfirm = true  ; 
+    }
+
+    async Task ConfirmDeleteVariant ()
+    {
+        var result =  await  productService.DeleteVariant(VariantIdToDelete) ; 
+        showDeleteVariantConfirm = false ; 
+        if  (result.IsSuccess)
+        {
+            showSuccess = true ; 
+            await loadProduct() ; 
+            
+            await  Task.Delay(3000) ; 
+            showSuccess = false ; 
+        }
+        else
+        {
+             erroMessage = result.ErrorMessage! ;         
+            await  Task.Delay(3000) ; 
+            erroMessage = null ; 
+        }
+    }
+
+
+
 }

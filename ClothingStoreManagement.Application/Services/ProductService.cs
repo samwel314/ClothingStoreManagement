@@ -305,6 +305,16 @@ namespace ClothingStoreManagement.Application.Services
 
             return Result<string>.Success("تم تحديث التنوع بنجاح");
         }
+        public async Task<Result<string>> DeleteVariant(Guid Id)
+        {
+
+            var variant = await _db.ProductVariants.FirstOrDefaultAsync((p) => p.Id == Id);
+            if (variant == null)
+                return Result<string>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
+            _db.ProductVariants.Delete(variant);    
+            await _db.Save();
+            return Result<string>.Success();
+        }
     }
 
-}
+    }
