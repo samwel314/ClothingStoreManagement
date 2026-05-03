@@ -1,0 +1,117 @@
+﻿@page "/dashboard"
+    <div class="row g-3 align-items-center mb-4">
+     
+        <div class="col-lg-4 d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
+                <i class="bi bi-receipt text-primary fs-4"></i>
+            </div>
+            <h3 class="fw-bold text-secondary mb-0">إدارة الفواتير</h3>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
+                <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button">
+               ابحث 
+                </button>
+                
+                <input type="text"
+                       class="form-control border-0 bg-transparent text-end"
+                       placeholder="ابحث برقم الفاتورة أو اسم العميل..."
+                       style="box-shadow: none;" />
+                
+                <span class="input-group-text bg-transparent border-0 text-muted px-3">
+                    <i class="bi bi-search"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="col-lg-3 text-start">
+            <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+                    style="height: 56px;">
+                <i class="bi bi-plus-circle fs-5"></i>
+                <span>فاتورة جديدة</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-primary border-4">
+                <small class="text-muted">إجمالي فواتير اليوم</small>
+                <h4 class="fw-bold mb-0">1,250.00 ج.م</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-success border-4">
+                <small class="text-muted">المدفوع</small>
+                <h4 class="fw-bold mb-0 text-success">1,000.00 ج.م</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-warning border-4">
+                <small class="text-muted">قيد التنفيذ (Draft)</small>
+                <h4 class="fw-bold mb-0 text-warning">250.00 ج.م</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light py-3">
+                    <tr>
+                        <th class="py-3">رقم الفاتورة</th>
+                        <th class="py-3">التاريخ</th>
+                        <th class="py-3">العميل</th>
+                        <th class="py-3">الإجمالي</th>
+                        <th class="py-3">الحالة</th>
+                        <th class="py-3">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-primary">#INV-2026-001</td>
+                        <td>2026-05-03</td>
+                        <td>عميل نقدي</td>
+                        <td>450.00 ج.م</td>
+                        <td>
+                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
+                                <i class="bi bi-pencil-square me-1"></i> مسودة
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">تكملة الفاتورة</button>
+                                <button class="btn btn-sm btn-outline-danger rounded-circle p-2">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="fw-bold text-primary">#INV-2026-002</td>
+                        <td>2026-05-02</td>
+                        <td>أحمد محمد</td>
+                        <td>800.00 ج.م</td>
+                        <td>
+                            <span class="badge rounded-pill bg-success px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i> مدفوعة
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">عرض</button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle p-2">
+                                    <i class="bi bi-printer"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+

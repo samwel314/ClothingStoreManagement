@@ -9,12 +9,13 @@ namespace ClothingStoreManagement.Data
         {
 
         }
-        public DbSet<Product> Products { get; set; }   
-        public DbSet<Category> Categories { get; set; } 
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
         public DbSet<Size> Sizes { get; set; }
         public DbSet<Color> Colors { get; set; }
-        public DbSet<ProductVariant>  ProductVariants { get; set; }
-
+        public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -29,8 +30,8 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<Product>()
                 .Property(p => p.Id)
                 .HasConversion(
-                    v => v.ToString().ToLower(),        
-                    v => Guid.Parse(v));    
+                    v => v.ToString().ToLower(),
+                    v => Guid.Parse(v));
             //- *-*-* -Color
 
             modelBuilder.Entity<Color>().Property(p => p.Name).IsRequired().HasMaxLength(50);
@@ -40,14 +41,15 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<Size>().Property(p => p.Code).IsRequired().HasMaxLength(7);
             // -*-* ProductVariant 
 
-            modelBuilder.Entity<ProductVariant>(entity => {
+            modelBuilder.Entity<ProductVariant>(entity =>
+            {
                 entity.Property(p => p.VariantSKU).IsRequired().HasMaxLength(150);
-                entity.HasIndex(p => p.VariantSKU).IsUnique(); 
+                entity.HasIndex(p => p.VariantSKU).IsUnique();
 
                 entity.HasOne(pv => pv.Product)
                       .WithMany(p => p.Variants)
                       .HasForeignKey(pv => pv.ProductId)
-                      .OnDelete(DeleteBehavior.Cascade); 
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(pv => pv.Color).WithMany().HasForeignKey(pv => pv.ColorId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(pv => pv.Size).WithMany().HasForeignKey(pv => pv.SizeId).OnDelete(DeleteBehavior.Restrict);
@@ -61,19 +63,26 @@ namespace ClothingStoreManagement.Data
                 });
 
                 modelBuilder.Entity<ProductVariant>()
-    .Property(p => p.Id)
-    .HasConversion(
-        v => v.ToString().ToLower(),
-        v => Guid.Parse(v));
-            });
+                                    .Property(p => p.Id)
+                                    .HasConversion(
+                                        v => v.ToString().ToLower(),
+                                        v => Guid.Parse(v));
+                                            });
 
-                        modelBuilder.Entity<ProductVariant>()
-.Property(p => p.ProductId)
-.HasConversion(
-v => v.ToString().ToLower(),
-v => Guid.Parse(v));
-        
-
+               modelBuilder.Entity<ProductVariant>()
+                                .Property(p => p.ProductId)
+                                .HasConversion(
+                                v => v.ToString().ToLower(),
+                                v => Guid.Parse(v));
+            //-*-*-*-*Invoice
+            modelBuilder.Entity<Invoice>().HasIndex(i => i.Serial).IsUnique();
+            modelBuilder.Entity<Invoice>().Property(v => v.Serial).HasMaxLength(50); 
+                        // -*-*-*-* InvoiceItem
+            modelBuilder.Entity<InvoiceItem>()
+                .Property(p => p.ProductVariantId)
+                .HasConversion(
+                v => v.ToString().ToLower(),
+                v => Guid.Parse(v));
         }
     }
 }
