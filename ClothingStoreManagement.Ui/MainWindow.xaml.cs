@@ -37,6 +37,7 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<SizeService , SizeService>();
             serviceCollection.AddScoped<CategoryService , CategoryService>();
             serviceCollection.AddScoped<ProductService , ProductService>(); 
+            serviceCollection.AddScoped<InvoiceService , InvoiceService>(); 
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

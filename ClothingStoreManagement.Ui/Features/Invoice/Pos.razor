@@ -1,13 +1,13 @@
 ﻿@page "/pos"
+@inject InvoiceService invoiceService
 <div class="container-fluid py-3" dir="rtl">
     <div class="row g-3">
         <div class="col-lg-9">
             <div class="card shadow-sm mb-3 border-0" style="border-radius: 12px;">
                 <div class="card-body py-2">
                     <div class="input-group input-group-lg border rounded-3 overflow-hidden">
-                  
                         <button class="btn btn-primary border-0 px-4">
-                            <i class="bi bi-search"></i>
+                            <i class="bi bi-search"> بحث </i>
                         </button>
                         <input type="text" class="form-control border-0 shadow-none text-end"
                                placeholder="امسح الباركود أو ابحث عن الموديل (SKU)...">
@@ -17,40 +17,44 @@
 
             <div class="card shadow-sm border-0" style="border-radius: 12px; min-height: 550px;">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 text-center">
                         <thead class="bg-light">
                             <tr class="text-secondary">
-                                <th class="ps-4 py-3">المنتج والتفاصيل</th>
-                                <th class="text-center">السعر</th>
-                                <th class="text-center">الكمية</th>
-                                <th class="text-center">الإجمالي</th>
-                                <th class="text-center"></th>
+                                <th class="ps-4 py-3 text-end">المنتج والتفاصيل</th>
+                                <th>السعر</th>
+                                <th>الكمية</th>
+                                <th style="width: 120px;">خصم (قطعة)</th>
+                                <th>الإجمالي</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="border-bottom">
-                                <td class="ps-4 py-3">
+                                <td class="ps-4 py-3 text-end">
                                     <div class="fw-bold text-dark mb-1">جاكيت جينز شبابي</div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-light text-muted border fw-normal">SKU: JK-2024-001</span>
-                                        <span class="badge bg-light text-dark border d-flex align-items-center gap-1">
-                                            <!-- Preview للون -->
-                                            <span style="width: 12px; height: 12px; background-color: #0000FF; border-radius: 50%; display: inline-block;"></span>
+                                    <div class="d-flex align-items-center gap-2 justify-content-end">
+                                        <span class="badge bg-light text-muted border fw-normal small">SKU: JK-2024-001</span>
+                                        <span class="badge bg-light text-dark border d-flex align-items-center gap-1 small">
+                                            <span style="width: 10px; height: 10px; background-color: #0000FF; border-radius: 50%; display: inline-block;"></span>
                                             أزرق
                                         </span>
-                                        <span class="badge bg-light text-dark border">مقاس: L</span>
+                                        <span class="badge bg-light text-dark border small">مقاس: L</span>
                                     </div>
                                 </td>
-                                <td class="text-center fw-semibold">850 ج.م</td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm border rounded-pill p-1">
+                                <td class="fw-semibold">850 ج.م</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm border rounded-pill p-1 bg-white">
                                         <button class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-dash-lg"></i></button>
-                                        <span class="fw-bold px-3">1</span>
+                                        <span class="fw-bold px-2">1</span>
                                         <button class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-plus-lg"></i></button>
                                     </div>
                                 </td>
-                                <td class="text-center fw-bold text-primary">850 ج.م</td>
-                                <td class="text-center">
+                                <td>
+                                    <input type="number" class="form-control form-control-sm text-center rounded-pill border-warning"
+                                           placeholder="0.00" style="background-color: #fffdf5;">
+                                </td>
+                                <td class="fw-bold text-primary">850.00 ج.م</td>
+                                <td>
                                     <button class="btn btn-sm btn-outline-danger border-0 rounded-circle">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
@@ -65,34 +69,69 @@
         <div class="col-lg-3">
             <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
                 <div class="card-body d-flex flex-column p-4">
-                    <h5 class="fw-bold mb-4 text-center">تفاصيل الفاتورة</h5>
-                    
-                    <div class="space-y-3 flex-grow-1">
-                        <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>إجمالي القطع</span>
-                            <span>1</span>
+            
+                   
+                    <div class="mb-4 pb-3 border-bottom border-light">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="bg-primary bg-opacity-10 p-2 rounded-2">
+                                <i class="bi bi-hash text-primary"></i>
+                            </div>
+                            <span class="fw-bold text-secondary">@currentInvoice!.SerialNumber</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>المجموع</span>
-                            <span>850.00</span>
-                        </div>
-                        <div class="mb-4 mt-3">
-                            <label class="small fw-bold mb-1">الخصم (ج.م)</label>
-                            <input type="number" class="form-control form-control-sm text-center" placeholder="0.00">
-                        </div>
-                        <hr class="text-muted opacity-25">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h5 fw-bold mb-0">الصافي:</span>
-                            <span class="h4 fw-bold text-primary mb-0">850.00 <small class="fs-6">ج.م</small></span>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <i class="bi bi-calendar3"></i>
+                            <span>@currentInvoice?.LastUpdate.ToString("dd/MM/yyyy")</span>
+                            <span class="mx-1">|</span>
+                            <i class="bi bi-clock"></i>
+                            <span>@currentInvoice?.LastUpdate.ToString("hh:mm tt")</span>
                         </div>
                     </div>
 
+                    <h5 class="fw-bold mb-4 text-center">تفاصيل الحساب</h5>
+            
+                    <div class="space-y-3 flex-grow-1">
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <span>إجمالي القطع</span>
+                            <span class="fw-bold text-dark">1</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <span>المجموع (قبل الخصم)</span>
+                            <span class="fw-bold text-dark">850.00</span>
+                        </div>
+                
+                        <!-- صندوق الخصومات المطور -->
+                        <div class="p-3 bg-light rounded-3 my-3">
+                            <div class="d-flex justify-content-between mb-1 small text-muted">
+                                <span>خصم الأصناف (من الجدول):</span>
+                                <span class="fw-bold">0.00</span>
+                            </div>
+                            <div class="mb-2 mt-2">
+                                <label class="small fw-bold mb-1 text-secondary">خصم إضافي للفاتورة (ج.م)</label>
+                                <input type="number" class="form-control form-control-sm text-center border-0 shadow-sm" placeholder="0.00">
+                            </div>
+                            <div class="d-flex justify-content-between pt-2 border-top border-2 border-white small">
+                                <span class="fw-bold text-secondary">إجمالي الخصم الكلي:</span>
+                                <span class="text-danger fw-bold">0.00 ج.م</span>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25">
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="h5 fw-bold mb-0 text-dark">الصافي النهائي:</span>
+                            <div class="text-start">
+                                <span class="h3 fw-bold text-primary mb-0">@currentInvoice?.TotalAmount</span>
+                                <small class="text-primary fw-bold ms-1">ج.م</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أزرار التحكم -->
                     <div class="d-grid gap-2 mt-4">
                         <button class="btn btn-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
-                            <i class="bi bi-printer-fill me-2"></i> طباعة الفاتورة (F5)
+                            <i class="bi bi-printer-fill me-2"></i> طباعة وحفظ (F5)
                         </button>
                         <button class="btn btn-outline-secondary py-2 border-0">
-                            تعليق (F2)
+                            تعليق الفاتورة (F2)
                         </button>
                     </div>
                 </div>
@@ -100,3 +139,13 @@
         </div>
     </div>
 </div>
+@code
+{
+    private InvoiceDTO ? currentInvoice ;
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await invoiceService.CreateInvoiceAsync();
+        currentInvoice = result.Data!;   
+    }
+
+}

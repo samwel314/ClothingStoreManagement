@@ -7,22 +7,15 @@ namespace ClothingStoreManagement.Domain.Entities
     public class Invoice
     {
         public int Id { get; private set; }
-        public string Serial { get; private set; } = null!; // = INV-year-month-day-Id 
-        public DateTime CreatedAt { get; private set; } = DateTime.Now; 
-        public DateTime LastUpdatedAt { get; private set; } // لو غيرنا الحالة بتتغير
+        public string Serial { get; set; } = $"INV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"; public DateTime CreatedAt { get; private set; } = DateTime.Now; 
+        public DateTime ? LastUpdatedAt { get; private set; } // لو غيرنا الحالة بتتغير
         public decimal TotalAmount { get; private set; } // مجموع سعر البيع لكل الأصناف في الفاتورة
         public InvoiceStatus Status { get; private set; } = InvoiceStatus.pending;
         public void CalcTotal( decimal price , int quantity , decimal discount , decimal oldAmount) // لما نضيف صنف جديد أو نعدل صنف موجود في الفاتورة لازم نعيد حساب المجموع
         {
             TotalAmount = TotalAmount - oldAmount + (price * quantity) * (1  - discount ) ;  
         }
-        public void GenerateSerial()
-        {
-            if (string.IsNullOrEmpty(Serial))
-            {
-                Serial = $"INV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
-            }
-        }
+
         public void UpdateStatus(InvoiceStatus newStatus)
          {
              if (Status == InvoiceStatus.returned)

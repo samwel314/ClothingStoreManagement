@@ -11,6 +11,7 @@ namespace ClothingStoreManagement.Data.Repository
         IProductRepository Products {  get; }
         ICategoryRepository Categories { get; }
         IProductProductVariantRepository ProductVariants { get; }  
+        IInvoiceRepository Invoices { get; }    
         Task Save();
     }
     

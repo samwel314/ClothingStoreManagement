@@ -16,6 +16,7 @@ namespace ClothingStoreManagement.Data.Repository.implementation
             Categories = new CategoryRepository(_db);
                 Products = new ProductRepository(_db);
             ProductVariants = new ProductProductVariantRepository(_db); 
+            Invoices = new InvoiceRepository(_db);  
         }
 
         public IColorRepository Colors { get; private set; }
@@ -24,6 +25,8 @@ namespace ClothingStoreManagement.Data.Repository.implementation
         public ICategoryRepository Categories { get; private set; }
 
         public IProductProductVariantRepository ProductVariants { get; private set; }
+
+        public IInvoiceRepository Invoices { get; private set; }
 
         public async Task Save()
         {
