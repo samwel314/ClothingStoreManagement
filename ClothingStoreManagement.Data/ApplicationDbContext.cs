@@ -25,8 +25,12 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().Property(p => p.SKU).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().HasIndex(p => p.SKU).IsUnique();
-   
 
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Id)
+                .HasConversion(
+                    v => v.ToString().ToLower(),        
+                    v => Guid.Parse(v));    
             //- *-*-* -Color
 
             modelBuilder.Entity<Color>().Property(p => p.Name).IsRequired().HasMaxLength(50);
@@ -55,7 +59,21 @@ namespace ClothingStoreManagement.Data
                     t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
                     t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
                 });
+
+                modelBuilder.Entity<ProductVariant>()
+    .Property(p => p.Id)
+    .HasConversion(
+        v => v.ToString().ToLower(),
+        v => Guid.Parse(v));
             });
+
+                        modelBuilder.Entity<ProductVariant>()
+.Property(p => p.ProductId)
+.HasConversion(
+v => v.ToString().ToLower(),
+v => Guid.Parse(v));
+        
+
         }
     }
 }

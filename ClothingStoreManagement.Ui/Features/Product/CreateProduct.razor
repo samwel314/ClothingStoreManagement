@@ -1,0 +1,266 @@
+﻿@page "/products/create"
+@inject CategoryService CategoryService
+@inject ColorService ColorService
+@inject SizeService SizeService
+@inject ProductService ProductService   
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+        <div class="flex-grow-1">
+            &nbsp;    @errorMessage
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => errorMessage = null" aria-label="Close"></button>
+    </div>
+}
+@if (showSuccessAlert)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+
+        <div>
+            &nbsp;
+            <strong class="ms-1">تم بنجاح!</strong>
+            <span>تم حفظ المنتج الجديد بنجاح .</span>
+        </div>
+
+        <button type="button" class="btn-close ms-0 me-auto" @onclick="() => showSuccessAlert = false" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container-fluid py-4" dir="rtl">
+    <EditForm Model="productDto" OnValidSubmit="HandleValidSubmit">
+        <FluentValidationValidator />
+
+        <!-- رأس الصفحة -->
+        <div class="row align-items-center mb-4 g-3">
+            <div class="col-md-6 text-start">
+                <div class="d-flex align-items-center justify-content-end">
+                    <div class="ms-3 text-end">
+                        <h3 class="fw-bold mb-0 text-dark">إضافة موديل جديد</h3>
+                        <p class="text-muted small mb-0">تأسيس منتج جديد وتوزيع المقاسات والألوان</p>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-4 shadow-sm">
+                        <i class="bi bi-box-seam-fill text-primary fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="button" @onclick="Reset" class="btn btn-outline-secondary rounded-pill px-4 me-2">إلغاء</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                    <i class="bi bi-cloud-arrow-up-fill ms-2"></i>حفظ المنتج بالكامل
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- الجزء اليمين: البيانات الأساسية -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 border-top border-primary border-5">
+                    <h5 class="fw-bold mb-4 border-bottom pb-2">
+                        <i class="bi bi-info-circle ms-2"></i>البيانات الأساسية
+                    </h5>
+                    
+                    <div class="mb-3 text-end">
+                        <label class="form-label small fw-bold">اسم الموديل</label>
+                        <InputText @bind-Value="productDto.Name" class="form-control rounded-pill" placeholder="مثلاً: قميص كتان تركي" />
+                        <ValidationMessage For="@(() => productDto.Name)" class="text-danger small" />
+                    </div>
+
+                    <div class="mb-3 text-end">
+                        <label class="form-label small fw-bold">الباركود الأساسي (SKU)</label>
+                        <InputText @bind-Value="productDto.SKU" class="form-control rounded-pill text-start" placeholder="SH-100" />
+                        <ValidationMessage For="@(() => productDto.SKU)" class="text-danger small" />
+                    </div>
+                    <div class="mb-3 text-end">
+                        <label class="form-label small fw-bold">الفئة / القسم</label>
+                        <InputSelect @bind-Value="productDto.CategoryId" class="form-select rounded-pill">
+                            <option value="0">-- اختر الفئة --</option>
+                            @foreach (var cat in Categories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => productDto.CategoryId)" class="text-danger small" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- الجزء الشمال: إدارة التنوعات -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                        <button type="button" @onclick="AddVariantRow" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                            <i class="bi bi-plus-lg ms-1"></i>إضافة لون / مقاس
+                        </button>
+                        <h5 class="fw-bold mb-0">توزيع الألوان والمقاسات والأسعار</h5>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light border-0">
+                                <tr class="small text-muted">
+                                    <th class="text-center" style="width: 20%;">اللون</th>
+                                    <th class="text-center" style="width: 15%;">المقاس</th>
+                                    <th class="text-center" style="width: 20%;">سعر الشراء</th>
+                                    <th class="text-center" style="width: 20%;">سعر البيع</th>
+                                    <th class="text-center" style="width: 15%;">الكمية</th>
+                                    <th style="width: 10%;"></th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var variant in productDto.Variants)
+                                {
+                                    <tr>
+                                        <td>
+                                            <InputSelect @bind-Value:after="ValidList" @bind-Value="variant.ColorId" class="form-select form-select-sm rounded-pill">
+                                                <option value="0">-- اختر لون --</option>
+                                                @foreach (var color in Colors)
+                                                {
+                                                    <option  value="@color.Id"> @color.Name </option>
+                                                }
+                                            </InputSelect>
+                                            <ValidationMessage For="@(() => variant.ColorId)" class="text-danger small" />
+                                        </td>
+                                        <td>
+                                            <InputSelect @bind-Value:after="ValidList" @bind-Value="variant.SizeId" class="form-select form-select-sm rounded-pill">
+                                                <option value="0">-- اختر المقاس --</option>
+                                                @foreach (var size in Sizes)
+                                                {
+                                                    <option value="@size.Id">@size.Code</option>
+                                                }
+                                            </InputSelect>
+                                                                                        <ValidationMessage For="@(() => variant.SizeId)" class="text-danger small" />
+
+                                        </td>
+                                        <td>
+                                            <InputNumber  @bind-Value="variant.PurchasePrice" class="form-control form-control-sm rounded-pill text-center" placeholder="0.00" />
+                                                                                   <ValidationMessage For="@(() => variant.PurchasePrice)" class="text-danger small" />
+
+                                        </td>
+                                        <td>
+                                            <InputNumber @bind-Value="variant.SellingPrice" class="form-control form-control-sm rounded-pill text-center fw-bold text-primary" placeholder="0.00" />
+                                                                                                                    <ValidationMessage For="@(() => variant.SellingPrice)" class="text-danger small" />
+
+                                        </td>
+                                        <td>
+                                            <InputNumber @bind-Value="variant.StockQuantity" class="form-control form-control-sm rounded-pill text-center" />
+                                                                                                                      <ValidationMessage For="@(() => variant.StockQuantity)" class="text-danger small" />
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" @onclick="() => RemoveVariantRow(variant)" class="btn btn-link text-danger p-0">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        
+                        @if (productDto.Variants.Count == 0)
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-layers-fill fs-1 d-block mb-2 opacity-25"></i>
+                                <p>لم يتم إضافة أي تنوعات بعد. اضغط على زر الإضافة للبدء.</p>
+                            </div>
+                        }
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CreateProductWithVariantsDto productDto = new() { Variants = new() };
+    private string ? errorMessage;
+    private List<CategoryDTO> Categories = new();
+    private List<ColorListDTO> Colors = new();
+    private List<SizeListDTO> Sizes = new();
+    private bool showSuccessAlert = false;  
+    private async Task LoadData()
+    {
+        var CategoriesResult = await CategoryService.GetCategoriesLookUpAsync();
+        if (CategoriesResult.IsSuccess)
+            Categories = CategoriesResult.Data!.ToList();
+        var ColorsResult = await ColorService.GetColorsAsync();
+        if (ColorsResult.IsSuccess)
+            Colors = ColorsResult.Data!.ToList();
+        var SizesResult = await SizeService.GetSizesAsync();
+        if (SizesResult.IsSuccess)
+            Sizes = SizesResult.Data!.ToList();
+    }   
+    protected override async Task OnInitializedAsync()
+    {
+         await LoadData() ; 
+         AddVariantRow();
+    }
+    private void Reset()
+    {
+        productDto = new CreateProductWithVariantsDto { Variants = new() };
+        AddVariantRow();
+    }
+    private void AddVariantRow()
+    {
+        productDto.Variants.Add(new CreateProductVariantDto 
+        { 
+            StockQuantity = 1, 
+            PurchasePrice = 0.0m, 
+            SellingPrice = 0.0m  
+        });
+    }
+    private void ValidList()
+    {
+       Dictionary<string ,int> colorSizeKey = new(); 
+       foreach(var variant in productDto.Variants)
+       {
+            string key = $"{variant.ColorId}-{variant.SizeId}";
+            if (colorSizeKey.ContainsKey(key))
+            {
+               errorMessage = $"تكرار في اللون والمقاس: اللون {Colors.FirstOrDefault(c => c.Id == variant.ColorId)?.Name} والمقاس {Sizes.FirstOrDefault(s => s.Id == variant.SizeId)?.Code}";
+               productDto.Variants.Remove(variant); 
+            }
+            else
+            {
+                colorSizeKey[key] = 1;
+            }
+       }
+    }
+    private void RemoveVariantRow(CreateProductVariantDto variant)
+    {
+        if (productDto.Variants.Count > 1)
+            productDto.Variants.Remove(variant);
+         else
+            errorMessage = "يجب أن يكون هناك تنوع واحد على الأقل للمنتج.";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var result = await ProductService.CreateProductAsync(productDto);
+        if (result.IsSuccess)
+        {
+            showSuccessAlert = true;
+            Reset();
+        }
+        else
+        {
+            errorMessage = result.ErrorMessage;
+        }
+    }
+}
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+    .table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card { border-radius: 1rem; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; margin: 0; 
+    }
+</style>

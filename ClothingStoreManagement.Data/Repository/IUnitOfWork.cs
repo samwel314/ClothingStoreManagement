@@ -7,8 +7,10 @@ namespace ClothingStoreManagement.Data.Repository
     public interface IUnitOfWork 
     { 
         IColorRepository Colors { get; }
-        ISizeRepository Sizes { get; }  
-        ICategoryRepository Categories { get; }  
+        ISizeRepository Sizes { get; }
+        IProductRepository Products {  get; }
+        ICategoryRepository Categories { get; }
+        IProductProductVariantRepository ProductVariants { get; }  
         Task Save();
     }
     

@@ -39,7 +39,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Color", b =>
@@ -60,7 +60,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors");
+                    b.ToTable("Colors", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Product", b =>
@@ -98,7 +98,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("SKU")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ProductVariant", b =>
@@ -143,7 +143,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("VariantSKU")
                         .IsUnique();
 
-                    b.ToTable("ProductVariants", t =>
+                    b.ToTable("ProductVariants", null, t =>
                         {
                             t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
 
@@ -169,7 +169,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Sizes");
+                    b.ToTable("Sizes", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Product", b =>
