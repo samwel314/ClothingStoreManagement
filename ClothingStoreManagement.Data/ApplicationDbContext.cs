@@ -67,17 +67,17 @@ namespace ClothingStoreManagement.Data
                                     .HasConversion(
                                         v => v.ToString().ToLower(),
                                         v => Guid.Parse(v));
-                                            });
+            });
 
-               modelBuilder.Entity<ProductVariant>()
-                                .Property(p => p.ProductId)
-                                .HasConversion(
-                                v => v.ToString().ToLower(),
-                                v => Guid.Parse(v));
+            modelBuilder.Entity<ProductVariant>()
+                             .Property(p => p.ProductId)
+                             .HasConversion(
+                             v => v.ToString().ToLower(),
+                             v => Guid.Parse(v));
             //-*-*-*-*Invoice
             modelBuilder.Entity<Invoice>().HasIndex(i => i.Serial).IsUnique();
-            modelBuilder.Entity<Invoice>().Property(v => v.Serial).HasMaxLength(50); 
-                        // -*-*-*-* InvoiceItem
+            modelBuilder.Entity<Invoice>().Property(v => v.Serial).HasMaxLength(50);
+            // -*-*-*-* InvoiceItem
             modelBuilder.Entity<InvoiceItem>()
                 .Property(p => p.ProductVariantId)
                 .HasConversion(

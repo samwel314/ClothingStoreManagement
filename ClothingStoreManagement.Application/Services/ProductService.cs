@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Application.ResultHelpers;
-using ClothingStoreManagement.Application.Validation;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Application.Services
 {
@@ -149,7 +143,7 @@ namespace ClothingStoreManagement.Application.Services
                         Color = v.Color.Code,
                         ColorId = v.Color.Id,
                         Size = v.Size.Code,
-                        SizeId = v.Size.Id, 
+                        SizeId = v.Size.Id,
                         Purchase = v.PurchasePrice,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
@@ -239,15 +233,15 @@ namespace ClothingStoreManagement.Application.Services
             if (size == null)
                 return Result<string>.Failure("هذا المقاس  غير موجود", ErrorType.notFound);
 
-            var isVariantExist =  await _db.ProductVariants.ExistsAsync( pv => product.Id == pv.ProductId && pv.ColorId  == dto.ColorId && pv.SizeId == dto.SizeId);
+            var isVariantExist = await _db.ProductVariants.ExistsAsync(pv => product.Id == pv.ProductId && pv.ColorId == dto.ColorId && pv.SizeId == dto.SizeId);
             if (isVariantExist)
                 return Result<string>.Failure("هذا التنوع موجود بالفعل ", ErrorType.conflict);
             var variant = new ProductVariant
-                (product.Id , product.SKU , dto.SizeId , 
-                size.Code, dto.ColorId, color.Code, dto.StockQuantity , dto.SellingPrice , dto.PurchasePrice); 
+                (product.Id, product.SKU, dto.SizeId,
+                size.Code, dto.ColorId, color.Code, dto.StockQuantity, dto.SellingPrice, dto.PurchasePrice);
 
-            await  _db.ProductVariants.CreateAsync(variant);  
-            product.UpdateChanges();    
+            await _db.ProductVariants.CreateAsync(variant);
+            product.UpdateChanges();
             await _db.Save();
             return Result<string>.Success("تم إضافة التنوع بنجاح ");
         }
@@ -299,7 +293,7 @@ namespace ClothingStoreManagement.Application.Services
 
             if (isChanged)
             {
-                product.UpdateChanges(); 
+                product.UpdateChanges();
                 await _db.Save();
             }
 
@@ -311,10 +305,10 @@ namespace ClothingStoreManagement.Application.Services
             var variant = await _db.ProductVariants.FirstOrDefaultAsync((p) => p.Id == Id);
             if (variant == null)
                 return Result<string>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
-            _db.ProductVariants.Delete(variant);    
+            _db.ProductVariants.Delete(variant);
             await _db.Save();
             return Result<string>.Success();
         }
     }
 
-    }
+}

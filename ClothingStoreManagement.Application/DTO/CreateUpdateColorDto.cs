@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ClothingStoreManagement.Application.DTO
 {
@@ -18,11 +15,11 @@ namespace ClothingStoreManagement.Application.DTO
         ErrorMessage = "صيغة كود اللون غير صحيحة (يجب أن يبدأ بـ #)")]
         public string Code { get; set; } = "#000000"; // قيمة افتراضية سوداء    }
     }
-    public class ColorListDTO 
+    public class ColorListDTO
     {
-        public int Id { get; set; } 
+        public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public string Code { get; set; } = null!; 
+        public string Code { get; set; } = null!;
 
 
     }

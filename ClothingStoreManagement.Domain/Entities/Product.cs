@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ClothingStoreManagement.Domain.Entities
+﻿namespace ClothingStoreManagement.Domain.Entities
 {
     public class Product
     {
@@ -68,7 +64,7 @@ namespace ClothingStoreManagement.Domain.Entities
             CategoryId = categoryId;
             UpdatedAt = DateTime.UtcNow;
         }
-        public void UpdateChanges () // if add any change to the product we will call this method to update the updated at time
+        public void UpdateChanges() // if add any change to the product we will call this method to update the updated at time
         {
             UpdatedAt = DateTime.UtcNow;
         }
@@ -85,6 +81,6 @@ namespace ClothingStoreManagement.Domain.Entities
             Variants = variants;
             UpdatedAt = DateTime.UtcNow;
         }
-        public IEnumerable<ProductVariant> Variants { get; private set; } = null!; 
+        public IEnumerable<ProductVariant> Variants { get; private set; } = null!;
     }
 }

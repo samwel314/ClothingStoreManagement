@@ -4,8 +4,8 @@ namespace ClothingStoreManagement.Domain.Entities
 {
     public class InvoiceItem
     {
-        public InvoiceItem(int invoiceId, Guid productVariantId, 
-            int quantity, decimal sellingPrice, decimal purchasePrice, decimal discount = 0 )
+        public InvoiceItem(int invoiceId, Guid productVariantId,
+            int quantity, decimal sellingPrice, decimal purchasePrice, decimal discount = 0)
         {
             ValidateStockQuantity(quantity);
             ValidateSellingPrice(sellingPrice);
@@ -17,7 +17,7 @@ namespace ClothingStoreManagement.Domain.Entities
             PurchasePrice = purchasePrice;
             Discount = discount;
         }
-        public int Id { get; private set; } 
+        public int Id { get; private set; }
         public int InvoiceId { get; private set; }
         public Guid ProductVariantId { get; private set; }
         public int Quantity { get; private set; }

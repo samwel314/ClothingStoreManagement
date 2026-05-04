@@ -5,20 +5,37 @@ namespace ClothingStoreManagement.Application.DTO
     public class InvoiceDTO
     {
         public int Id { get; set; }
-        public string SerialNumber { get; set; } = null!; 
-        public InvoiceStatus Status { get; set;}
-        public decimal TotalAmount { get; set; }    
+        public string SerialNumber { get; set; } = null!;
+        public InvoiceStatus Status { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal TotalAmountWithDiscount { get; set; }
         public DateTime LastUpdate { get; set; }
-    }
-    public class InvoiceItemDetailsDto
-    {
-        public string ProductName { get; set; } = null!;
-        public string SKU { get; set; } = null!;
-        public string Color { get; set; } = null!;
-        public string Size { get; set; } = null!;
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-        public decimal Discount { get; set; }
-        public decimal Total  => (Price * Quantity) * (1 - Discount / 100 );    
+        public int TotalQuantity { get; set; }
+
+        public void UpdateTotal()
+        {
+            TotalAmount = 0;
+            foreach (var item in Items)
+            {
+                TotalAmount += item.Quantity * item.Price;
+            }
+        }
+        public void UpdateTotalQuantity()
+        {
+            TotalQuantity = 0;
+            foreach (var item in Items)
+            {
+                TotalQuantity += item.Quantity;
+            }
+        }
+        public void UpdateTotalWithDiscount()
+        {
+            TotalAmountWithDiscount = 0;
+            foreach (var item in Items)
+            {
+                TotalAmountWithDiscount += item.Total;
+            }
+        }
+        public List<InvoiceItemDetailsDto> Items { get; set; } = new List<InvoiceItemDetailsDto>();
     }
 }

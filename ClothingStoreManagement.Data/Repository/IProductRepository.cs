@@ -4,6 +4,6 @@ namespace ClothingStoreManagement.Data.Repository
 {
     public interface IProductRepository : IBaseRepository<Product>
     {
-      
+
     }
 }
