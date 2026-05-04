@@ -13,7 +13,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public InvoiceStatus Status { get; private set; } = InvoiceStatus.pending;
         public void CalcTotal( decimal price , int quantity , decimal discount , decimal oldAmount) // لما نضيف صنف جديد أو نعدل صنف موجود في الفاتورة لازم نعيد حساب المجموع
         {
-            TotalAmount = TotalAmount - oldAmount + (price * quantity) * (1  - discount ) ;  
+            TotalAmount = TotalAmount - oldAmount + (price * quantity) * (1  - discount / 100) ;  
         }
 
         public void UpdateStatus(InvoiceStatus newStatus)

@@ -24,7 +24,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public decimal SellingPrice { get; private set; }
         public decimal PurchasePrice { get; private set; }
         public decimal Discount { get; private set; }
-        public decimal TotalPrice => Quantity * SellingPrice * (1 - Discount);
+        public decimal TotalPrice => Quantity * SellingPrice * (1 - Discount / 100);
         private void ValidateSellingPrice(decimal sellingPrice)
         {
             if (sellingPrice <= 0)

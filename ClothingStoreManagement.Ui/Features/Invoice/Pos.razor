@@ -30,6 +30,7 @@
                         </thead>
                         <tbody>
                             <tr class="border-bottom">
+                                <!-- تفاصيل المنتج -->
                                 <td class="ps-4 py-3 text-end">
                                     <div class="fw-bold text-dark mb-1">جاكيت جينز شبابي</div>
                                     <div class="d-flex align-items-center gap-2 justify-content-end">
@@ -41,20 +42,33 @@
                                         <span class="badge bg-light text-dark border small">مقاس: L</span>
                                     </div>
                                 </td>
-                                <td class="fw-semibold">850 ج.م</td>
-                                <td>
+
+                                <!-- السعر الأساسي -->
+                                <td class="fw-semibold text-center">850 ج.م</td>
+
+                                <!-- التحكم في الكمية -->
+                                <td class="text-center">
                                     <div class="btn-group btn-group-sm border rounded-pill p-1 bg-white">
                                         <button class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-dash-lg"></i></button>
                                         <span class="fw-bold px-2">1</span>
                                         <button class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-plus-lg"></i></button>
                                     </div>
                                 </td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-center rounded-pill border-warning"
-                                           placeholder="0.00" style="background-color: #fffdf5;">
+
+                                <!-- خانة الخصم بالنسبة المئوية -->
+                                <td style="width: 130px;">
+                                    <div class="input-group input-group-sm rounded-pill overflow-hidden border-warning shadow-sm">
+                                        <input type="number" class="form-control text-center border-0"
+                                               placeholder="0" style="background-color: #fffdf5; box-shadow: none;">
+                                        <span class="input-group-text border-0 bg-warning bg-opacity-10 text-warning fw-bold">%</span>
+                                    </div>
                                 </td>
-                                <td class="fw-bold text-primary">850.00 ج.م</td>
-                                <td>
+
+                                <!-- الإجمالي بعد خصم النسبة -->
+                                <td class="fw-bold text-primary text-center">850.00 ج.م</td>
+
+                                <!-- زر الحذف -->
+                                <td class="text-center">
                                     <button class="btn btn-sm btn-outline-danger border-0 rounded-circle">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
