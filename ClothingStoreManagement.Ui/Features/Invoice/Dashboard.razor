@@ -116,20 +116,16 @@
                     foreach (var invoice in invoices)
                     {
                         <tr>
-                            @* 1. رقم الفاتورة *@
                             <td class="fw-bold text-primary">#@invoice.Serial</td>
                 
-                            @* 2. التاريخ والوقت *@
                             <td>
                                 <span class="text-secondary">@invoice.LastUpdatedAt.ToString("dd/MM/yyyy")</span>
                                 <span class="mx-1 text-muted">|</span>
                                 <span class="fw-bold">@invoice.LastUpdatedAt.ToString("hh:mm tt")</span>
                             </td>
 
-                            @* 3. الإجمالي *@
                             <td class="fw-bold">@invoice.TotalAmount ج.م</td>
 
-                            @* 4. عمود الحالة (Badge) *@
                             <td>
                                 @if (invoice.Status == InvoiceStatus.pending)
                                 {
@@ -151,15 +147,15 @@
                                 }
                             </td>
 
-                            @* 5. عمود الإجراءات (الزارير) *@
+ 
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     @if (invoice.Status == InvoiceStatus.pending)
                                     {
-                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                        <a href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
                                             تكملة الفاتورة
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger rounded-circle p-2">
+                                        </a>
+                                        <button @onclick="()=> Remove(invoice.Id)" class="btn btn-sm btn-outline-danger rounded-circle p-2">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     }
@@ -219,5 +215,11 @@
         {
             await LoadInvoicesAsync();
         }
+    }
+
+    private async Task Remove (int id )
+    {
+           await   invoiceService.Remove(id);  
+        await LoadInvoicesAsync();
     }
 }

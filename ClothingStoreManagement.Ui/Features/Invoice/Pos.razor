@@ -1,4 +1,5 @@
-﻿@page "/pos"
+﻿@page "/pos/{invoiceId:int}"
+@page "/pos"
 @inject InvoiceService invoiceService
 @if (isPrintingMode && savedInvoiceDto != null)
 {
@@ -175,6 +176,8 @@ else
 }
 @code
 {
+    [Parameter]
+    public int invoiceId { get; set; } 
     private InvoiceDTO ? currentInvoice = new()
     {
         SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
@@ -183,7 +186,20 @@ else
     private string errorMessage = null! ; 
     private string successMessage = null !; 
     InvoiceDTO? savedInvoiceDto; 
-    bool isPrintingMode = false; 
+    bool isPrintingMode = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (invoiceId != 0)
+        {
+            var result  =await  invoiceService.GetInvoiceById(invoiceId) ; 
+            if (result.IsSuccess)
+            {
+                currentInvoice = result.Data;
+            }
+        }
+    }
     private void CalcTotal ()
     {
         currentInvoice!.UpdateTotalQuantity() ; 
@@ -213,14 +229,14 @@ else
 
         if (currentInvoice?.Items.Count == 0)
         {
-   
+
             await invoiceService.Remove(currentInvoice.Id);
             currentInvoice = new InvoiceDTO()
             {
                 SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
             };
         }
-    
+
         CalcTotal();
     }
     private async Task ApplySearch()
@@ -241,8 +257,11 @@ else
                 }
                 var newItem = result.Data;
                 var oldItem = currentInvoice.Items.FirstOrDefault(i => i.Id == newItem.Id);
-                if (oldItem != null)
-                    oldItem.Quantity += 1;
+                if (oldItem != null )
+                {
+                    if ( oldItem.Quantity < oldItem.AvailableQuantity)
+                        oldItem.Quantity += 1;
+                }
                 else
                     currentInvoice.Items.Add(newItem!);
                 CalcTotal();

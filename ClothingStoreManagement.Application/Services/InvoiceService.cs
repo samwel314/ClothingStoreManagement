@@ -108,9 +108,34 @@ namespace ClothingStoreManagement.Application.Services
 
             return Result<InvoiceDTO>.Success(dto);
         }
-        public async Task<bool> InvoiceExists(int id)
+        public async Task<Result<InvoiceDTO>> GetInvoiceById(int id)
         {
-            return await _db.Invoices.GetAll().AnyAsync(i => i.Id == id);
+            var invoiceDto = await _db.Invoices.GetAll().Where(invoice => invoice.Id == id).Select(invoice => new InvoiceDTO()
+            {
+                Id = invoice.Id,
+                Status = invoice.Status,
+                SerialNumber = invoice.Serial,
+                LastUpdate = invoice.LastUpdatedAt == null ? invoice.CreatedAt : invoice.LastUpdatedAt.Value,
+                Items = new List<InvoiceItemDetailsDto>(invoice.Items.Select(i => new InvoiceItemDetailsDto
+                {
+                    Id = i.ProductVariantId,
+                    ProductName = i.ProductVariant.Product.Name,
+                    Color = i.ProductVariant.Color.Code,
+                    Size = i.ProductVariant.Size.Code,
+                    SKU = i.ProductVariant.VariantSKU,
+                    Price = i.SellingPrice,
+                    AvailableQuantity = i.ProductVariant.StockQuantity,
+                    Quantity = i.Quantity,
+                    Discount = i.Discount
+                }).ToList()),
+            }).FirstOrDefaultAsync(); 
+            if (invoiceDto == null)
+                return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);   
+
+            invoiceDto.UpdateTotalWithDiscount();
+            invoiceDto.UpdateTotal();   
+            invoiceDto.UpdateTotalQuantity();   
+            return Result<InvoiceDTO>.Success(invoiceDto);
         }
         public async Task Remove(int id)
         {
