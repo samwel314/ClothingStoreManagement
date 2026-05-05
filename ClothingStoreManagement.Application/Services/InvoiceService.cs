@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
@@ -104,7 +105,7 @@ namespace ClothingStoreManagement.Application.Services
             dto.Id = invoice.Id;
             dto.SerialNumber = invoice.Serial;
             dto.LastUpdate = invoice.LastUpdatedAt ?? invoice.CreatedAt;
-     
+
             return Result<InvoiceDTO>.Success(dto);
         }
         public async Task<bool> InvoiceExists(int id)
@@ -119,6 +120,38 @@ namespace ClothingStoreManagement.Application.Services
                 _db.Invoices.Delete(invoice);
                 await _db.Save();
             }
+        }
+        public async Task<Result<IEnumerable<InvoiceLockUpDTO>>>
+            GetInvoicesLookUpAsync(string? searchTerm = null, InvoiceStatus? status = null , DateTime ? start = null , DateTime ? end = null)
+        {
+            var invoices = _db.Invoices.GetAll();
+            if (status != null)
+            {
+                invoices = invoices.Where(i => i.Status == status);
+            }
+            if (start != null)
+            {
+                invoices = invoices.Where(i => (i.LastUpdatedAt ?? i.CreatedAt) >= start);
+            }
+            if (end != null)
+            {
+                invoices = invoices.Where(i => (i.LastUpdatedAt ?? i.CreatedAt) < end.Value.AddDays(1));
+            }
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.Trim();
+                invoices = invoices.Where(i => i.Serial.Contains(searchTerm));
+            }
+
+            var invoiceLookUpDtos = await invoices.Select(i => new InvoiceLockUpDTO
+            {
+                Id = i.Id,
+                Serial = i.Serial,
+                Status = i.Status,
+                TotalAmount = i.TotalAmountWithDiscount,
+                LastUpdatedAt = i.LastUpdatedAt ?? i.CreatedAt
+            }).OrderByDescending(i => i.LastUpdatedAt).ToListAsync();
+            return Result<IEnumerable<InvoiceLockUpDTO>>.Success(invoiceLookUpDtos);
         }
     }
 }

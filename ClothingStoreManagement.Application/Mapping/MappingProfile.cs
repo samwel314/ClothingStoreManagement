@@ -12,7 +12,6 @@ namespace ClothingStoreManagement.Application.Mapping
             CreateMap<Size, SizeListDTO>();
             CreateMap<Category, CategoryDTO>();
             CreateMap<Category, CategoryListDTO>();
-
         }
     }
 }

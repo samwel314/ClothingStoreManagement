@@ -1,5 +1,6 @@
 ﻿@page "/dashboard"
-    <div class="row g-3 align-items-center mb-4">
+@inject InvoiceService invoiceService
+<div class="row g-3 align-items-center mb-4">
      
         <div class="col-lg-4 d-flex align-items-center gap-3">
             <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
@@ -14,7 +15,7 @@
                ابحث 
                 </button>
                 
-                <input type="text"
+            <input @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" type="text"
                        class="form-control border-0 bg-transparent text-end"
                        placeholder="ابحث برقم الفاتورة أو اسم العميل..."
                        style="box-shadow: none;" />
@@ -34,7 +35,7 @@
         </div>
     </div>
     
-    <div class="row g-3 mb-4 text-center">
+<div class="row g-3 mb-4 text-center">
         <div class="col-md-4">
             <div class="p-3 shadow-sm rounded-4 bg-white border-start border-primary border-4">
                 <small class="text-muted">إجمالي فواتير اليوم</small>
@@ -55,63 +56,168 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4" dir="rtl">
+    <div class="row g-3 align-items-end justify-content-center">
+        
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">📅 من تاريخ:</label>
+            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
+                   @bind="StartDate" style="text-align: right;" />
+        </div>
+        
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">📅 إلى تاريخ:</label>
+            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
+                   @bind="EndDate" style="text-align: right;" />
+        </div>
+
+        <div class="col-md-6 d-flex justify-content-center mt-4 mt-md-0">
+            <div class="btn-group p-1 bg-white rounded-pill border shadow-sm">
+                <button @onclick='() => FilterByStatus(null)'
+                        class="btn rounded-pill px-4 @(status == null ? "btn-primary shadow-sm" : "btn-outline-secondary border-0")">
+                    الكل
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.pending ? "btn-warning shadow-sm text-dark" : "btn-outline-warning border-0")">
+                    المسودات
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.completed ? "btn-success shadow-sm" : "btn-outline-success border-0")">
+                    المدفوعة
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.returned ? "btn-danger shadow-sm" : "btn-outline-danger border-0")">
+                    المرتجعة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive text-nowrap">
             <table class="table table-hover align-middle mb-0 text-center">
                 <thead class="table-light py-3">
                     <tr>
                         <th class="py-3">رقم الفاتورة</th>
                         <th class="py-3">التاريخ</th>
-                        <th class="py-3">العميل</th>
                         <th class="py-3">الإجمالي</th>
                         <th class="py-3">الحالة</th>
                         <th class="py-3">الإجراءات</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="fw-bold text-primary">#INV-2026-001</td>
-                        <td>2026-05-03</td>
-                        <td>عميل نقدي</td>
-                        <td>450.00 ج.م</td>
-                        <td>
-                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
-                                <i class="bi bi-pencil-square me-1"></i> مسودة
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">تكملة الفاتورة</button>
-                                <button class="btn btn-sm btn-outline-danger rounded-circle p-2">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="fw-bold text-primary">#INV-2026-002</td>
-                        <td>2026-05-02</td>
-                        <td>أحمد محمد</td>
-                        <td>800.00 ج.م</td>
-                        <td>
-                            <span class="badge rounded-pill bg-success px-3 py-2">
-                                <i class="bi bi-check-circle me-1"></i> مدفوعة
-                            </span>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">عرض</button>
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle p-2">
-                                    <i class="bi bi-printer"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
+            <tbody>
+                @if (invoices != null)
+                {
+                    foreach (var invoice in invoices)
+                    {
+                        <tr>
+                            @* 1. رقم الفاتورة *@
+                            <td class="fw-bold text-primary">#@invoice.Serial</td>
+                
+                            @* 2. التاريخ والوقت *@
+                            <td>
+                                <span class="text-secondary">@invoice.LastUpdatedAt.ToString("dd/MM/yyyy")</span>
+                                <span class="mx-1 text-muted">|</span>
+                                <span class="fw-bold">@invoice.LastUpdatedAt.ToString("hh:mm tt")</span>
+                            </td>
+
+                            @* 3. الإجمالي *@
+                            <td class="fw-bold">@invoice.TotalAmount ج.م</td>
+
+                            @* 4. عمود الحالة (Badge) *@
+                            <td>
+                                @if (invoice.Status == InvoiceStatus.pending)
+                                {
+                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-pencil-square me-1"></i> مسودة
+                                    </span>
+                                }
+                                else if (invoice.Status == InvoiceStatus.completed)
+                                {
+                                    <span class="badge rounded-pill bg-success px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-check-circle me-1"></i> مدفوعة
+                                    </span>
+                                }
+                                else if (invoice.Status == InvoiceStatus.returned)
+                                {
+                                    <span class="badge rounded-pill bg-danger px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> مرتجع
+                                    </span>
+                                }
+                            </td>
+
+                            @* 5. عمود الإجراءات (الزارير) *@
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    @if (invoice.Status == InvoiceStatus.pending)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                            تكملة الفاتورة
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-circle p-2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                    else if (invoice.Status == InvoiceStatus.completed)
+                                    {
+                                        <button class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">
+                                            عرض
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary rounded-circle p-2">
+                                            <i class="bi bi-printer"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
+                                            مرتجع
+                                        </button>
+                                    }
+                                    else if (invoice.Status == InvoiceStatus.returned)
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
+                                            التفاصيل
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
             </table>
         </div>
     </div>
 
+@code
+{
+    private DateTime ? StartDate ; 
+    private DateTime ? EndDate ;  
+    private string? searchTerm;
+    private InvoiceStatus ? status;
+    private IEnumerable<InvoiceLockUpDTO>? invoices ;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoicesAsync();
+    }
+    private async Task LoadInvoicesAsync()
+    {
+        var result = await invoiceService.GetInvoicesLookUpAsync(searchTerm , status , StartDate , EndDate);
+        invoices = result.Data!;
+    }    
 
-
+    public async Task FilterByStatus(InvoiceStatus ? status)
+    {
+        this.status = status;
+        await LoadInvoicesAsync() ; 
+    }
+    private async Task ApplySearch()
+    {
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            await LoadInvoicesAsync();
+        }
+    }
+}
