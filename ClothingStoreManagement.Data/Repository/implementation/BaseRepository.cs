@@ -37,11 +37,11 @@ namespace ClothingStoreManagement.Data.Repository.implementation
 
         public void Delete(T model)
         {
-            _db.Remove(model);
+            _dbSet.Remove(model);
         }
         public void Delete(IEnumerable<T> models)
         {
-            _db.RemoveRange(models);
+            _dbSet.RemoveRange(models);
         }
     }
 }

@@ -655,7 +655,7 @@ else
         {
             erroMessage = result.ErrorMessage! ;         
             await  Task.Delay(3000) ; 
-            erroMessage = null ; 
+            erroMessage = null! ; 
 
         }
 
@@ -682,7 +682,7 @@ else
         {
              erroMessage = result.ErrorMessage! ;         
             await  Task.Delay(3000) ; 
-            erroMessage = null ; 
+            erroMessage = null !; 
         }
     }
 

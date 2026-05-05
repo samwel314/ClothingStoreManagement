@@ -1,4 +1,5 @@
 ﻿using ClothingStoreManagement.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClothingStoreManagement.Data.Repository.implementation
 {
@@ -8,6 +9,11 @@ namespace ClothingStoreManagement.Data.Repository.implementation
         public InvoiceRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
+        }
+
+        public void Detach(Invoice model)
+        {
+            _db.Entry(model).State = EntityState.Detached;
         }
     }
 }

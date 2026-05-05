@@ -10,7 +10,18 @@
         public decimal Price { get; set; }
         public int Quantity { get; set; } = 1;
         public int AvailableQuantity { get; set; }
-        public decimal Discount { get; set; } = decimal.Zero;
+        private decimal _discount;
+        public decimal Discount
+        {
+            get => _discount;
+            set
+            {
+                if (value > 100) _discount = 100;
+                else if (value < 0) _discount = 0;
+                else _discount = value;
+            }
+        }
         public decimal Total => (Price * Quantity) * (1 - Discount / 100);
+      
     }
 }

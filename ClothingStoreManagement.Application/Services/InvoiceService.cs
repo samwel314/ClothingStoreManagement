@@ -20,6 +20,7 @@ namespace ClothingStoreManagement.Application.Services
             var invoice = new Invoice();
             await _db.Invoices.CreateAsync(invoice);
             await _db.Save();
+            _db.Invoices.Detach(invoice);
             return Result<InvoiceDTO>.Success(new InvoiceDTO
             {
                 Id = invoice.Id,
@@ -27,7 +28,7 @@ namespace ClothingStoreManagement.Application.Services
                 SerialNumber = invoice.Serial,
                 LastUpdate = invoice.LastUpdatedAt == null ? invoice.CreatedAt : invoice.LastUpdatedAt.Value,
                 TotalAmount = invoice.TotalAmount,
-           //     TotalAmountWithDiscount = invoice.TotalAmountWithDiscount,
+                TotalAmountWithDiscount = invoice.TotalAmountWithDiscount,
                 Items = new List<InvoiceItemDetailsDto>()
             });
         }
@@ -67,42 +68,58 @@ namespace ClothingStoreManagement.Application.Services
                     return Result<string>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
                 newItems.Add(new InvoiceItem(invoice.Id, variant.Id, item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount));
             }
-           // invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
+            invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
             invoice.SetTotal(dto.TotalAmount);
             invoice.Items = newItems;
             await _db.Save();
             return Result<string>.Success(" تم ارشافة الفاتور ");
         }
-        public async Task<Result<string>> CompleteInvoiceWithItems(InvoiceDTO dto)
+        public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto)
         {
             if (dto.Items.Count() == 0)
-                return Result<string>.Failure("لا يكن انشاء او ارشافة  فاتورة فارغة ", ErrorType.notFound);
+                return Result<InvoiceDTO>.Failure("لا يكن انشاء او ارشافة  فاتورة فارغة ", ErrorType.notFound);
             var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == dto.Id);
             if (invoice == null)
-                return Result<string>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
-            if (invoice.Status == InvoiceStatus.completed || invoice.Status == InvoiceStatus.returned  )
+                return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
+            if (invoice.Status == InvoiceStatus.completed || invoice.Status == InvoiceStatus.returned)
             {
-                return Result<string>.Failure("لا يمكن تيغر حالة الفاتورة بعد اكمالها و ارتجاعها ", ErrorType.conflict);
+                return Result<InvoiceDTO>.Failure("لا يمكن تيغر حالة الفاتورة بعد اكمالها و ارتجاعها ", ErrorType.conflict);
             }
             var newItems = new List<InvoiceItem>();
             foreach (var item in dto.Items)
             {
                 var variant = await _db.ProductVariants.FirstOrDefaultAsync(pv => pv.Id == item.Id, true);
                 if (variant == null)
-                    return Result<string>.Failure($" هذا الصنف غير موجود ({item.ProductName})  ", ErrorType.notFound);
+                    return Result<InvoiceDTO>.Failure($" هذا الصنف غير موجود ({item.ProductName})  ", ErrorType.notFound);
                 if (!variant.CanWithdraw(item.Quantity))
-                    return Result<string>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
+                    return Result<InvoiceDTO>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
                 variant.Withdraw(item.Quantity);
                 newItems.Add(new InvoiceItem(invoice.Id, variant.Id, item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount));
             }
-           // invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
+            invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
             invoice.SetTotal(dto.TotalAmount);
             invoice.UpdateStatus(InvoiceStatus.completed);
             invoice.Items = newItems;
             await _db.Save();
-            return Result<string>.Success(" تم حفظ الفاتورة بنجاح ");
+            dto.Id = invoice.Id;
+            dto.SerialNumber = invoice.Serial;
+            dto.LastUpdate = invoice.LastUpdatedAt ?? invoice.CreatedAt;
+     
+            return Result<InvoiceDTO>.Success(dto);
         }
-
+        public async Task<bool> InvoiceExists(int id)
+        {
+            return await _db.Invoices.GetAll().AnyAsync(i => i.Id == id);
+        }
+        public async Task Remove(int id)
+        {
+            var invoice = await _db.Invoices.FirstOrDefaultAsync(i => i.Id == id);
+            if (invoice != null)
+            {
+                _db.Invoices.Delete(invoice);
+                await _db.Save();
+            }
+        }
     }
 }
 

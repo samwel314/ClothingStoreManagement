@@ -1,174 +1,192 @@
 ﻿@page "/pos"
 @inject InvoiceService invoiceService
-<div class="container-fluid py-3" dir="rtl">
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-3"></i>
+@if (isPrintingMode && savedInvoiceDto != null)
+{
+
+    <InvoicePrinter InvoiceModel="savedInvoiceDto" />
+
+    <div class="mt-3 no-print">
+        <button class="btn btn-secondary" @onclick="ClosePrintPreview">
+            إغلاق والعودة للفواتير
+        </button>
+    </div>
+}
+else
+{
+    <div class="container-fluid py-3" dir="rtl">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-3"></i>
     
-            <div class="flex-grow-1">
-                &nbsp;@errorMessage
-            </div>
-        </div>
-    }
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <div class="alert alert-success alert-dismissible fade show shadow-errorMessagesm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
-            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
-            &nbsp;
-            <div>
-                <strong class="ms-1">تم بنجاح!</strong>
-                <span>@successMessage</span>
-            </div>
-        </div>
-    }
-    <div class="row g-3">
-        <div class="col-lg-9">
-            <div class="card shadow-sm mb-3 border-0" style="border-radius: 12px;">
-                <div class="card-body py-2">
-                    <div class="input-group input-group-lg border rounded-3 overflow-hidden">
-                        <button  @onclick="ApplySearch" class="btn btn-primary border-0 px-4">
-                            <i class="bi bi-search"> بحث </i>
-                        </button>
-                        <input @bind:event="oninput" @bind="sku" @bind:after="ApplySearch" type="text" class="form-control border-0 shadow-none text-end"
-                                placeholder="امسح الباركود أو ابحث عن الموديل (SKU)...">
-                    </div>
+                <div class="flex-grow-1">
+                    &nbsp;@errorMessage
                 </div>
             </div>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-errorMessagesm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+                <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                &nbsp;
+                <div>
+                    <strong class="ms-1">تم بنجاح!</strong>
+                    <span>@successMessage</span>
+                </div>
+            </div>
+        }
+        <div class="row g-3">
+            <div class="col-lg-9">
+                <div class="card shadow-sm mb-3 border-0" style="border-radius: 12px;">
+                    <div class="card-body py-2">
+                        <div class="input-group input-group-lg border rounded-3 overflow-hidden">
+                            <button @onclick="ApplySearch" class="btn btn-primary border-0 px-4">
+                                <i class="bi bi-search"> بحث </i>
+                            </button>
+                            <input @bind:event="oninput" @bind="sku" @bind:after="ApplySearch" type="text" class="form-control border-0 shadow-none text-end"
+                                   placeholder="امسح الباركود أو ابحث عن الموديل (SKU)...">
+                        </div>
+                    </div>
+                </div>
 
-            <div class="card shadow-sm border-0" style="border-radius: 12px; min-height: 450px;">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 text-center">
-                        <thead class="bg-light">
-                            <tr class="text-secondary">
-                                <th class="ps-4 py-3 text-end">المنتج والتفاصيل</th>
-                                <th>السعر</th>
-                                <th>الكمية</th>
-                                <th style="width: 120px;">خصم (قطعة)</th>
-                                <th>الإجمالي</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in currentInvoice!.Items)
-                            {
-                                <tr class="border-bottom">
+                <div class="card shadow-sm border-0" style="border-radius: 12px; min-height: 450px;">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-center">
+                            <thead class="bg-light">
+                                <tr class="text-secondary">
+                                    <th class="ps-4 py-3 text-end">المنتج والتفاصيل</th>
+                                    <th>السعر</th>
+                                    <th>الكمية</th>
+                                    <th style="width: 120px;">خصم (قطعة)</th>
+                                    <th>الإجمالي</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in currentInvoice!.Items)
+                                {
+                                    <tr class="border-bottom">
  
-                                    <td class="ps-4 py-3 text-end">
-                                        <div class="fw-bold text-dark mb-1">@item.ProductName</div>
-                                        <div class="d-flex align-items-center gap-2 justify-content-end">
-                                            <span class="badge bg-light text-muted border fw-normal small">SKU: @item.SKU</span>
-                                            <span class="badge bg-light text-dark border d-flex align-items-center gap-1 small">
-                                                <span style="width: 10px; height: 10px; background-color: @item.Color; border-radius: 50%; display: inline-block;"></span>
-                                            </span>
-                                            <span class="badge bg-light text-dark border small">@item.Size</span>
-                                        </div>
-                                    </td>
+                                        <td class="ps-4 py-3 text-end">
+                                            <div class="fw-bold text-dark mb-1">@item.ProductName</div>
+                                            <div class="d-flex align-items-center gap-2 justify-content-end">
+                                                <span class="badge bg-light text-muted border fw-normal small">SKU: @item.SKU</span>
+                                                <span class="badge bg-light text-dark border d-flex align-items-center gap-1 small">
+                                                    <span style="width: 10px; height: 10px; background-color: @item.Color; border-radius: 50%; display: inline-block;"></span>
+                                                </span>
+                                                <span class="badge bg-light text-dark border small">@item.Size</span>
+                                            </div>
+                                        </td>
 
                  
-                                    <td class="fw-semibold text-center">@item.Price ج.م</td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm border rounded-pill p-1 bg-white">
-                                            <button @onclick="() => Minus(item)" class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-dash-lg"></i></button>
-                                            <span class="fw-bold px-2">@item.Quantity</span>
-                                            <button @onclick="() => Plus(item)" class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
+                                        <td class="fw-semibold text-center">@item.Price ج.م</td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm border rounded-pill p-1 bg-white">
+                                                <button @onclick="() => Minus(item)" class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-dash-lg"></i></button>
+                                                <span class="fw-bold px-2">@item.Quantity</span>
+                                                <button @onclick="() => Plus(item)" class="btn btn-link text-dark p-0 px-2 border-0"><i class="bi bi-plus-lg"></i></button>
+                                            </div>
+                                        </td>
 
-                                    <td style="width: 130px;">
-                                        <div class="input-group input-group-sm rounded-pill overflow-hidden border-warning shadow-sm">
-                                            <input min="0" max="100" @bind="@item.Discount" @bind:after="CalcTotal" type="number" class="form-control text-center border-0"
-                                                   placeholder="0" style="background-color: #fffdf5; box-shadow: none;">
-                                            <span class="input-group-text border-0 bg-warning bg-opacity-10 text-warning fw-bold">%</span>
-                                        </div>
-                                    </td>
+                                        <td style="width: 130px;">
+                                            <div class="input-group input-group-sm rounded-pill overflow-hidden border-warning shadow-sm">
+                                                <input min="0" max="100" @bind="@item.Discount" @bind:after="CalcTotal" type="number" class="form-control text-center border-0"
+                                                       placeholder="0" style="background-color: #fffdf5; box-shadow: none;">
+                                                <span class="input-group-text border-0 bg-warning bg-opacity-10 text-warning fw-bold">%</span>
+                                            </div>
+                                        </td>
   
-                                    <td class="fw-bold text-primary text-center">@item.Total ج.م</td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm btn-outline-danger border-0 rounded-circle">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                        <td class="fw-bold text-primary text-center">@item.Total ج.م</td>
+                                        <td class="text-center">
+                                            <button @onclick="() => RemoveItem(item)" class="btn btn-sm btn-outline-danger border-0 rounded-circle">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-3">
-            <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
-                <div class="card-body d-flex flex-column p-4">
+            <div class="col-lg-3">
+                <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                    <div class="card-body d-flex flex-column p-4">
+
             
-                   
-                    <div class="mb-4 pb-3 border-bottom border-light">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <div class="bg-primary bg-opacity-10 p-2 rounded-2">
-                                <i class="bi bi-hash text-primary"></i>
+                        <div class="mb-4 pb-3 border-bottom border-light">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded-2">
+                                    <i class="bi bi-hash text-primary"></i>
+                                </div>
+                                <span class="fw-bold text-secondary text-nowrap overflow-hidden"
+                                      style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                                    @currentInvoice!.SerialNumber
+                                </span>
                             </div>
-                            <span class="fw-bold text-secondary">@currentInvoice!.SerialNumber</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 text-muted small">
-                            <i class="bi bi-calendar3"></i>
-                            <span>@currentInvoice?.LastUpdate.ToString("dd/MM/yyyy")</span>
-                            <span class="mx-1">|</span>
-                            <i class="bi bi-clock"></i>
-                            <span>@currentInvoice?.LastUpdate.ToString("hh:mm tt")</span>
-                        </div>
-                    </div>
-
-                    <h5 class="fw-bold mb-4 text-center">تفاصيل الحساب</h5>
-            
-                    <div class="space-y-3 flex-grow-1">
-                        <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>إجمالي القطع</span>
-                            <span class="fw-bold text-dark">@currentInvoice.TotalQuantity</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>المجموع (قبل الخصم)</span>
-                            <span class="fw-bold text-dark">@currentInvoice?.TotalAmount</span>
-                        </div>
-
-
-                        <hr class="text-muted opacity-25">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="h6 fw-bold mb-0 text-dark">الصافي النهائي:</span>
-                            <div class="text-start">
-                                <span class="h5 fw-bold text-primary mb-0">@currentInvoice?.TotalAmountWithDiscount</span>
-                                <small class="text-primary fw-bold ms-1">ج.م</small>
+                            <div class="d-flex align-items-center gap-2 text-muted small">
+                                <i class="bi bi-calendar3"></i>
+                                <span>@currentInvoice?.LastUpdate.ToString("dd/MM/yyyy")</span>
+                                <span class="mx-1">|</span>
+                                <i class="bi bi-clock"></i>
+                                <span>@currentInvoice?.LastUpdate.ToString("hh:mm tt")</span>
                             </div>
                         </div>
-                        <!-- أزرار التحكم -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button @onclick="CompleteInvoice" class="btn btn-outline-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
-                                <i class="bi bi-printer-fill me-2"></i> طباعة وحفظ (F5)
-                            </button>
-                            <button @onclick="PendingInvoice" class="btn btn-outline-secondary py-2 border-0">
-                                 تعليق الفاتورة (F2)
-                            </button>
-                        </div>
-                    </div>
 
+                        <h5 class="fw-bold mb-4 text-center">تفاصيل الحساب</h5>
+            
+                        <div class="space-y-3 flex-grow-1">
+                            <div class="d-flex justify-content-between mb-2 text-muted">
+                                <span>إجمالي القطع</span>
+                                <span class="fw-bold text-dark">@currentInvoice.TotalQuantity</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 text-muted">
+                                <span>المجموع (قبل الخصم)</span>
+                                <span class="fw-bold text-dark">@currentInvoice?.TotalAmount</span>
+                            </div>
+
+
+                            <hr class="text-muted opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h6 fw-bold mb-0 text-dark">الصافي النهائي:</span>
+                                <div class="text-start">
+                                    <span class="h5 fw-bold text-primary mb-0">@currentInvoice?.TotalAmountWithDiscount</span>
+                                    <small class="text-primary fw-bold ms-1">ج.م</small>
+                                </div>
+                            </div>
+                            <!-- أزرار التحكم -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button @onclick="CompleteInvoice" class="btn btn-outline-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
+                                    <i class="bi bi-printer-fill me-2"></i> طباعة وحفظ (F5)
+                                </button>
+                                <button @onclick="PendingInvoice" class="btn btn-outline-secondary py-2 border-0">
+                                    تعليق الفاتورة (F2)
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+}
 @code
 {
-    private InvoiceDTO ? currentInvoice ;
+    private InvoiceDTO ? currentInvoice = new()
+    {
+        SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
+    };
     private string sku = "";
     private string errorMessage = null! ; 
-    private string successMessage = null ; 
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await invoiceService.CreateInvoiceAsync();
-        currentInvoice = result.Data!;   
-    }
+    private string successMessage = null !; 
+    InvoiceDTO? savedInvoiceDto; 
+    bool isPrintingMode = false; 
     private void CalcTotal ()
     {
-        currentInvoice.UpdateTotalQuantity() ; 
+        currentInvoice!.UpdateTotalQuantity() ; 
         currentInvoice.UpdateTotal();
         currentInvoice.UpdateTotalWithDiscount();
     }
@@ -189,7 +207,22 @@
         }
 
     }
+    private async Task RemoveItem(InvoiceItemDetailsDto item)
+    {
+        currentInvoice?.Items.Remove(item);
 
+        if (currentInvoice?.Items.Count == 0)
+        {
+   
+            await invoiceService.Remove(currentInvoice.Id);
+            currentInvoice = new InvoiceDTO()
+            {
+                SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
+            };
+        }
+    
+        CalcTotal();
+    }
     private async Task ApplySearch()
     {
         if (!string.IsNullOrEmpty(sku))
@@ -197,6 +230,15 @@
             var result = await invoiceService.GetVariant(sku);
             if (result.IsSuccess)
             {
+                if (currentInvoice!.Id == 0) 
+                {
+                    var invoiceResult = await invoiceService.CreateInvoiceAsync();
+                    if (invoiceResult.IsSuccess)
+                    {
+                        currentInvoice.Id = invoiceResult.Data!.Id;
+                        currentInvoice.SerialNumber = invoiceResult.Data!.SerialNumber;
+                    }
+                }
                 var newItem = result.Data;
                 var oldItem = currentInvoice.Items.FirstOrDefault(i => i.Id == newItem.Id);
                 if (oldItem != null)
@@ -228,17 +270,20 @@
     }
     private async Task CompleteInvoice()
     {
-        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice);
+        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice); //[cite: 2]
+    
         if (result.IsSuccess)
         {
-            await ShowSuccess(result.Data);
+
+            savedInvoiceDto = result.Data; 
+            isPrintingMode = true; 
         }
         else
         {
-            await ShowError(result.ErrorMessage);
+            await ShowError(result.ErrorMessage); //[cite: 2]
         }
     }
-    private async Task ShowError(string ErrorMessage )
+    private async Task ShowError(string ErrorMessage)
     {
         errorMessage = ErrorMessage;
         await Task.Delay(3000);
@@ -249,6 +294,15 @@
         successMessage = SucsussMessage;
         await Task.Delay(3000);
         successMessage = null!;
+    }
+    private void ClosePrintPreview()
+    {
+        isPrintingMode = false;
+        currentInvoice = new InvoiceDTO()
+        {
+            SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
+        };
+        // هنا ممكن تصفر الـ currentInvoice لتبدأ فاتورة جديدة
     }
 }
 

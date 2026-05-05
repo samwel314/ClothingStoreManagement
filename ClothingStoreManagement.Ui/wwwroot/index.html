@@ -21,7 +21,12 @@
     </div>
     <script src="_framework/blazor.webview.js"></script>
     <script src="js/bootstrap.js"></script>
-
+    <script>
+        // هذه الدالة هي التي يتم استدعاؤها من كود الـ C#
+        window.printInvoice = () => {
+            window.print();
+        };
+    </script>
 </body>
 
 </html>

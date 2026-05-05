@@ -6,12 +6,11 @@ namespace ClothingStoreManagement.Application.DTO
     {
         public int Id { get; set; }
         public string SerialNumber { get; set; } = null!;
-        public InvoiceStatus Status { get; set; }
+        public InvoiceStatus Status { get; set; } = InvoiceStatus.pending;
         public decimal TotalAmount { get; set; }
         public decimal TotalAmountWithDiscount { get; set; }
-        public DateTime LastUpdate { get; set; }
+        public DateTime LastUpdate { get; set; } = DateTime.Now;
         public int TotalQuantity { get; set; }
-
         public void UpdateTotal()
         {
             TotalAmount = 0;
