@@ -178,6 +178,23 @@ namespace ClothingStoreManagement.Application.Services
             }).OrderByDescending(i => i.LastUpdatedAt).ToListAsync();
             return Result<IEnumerable<InvoiceLockUpDTO>>.Success(invoiceLookUpDtos);
         }
+         
+    
+        public async Task<Result<string>> ReturnInvoice (int id)
+        {
+            var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items)
+                .ThenInclude(i => i.ProductVariant).FirstOrDefaultAsync(i => i.Id == id);
+
+            if (invoice == null)
+                return Result<string>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
+            foreach (var item in invoice.Items)
+            {
+                item.ProductVariant.Deposit(item.Quantity);
+            }
+            invoice.UpdateStatus(InvoiceStatus.returned);   
+            await _db.Save(); 
+            return Result<string>.Success("تمت إعادة الفاتورة بنجاح");  
+        }
     }
 }
 

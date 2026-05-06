@@ -82,5 +82,10 @@
         {
             StockQuantity -= quantity;
         }
+        // if we return a product we will add the quantity back to the stock
+        public void Deposit(int quantity)
+        {
+            StockQuantity += quantity;
+        }
     }
 }
