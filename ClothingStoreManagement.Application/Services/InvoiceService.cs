@@ -67,7 +67,11 @@ namespace ClothingStoreManagement.Application.Services
                     return Result<string>.Failure($" هذا الصنف غير موجود ({item.ProductName})  ", ErrorType.notFound);
                 if (!variant.CanWithdraw(item.Quantity))
                     return Result<string>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
-                newItems.Add(new InvoiceItem(invoice.Id, variant.Id, item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount));
+                newItems.Add(new InvoiceItem( item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
+                {
+                    ProductVariant = variant,
+                    Invoice = invoice
+                });
             }
             invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
             invoice.SetTotal(dto.TotalAmount);
@@ -82,11 +86,23 @@ namespace ClothingStoreManagement.Application.Services
             var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == dto.Id);
             if (invoice == null)
                 return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
-            if (invoice.Status == InvoiceStatus.completed || invoice.Status == InvoiceStatus.returned)
+            if (invoice.Status == InvoiceStatus.completed)
             {
-                return Result<InvoiceDTO>.Failure("لا يمكن تيغر حالة الفاتورة بعد اكمالها و ارتجاعها ", ErrorType.conflict);
+                return Result<InvoiceDTO>.Failure("لا يمكن تيغر حالة الفاتورة بعد اكمالها   ", ErrorType.conflict);
             }
+
             var newItems = new List<InvoiceItem>();
+            Invoice targetInvoice;
+            if (invoice.Status == InvoiceStatus.returned)
+            {
+                Invoice newInvoice = new();
+                await _db.Invoices.CreateAsync(newInvoice);
+                targetInvoice = newInvoice;
+            }
+            else
+            {
+                targetInvoice = invoice;
+            }
             foreach (var item in dto.Items)
             {
                 var variant = await _db.ProductVariants.FirstOrDefaultAsync(pv => pv.Id == item.Id, true);
@@ -95,16 +111,20 @@ namespace ClothingStoreManagement.Application.Services
                 if (!variant.CanWithdraw(item.Quantity))
                     return Result<InvoiceDTO>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
                 variant.Withdraw(item.Quantity);
-                newItems.Add(new InvoiceItem(invoice.Id, variant.Id, item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount));
+                newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
+                {
+                    ProductVariant = variant,   
+                    Invoice = targetInvoice 
+                });
             }
-            invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
-            invoice.SetTotal(dto.TotalAmount);
-            invoice.UpdateStatus(InvoiceStatus.completed);
-            invoice.Items = newItems;
+            targetInvoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
+            targetInvoice.SetTotal(dto.TotalAmount);
+            targetInvoice.UpdateStatus(InvoiceStatus.completed);
+            targetInvoice.Items = newItems;
             await _db.Save();
-            dto.Id = invoice.Id;
-            dto.SerialNumber = invoice.Serial;
-            dto.LastUpdate = invoice.LastUpdatedAt ?? invoice.CreatedAt;
+            dto.Id = targetInvoice.Id;
+            dto.SerialNumber = targetInvoice.Serial;
+            dto.LastUpdate = targetInvoice.LastUpdatedAt ?? targetInvoice.CreatedAt;
 
             return Result<InvoiceDTO>.Success(dto);
         }

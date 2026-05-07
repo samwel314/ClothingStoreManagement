@@ -292,7 +292,9 @@
                                 <div class="d-flex justify-content-center gap-2">
                                     @if (invoice.Status == InvoiceStatus.pending)
                                     {
-                                        <a href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                        <a href="/pos/@invoice.Id.ToString()"
+                                               class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-pencil-square me-2"></i>
                                             تكملة الفاتورة
                                         </a>
                                         <button @onclick="()=> Remove(invoice.Id)" class="btn btn-sm btn-outline-danger rounded-circle p-2">
@@ -301,26 +303,28 @@
                                     }
                                     else if (invoice.Status == InvoiceStatus.completed)
                                     {
-                                        <button @onclick="() => OpenDetailsModal(invoice.Id)" class=" btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">
-                                            عرض
-                                        </button >
-                                        @*
-                                        <button class="btn btn-sm btn-outline-secondary rounded-circle p-2">
-                                            <i class="bi bi-printer">  - -- -- -- -</i>
-                                        </button> 
-                                        *@
-                                        <button @onclick="() => ReturnInvoice(invoice.Id , invoice.Serial)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
+                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
+                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-eye-fill me-2"> </i> 
+                                              عرض  
+                                        </button>
+
+                                        <button @onclick="() => ReturnInvoice(invoice.Id, invoice.Serial)"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-arrow-counterclockwise me-2"></i>
                                             مرتجع
                                         </button>
                                     }
                                     else if (invoice.Status == InvoiceStatus.returned)
                                     {
-                                        <button @onclick="() => OpenDetailsModal(invoice.Id)" class=" btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">
+                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
+                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-eye-fill me-2"></i>
                                             عرض
                                         </button>
-                                        <button class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" >
+                                        <a  href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" >
                                             <i class="bi bi-pencil-square"></i> تعديل واستكمال
-                                        </button>
+                                        </a>
                                     }
                                 </div>
                             </td>

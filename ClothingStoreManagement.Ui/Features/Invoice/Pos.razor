@@ -15,6 +15,24 @@
 else
 {
     <div class="container-fluid py-3" dir="rtl">
+        @if (currentInvoice!.Status == InvoiceStatus.returned)
+        {
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+                <div class="toast show align-items-center border-0 rounded-pill shadow-lg bg-dark text-white"
+                     role="alert" style="width: fit-content;">
+                    <div class="d-flex align-items-center px-3 py-2">
+                        <i class="bi bi-arrow-repeat text-info fs-4 me-3"></i>
+                        <div class="me-4">
+                            <span class="fw-bold fs-5 d-block" style="line-height: 1.2;">وضع الإحلال والتجديد</span>
+                            <span class="text-info-emphasis fw-semibold" style="font-size: 0.9rem;">
+                              هذه الفاتورة مرتجعة سيتم إصدار فاتورة جديدة 
+                            </span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            </div>
+        }
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -161,9 +179,12 @@ else
                                 <button @onclick="CompleteInvoice" class="btn btn-outline-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
                                     <i class="bi bi-printer-fill me-2"></i> طباعة وحفظ (F5)
                                 </button>
-                                <button @onclick="PendingInvoice" class="btn btn-outline-secondary py-2 border-0">
-                                    تعليق الفاتورة (F2)
-                                </button>
+                                @if  (currentInvoice.Status == InvoiceStatus.pending)
+                                {
+                                    <button @onclick="PendingInvoice" class="btn btn-outline-secondary py-2 border-0">
+                                        تعليق الفاتورة (F2)
+                                    </button>
+                                }
                             </div>
                         </div>
 
@@ -193,7 +214,7 @@ else
     {
         if (invoiceId != 0)
         {
-            var result  =await  invoiceService.GetInvoiceById(invoiceId) ; 
+            var result  = await  invoiceService.GetInvoiceById(invoiceId) ; 
             if (result.IsSuccess)
             {
                 currentInvoice = result.Data;

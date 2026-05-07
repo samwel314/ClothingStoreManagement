@@ -4,14 +4,12 @@ namespace ClothingStoreManagement.Domain.Entities
 {
     public class InvoiceItem
     {
-        public InvoiceItem(int invoiceId, Guid productVariantId,
+        public InvoiceItem( 
             int quantity, decimal sellingPrice, decimal purchasePrice, decimal discount = 0)
         {
             ValidateStockQuantity(quantity);
             ValidateSellingPrice(sellingPrice);
             ValidatePurchasePrice(purchasePrice);
-            InvoiceId = invoiceId;
-            ProductVariantId = productVariantId;
             Quantity = quantity;
             SellingPrice = sellingPrice;
             PurchasePrice = purchasePrice;
@@ -42,8 +40,8 @@ namespace ClothingStoreManagement.Domain.Entities
         }
         // nav 
         [ForeignKey("ProductVariantId")]
-        public ProductVariant ProductVariant { get; private set; } = null!;
+        public ProductVariant ProductVariant { get;  set; } = null!;
         [ForeignKey("InvoiceId")]
-        public Invoice Invoice { get; private set; } = null!;
+        public Invoice Invoice { get;  set; } = null!;
     }
 }
