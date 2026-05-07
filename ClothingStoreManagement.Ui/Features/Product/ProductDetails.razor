@@ -3,6 +3,101 @@
 @inject CategoryService categoryService
 @inject ColorService colorService 
 @inject SizeService sizeService 
+@if (showMovements)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100" 
+         style="z-index: 1050; background: rgba(0,0,0,0.15); backdrop-filter: blur(6px);" 
+         @onclick="() => showMovements = false">
+    </div>
+
+    <div class="position-fixed top-0 start-0 h-100 bg-white shadow-lg border-end" 
+         style="z-index: 1060; width: 520px; animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);">
+        
+        <div class="p-3 border-bottom bg-light shadow-sm">
+            <div class="d-flex align-items-center mb-3">
+                <div style="flex: 1;">
+                    <button type="button" class="btn-close ms-2" @onclick="() => showMovements = false"></button>
+                </div>
+                <div style="flex: 2;" class="text-center">
+                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 1.1rem;">📦 @product.Name</h6>
+                </div>
+                <div style="flex: 1;"></div> </div>
+
+            <div class="d-flex align-items-center justify-content-center gap-3 bg-white p-2 rounded-pill border mx-auto" style="font-size: 0.8rem; width: fit-content;">
+                <span class="font-monospace text-muted">SKU: @selectedVariant.Sku</span>
+                <span class="text-muted opacity-50">|</span>
+                <span class="fw-bold text-dark">المقاس: @selectedVariant.Size</span>
+                <span class="text-muted opacity-50">|</span>
+                <div class="d-flex align-items-center gap-1">
+                    <div style="width: 12px; height: 12px; background-color: @selectedVariant.Color; border-radius: 50%;" class="border"></div>
+                    <span class="fw-bold text-secondary">اللون</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 overflow-auto" style="height: calc(100vh - 125px); scrollbar-width: thin;">
+            
+            <div class="d-flex gap-2 mb-4">
+                <div class="flex-fill p-2 rounded-3 bg-danger-subtle text-danger border-bottom border-danger border-3 text-center shadow-sm">
+                    <small class="d-block fw-bold opacity-75" style="font-size: 0.65rem;">المبيعات</small>
+                    <span class="fw-bold h6 mb-0">@MovementList.Where( m => m.Type == MovementType.Sale).Sum(m => m.QuantityChange)</span>
+                </div>
+                <div class="flex-fill p-2 rounded-3 bg-success-subtle text-success border-bottom border-success border-3 text-center shadow-sm">
+                    <small class="d-block fw-bold opacity-75" style="font-size: 0.65rem;">المرتجع</small>
+                    <span class="fw-bold h6 mb-0">+@MovementList.Where(m => m.Type == MovementType.Return).Sum(m => m.QuantityChange)</span>
+                </div>
+                <div class="flex-fill p-2 rounded-3 bg-primary-subtle text-primary border-bottom border-primary border-3 text-center shadow-sm">
+                    <small class="d-block fw-bold opacity-75" style="font-size: 0.65rem;">الرصيد الحالي</small>
+                    <span class="fw-bold h6 mb-0">@MovementList.OrderByDescending(m => m.CreatedAt).FirstOrDefault()?.StockAfter</span>
+                </div>
+            </div>
+
+            <div class="table-responsive border-0 rounded-3 shadow-sm bg-white">
+                <table class="table table-hover align-middle mb-0 text-center" style="font-size: 0.85rem;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3 text-secondary fw-bolder border-0">الرصيد 📉</th>
+                            <th class="py-3 text-secondary fw-bolder border-0">الكمية 📦</th>
+                            <th class="py-3 text-secondary fw-bolder text-end pe-4 border-0">تفاصيل الحركة 📝</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var move in MovementList.OrderByDescending(m => m.CreatedAt))
+                        {
+                            <tr class="border-bottom border-light-subtle">
+                                <td class="fw-bold text-dark fs-6">@move.StockAfter</td>
+                                <td>
+                                    <span class="badge @(move.QuantityChange > 0 ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger") px-2 py-1 border fw-bold" style="min-width: 45px;">
+                                        @(move.QuantityChange > 0 ? "+" : "")@move.QuantityChange
+                                    </span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-flex flex-column align-items-end py-2">
+                                        <span class="fw-bold text-dark mb-1">@GetMovementTranslation(move.Type)</span>
+                                        <div class="d-flex gap-2 align-items-center" style="font-size: 0.72rem;">
+                                            @if (!string.IsNullOrEmpty(move.ReferenceId)) {
+                                                <span class="badge bg-light text-primary border-0 fw-medium p-0">#@move.ReferenceId</span>
+                                                <span class="text-muted opacity-50">|</span>
+                                            }
+                                            <span class="text-muted"><i class="bi bi-calendar3 me-1"></i> @move.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                            <span class="text-muted opacity-50">|</span>
+                                            <span class="text-muted"><i class="bi bi-clock me-1"></i> @move.CreatedAt.ToString("hh:mm tt")</span>
+                                        </div>
+                                        @if (move.CreatedBy != null) {
+                                            <small class="text-muted mt-1" style="font-size: 0.65rem; opacity: 0.8;">👤 @move.CreatedBy</small>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+
 @if (showDeleteVariantConfirm)
 {
     <div class="modal-backdrop fade show"></div>
@@ -385,14 +480,19 @@
                                     <small class="text-muted ms-1">ج.م</small>
                                 </td>
                                 <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-1">
-                                        <button @onclick="()=> UpdateVariant(v)"  class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button  @onclick="() => DeleteVariant(v)" class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </div>
+                          <div class="d-flex justify-content-center gap-1">
+    <button @onclick="() => ShowMovements(v)" class="btn btn-sm btn-light rounded-circle text-info border shadow-sm" title="سجل الحركة">
+        <i class="bi bi-clock-history"></i>
+    </button>
+
+    <button @onclick="()=> UpdateVariant(v)" class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
+        <i class="bi bi-pencil-square"></i>
+    </button>
+
+    <button @onclick="() => DeleteVariant(v)" class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
+        <i class="bi bi-trash3"></i>
+    </button>
+</div>
                                 </td>
                             </tr>
                         }
@@ -499,6 +599,16 @@ else
         border-color: #0d6efd;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
     }
+
+    @@keyframes slideIn {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+    /* تحسين شكل الجدول ليكون بلا حدود خارجية */
+    .table > :not(caption) > * > * {
+        box-shadow: none !important;
+        border-bottom-width: 1px;
+    }
 </style>
 
 @code {
@@ -516,9 +626,11 @@ else
     private bool showVariantModal = false ; 
     private bool isEditVariantMode = false ; 
     private bool showDeleteVariantConfirm = false ; 
+    private bool showMovements = false ; 
     private Guid VariantIdToDelete ; 
     private CreateProductVariantDto variantModel = new () ; 
-
+    private ProductVariantListDto selectedVariant ; 
+    private IEnumerable<VariantMovementsDTO> MovementList = new List<VariantMovementsDTO>() ;
     protected async override Task OnInitializedAsync()
     {
         var CategoriesResult = await categoryService.GetCategoriesLookUpAsync();
@@ -674,18 +786,36 @@ else
         {
             showSuccess = true ; 
             await loadProduct() ; 
-            
+
             await  Task.Delay(3000) ; 
             showSuccess = false ; 
         }
         else
         {
-             erroMessage = result.ErrorMessage! ;         
+            erroMessage = result.ErrorMessage! ;         
             await  Task.Delay(3000) ; 
             erroMessage = null !; 
         }
     }
+    private string GetMovementTranslation(MovementType type)
+    {
+        return type switch
+        {
+            MovementType.Sale => "عملية بيع مبيعات",    
+            MovementType.Return => "مرتجع من فاتورة",
+            MovementType.Restock => "توريد مخزني جديد",  
+            MovementType.ManualEdit => "تعديل إداري يدوي", 
+            _ => "حركة غير معروفة"
+        };
+    }
 
-
+    private async Task ShowMovements (ProductVariantListDto variant)
+    {
+        showMovements = true ;   
+        selectedVariant = variant ;  
+        var result =   await productService.VariantMovementsAsync(variant.Id) ; 
+        MovementList = result.Data ; 
+         
+    }
 
 }

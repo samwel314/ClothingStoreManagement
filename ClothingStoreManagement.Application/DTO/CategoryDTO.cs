@@ -1,4 +1,6 @@
-﻿namespace ClothingStoreManagement.Application.DTO
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ClothingStoreManagement.Application.DTO
 {
     public class CategoryDTO
     {

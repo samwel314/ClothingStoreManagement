@@ -54,6 +54,14 @@ namespace ClothingStoreManagement.Application.Services
                     variantDto.StockQuantity,
                     variantDto.SellingPrice,
                     variantDto.PurchasePrice);
+              await  _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = variant,   
+                    QuantityChange = variant.StockQuantity,
+                    StockAfter = variant.StockQuantity, 
+                    Type = MovementType.Restock,
+                    CreatedAt = DateTime.UtcNow
+                });
                 Product.AddVariant(variant);
             }
 
@@ -241,6 +249,14 @@ namespace ClothingStoreManagement.Application.Services
                 size.Code, dto.ColorId, color.Code, dto.StockQuantity, dto.SellingPrice, dto.PurchasePrice);
 
             await _db.ProductVariants.CreateAsync(variant);
+            await _db.Movements.CreateAsync(new StockMovement
+            {
+                ProductVariant = variant,
+                QuantityChange = variant.StockQuantity,
+                StockAfter = variant.StockQuantity,
+                Type = MovementType.Restock,
+                CreatedAt = DateTime.UtcNow , 
+            });
             product.UpdateChanges();
             await _db.Save();
             return Result<string>.Success("تم إضافة التنوع بنجاح ");
@@ -268,7 +284,17 @@ namespace ClothingStoreManagement.Application.Services
             }
             if (variant.StockQuantity != dto.StockQuantity)
             {
+                var temp = dto.StockQuantity - variant.StockQuantity;
                 variant.UpdateStockQuantity(dto.StockQuantity);
+                await _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = variant,
+                    QuantityChange = temp,
+                    StockAfter = variant.StockQuantity,
+                    Type = MovementType.ManualEdit,
+                    CreatedAt = DateTime.UtcNow
+                });
+
                 isChanged = true;
             }
 
@@ -308,6 +334,26 @@ namespace ClothingStoreManagement.Application.Services
             _db.ProductVariants.Delete(variant);
             await _db.Save();
             return Result<string>.Success();
+        }
+
+        public async Task<Result< IEnumerable <VariantMovementsDTO>>> VariantMovementsAsync(Guid Id)
+        {
+            var variant = await _db.ProductVariants.FirstOrDefaultAsync((p) => p.Id == Id);
+            if (variant == null)
+                return Result<IEnumerable<VariantMovementsDTO>>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
+            var movements = await _db.Movements.GetAll().Where(m => m.ProductVariantId == Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new VariantMovementsDTO
+                {
+                    Id = m.Id,
+                    QuantityChange = m.QuantityChange,
+                    StockAfter = m.StockAfter,
+                    Type = m.Type,
+                    ReferenceId = m.ReferenceId,
+                    CreatedAt = m.CreatedAt,
+                    CreatedBy = m.CreatedBy
+                }).ToListAsync();
+            return Result<IEnumerable<VariantMovementsDTO>>.Success(movements);
         }
     }
 

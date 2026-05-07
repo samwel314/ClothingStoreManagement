@@ -110,7 +110,17 @@ namespace ClothingStoreManagement.Application.Services
                     return Result<InvoiceDTO>.Failure($" هذا الصنف غير موجود ({item.ProductName})  ", ErrorType.notFound);
                 if (!variant.CanWithdraw(item.Quantity))
                     return Result<InvoiceDTO>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
+
                 variant.Withdraw(item.Quantity);
+                await _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = variant,
+                    QuantityChange = -item.Quantity,
+                    StockAfter = variant.StockQuantity,
+                    Type = MovementType.Sale,
+                    CreatedAt = DateTime.UtcNow ,
+                    ReferenceId = targetInvoice.Serial
+                });
                 newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
                 {
                     ProductVariant = variant,   
@@ -210,6 +220,15 @@ namespace ClothingStoreManagement.Application.Services
             foreach (var item in invoice.Items)
             {
                 item.ProductVariant.Deposit(item.Quantity);
+                await _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = item.ProductVariant,
+                    QuantityChange = item.Quantity,
+                    StockAfter = item.ProductVariant.StockQuantity,
+                    Type = MovementType.Return,
+                    CreatedAt = DateTime.UtcNow , 
+                    ReferenceId = invoice.Serial 
+                });
             }
             invoice.UpdateStatus(InvoiceStatus.returned);   
             await _db.Save(); 

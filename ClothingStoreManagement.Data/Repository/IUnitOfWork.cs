@@ -8,6 +8,7 @@
         ICategoryRepository Categories { get; }
         IProductProductVariantRepository ProductVariants { get; }
         IInvoiceRepository Invoices { get; }
+        IStockMovementRepository Movements { get; } 
         Task Save();
     }
 

@@ -16,6 +16,7 @@ namespace ClothingStoreManagement.Data
         public DbSet<ProductVariant> ProductVariants { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
+        public DbSet<StockMovement> Movements { get; set; } 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
