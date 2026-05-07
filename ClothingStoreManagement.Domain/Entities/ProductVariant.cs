@@ -33,6 +33,7 @@
         public Product Product { get; private set; } = null!; // الربط بالموديل الأب 
         public Color Color { get; private set; } = null!;
         public Size Size { get; private set; } = null!;
+        public IEnumerable<StockMovement> Movements { get; private set; } = null!; 
         private void ValidateSellingPrice(decimal sellingPrice)
         {
             if (sellingPrice <= 0)

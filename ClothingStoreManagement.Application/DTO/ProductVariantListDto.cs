@@ -13,4 +13,11 @@
         public string Sku { get; set; } = null!;
 
     }
+    public class TopVariantDTO
+    {
+        public Guid Id { get; set; }
+        public string Size { get; set; } = null!;
+        public string  Code  { get; set; }
+        public decimal Total  { get; set; }
+    }
 }

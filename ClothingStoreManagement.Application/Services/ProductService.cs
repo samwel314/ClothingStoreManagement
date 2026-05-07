@@ -156,10 +156,40 @@ namespace ClothingStoreManagement.Application.Services
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
                         Sku = v.VariantSKU
-                    })
+                    }) , 
+                    TotalSalesCount = _db.Invoices.GetAll().
+                    Where(i => i.Status == InvoiceStatus.completed)
+                    .SelectMany(i => i.Items).
+                    Where(ii => ii.ProductVariant.ProductId == p.Id).Count(),   
+                    TotalSalesAmount = _db.Invoices.GetAll()
+    .Where(i => i.Status == InvoiceStatus.completed)
+    .SelectMany(i => i.Items)
+    .Where(ii => ii.ProductVariant.ProductId == p.Id)
+    .Sum(ii => ii.Quantity * ii.SellingPrice) ,
+                    NetProfit = _db.Invoices.GetAll()
+    .Where(i => i.Status == InvoiceStatus.completed)
+    .SelectMany(i => i.Items)
+    .Where(ii => ii.ProductVariant.ProductId == p.Id)
+    .Sum(ii => (ii.SellingPrice - ii.PurchasePrice) * ii.Quantity) 
                 }).FirstOrDefaultAsync((p) => p.Id == Id);
             if (product == null)
                 return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+
+              product.TopVariant = await  
+                _db.Invoices.GetAll().Where(i => i.Status == InvoiceStatus.completed)
+                .SelectMany(i => i.Items)!
+                .Where(ii => ii.ProductVariant.ProductId == product.Id).
+                GroupBy(ii => ii.ProductVariantId)!
+                .Select(g => new TopVariantDTO
+                {
+                    Total = g.Sum(x => x.Quantity * (x.SellingPrice - x.PurchasePrice)),
+                    Id = g.Key , 
+                    Size = g.First().ProductVariant.Size.Code,
+                    Code = g.First().ProductVariant.Color.Code
+
+                }).OrderByDescending(x => x.Total).FirstOrDefaultAsync()!;
+
+            
             return Result<ProductListDto>.Success(product);
         }
 

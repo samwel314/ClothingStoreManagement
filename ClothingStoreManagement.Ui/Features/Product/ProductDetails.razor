@@ -1,4 +1,5 @@
 ﻿@page "/product-details/{ProductId}"
+@using ClothingStoreManagement.Ui.Features.Invoice
 @inject ProductService productService 
 @inject CategoryService categoryService
 @inject ColorService colorService 
@@ -365,9 +366,9 @@
         <div class="col-lg-5 text-start">
       <div class="d-flex flex-wrap justify-content-start gap-2">
 
-    <button class="btn btn-outline-danger rounded-pill px-4 fw-bold">
+@*     <button class="btn btn-outline-danger rounded-pill px-4 fw-bold">
         <i class="bi bi-trash3 me-2"></i> حذف المنتج
-    </button>
+    </button> *@
 
 
     <button @onclick="()=> UpdateModel()" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
@@ -380,58 +381,64 @@
 </div>
         </div>
     </div>
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted small fw-bold mb-2">إجمالي المبيعات</h6>
-                        <h4 class="fw-bold mb-1 text-dark">15,420 ج.م</h4>
-                        <span class="text-success small fw-bold"><i class="bi bi-arrow-up"></i> 12% هذا الشهر</span>
-                    </div>
-                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-cash-stack text-primary fs-4"></i></div>
+<div class="row mb-4 g-3 text-end" dir="rtl">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="text-muted small fw-bold mb-2">إجمالي المبيعات</h6>
+                    <h4 class="fw-bold mb-1 text-dark">@product.TotalSalesAmount.ToString("N0") ج.م</h4>
+                    <span class="text-muted small">إجمالي الدخل المحقق</span>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up border-start border-success border-5">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted small fw-bold mb-2">صافي الربح التقديري</h6>
-                        <h4 class="fw-bold mb-1 text-success">4,200 ج.م</h4>
-                        <span class="text-muted small">هامش ربح: 27%</span>
-                    </div>
-                    <div class="bg-success bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-graph-up-arrow text-success fs-4"></i></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted small fw-bold mb-2">عدد مرات البيع</h6>
-                        <h4 class="fw-bold mb-1 text-dark">84 فاتورة</h4>
-                        <span class="text-muted small">متوسط 2 قطعة/طلب</span>
-                    </div>
-                    <div class="bg-info bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-receipt text-info fs-4"></i></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted small fw-bold mb-2">المخزون الكلي</h6>
-                        <h4 class="fw-bold mb-1 text-warning">45 قطعة</h4>
-                        <span class="text-muted small">موزعة على 6 تنوعات</span>
-                    </div>
-                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 h-100"><i class="bi bi-archive text-warning fs-4"></i></div>
-                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3"><i class="bi bi-cash-stack text-primary fs-4"></i></div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up border-start border-success border-5">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="text-muted small fw-bold mb-2">صافي الربح التقديري</h6>
+                    <h4 class="fw-bold mb-1 text-success">@product.NetProfit.ToString("N0") ج.م</h4>
+                    <div class="mt-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                            هامش ربح: @(product.TotalSalesAmount > 0 ? ((product.NetProfit / product.TotalSalesAmount) * 100).ToString("0") : "0")%
+                        </span>
+                    </div>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-3"><i class="bi bi-graph-up-arrow text-success fs-4"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="text-muted small fw-bold mb-2">عدد مرات البيع</h6>
+                    <h4 class="fw-bold mb-1 text-dark">@product.TotalSalesCount</h4>
+                    <span class="text-muted small">بند مبيعات مكتمل</span>
+                </div>
+                <div class="bg-info bg-opacity-10 p-3 rounded-3"><i class="bi bi-receipt text-info fs-4"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white hover-up">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="text-muted small fw-bold mb-2">المخزون الكلي</h6>
+                    <h4 class="fw-bold mb-1 text-warning">@product.Variants.Sum(v => v.StockQuantity) قطعة</h4>
+                    <span class="text-muted small">موزعة على @product.Variants.Count() تنوعات</span>
+                </div>
+                <div class="bg-warning bg-opacity-10 p-3 rounded-3"><i class="bi bi-archive text-warning fs-4"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+ <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
@@ -501,28 +508,61 @@
                 </div>
             </div>
         </div>
+<div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+            <h5 class="fw-bold mb-3">🏆 الأكثر ربحية</h5>
+            
+              @if (product.TopVariant != null)
 
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart me-2"></i> الأكثر مبيعاً</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small mb-4">تحليل مبيعات التنوعات خلال الـ 30 يوم الماضية:</p>
-                    <div class="mb-4 text-end">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold">مقاس XL - أسود</span>
-                            <span class="text-primary fw-bold">42%</span>
-                        </div>
-                        <div class="progress rounded-pill shadow-none" style="height: 10px;">
-                            <div class="progress-bar bg-primary" style="width: 42%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {
+
+                            <div class="mb-4 text-end">
+
+    <div class="d-flex justify-content-between align-items-center mb-1">
+
+        <div class="d-flex align-items-center">
+
+            <span class="rounded-circle me-2 border" 
+
+                  style="width: 15px; height: 15px; background-color: @product.TopVariant.Code; display: inline-block;">
+
+            </span>
+
+            <span class="fw-bold"> &nbsp;&nbsp; @product.TopVariant.Size </span>
+
+        </div>
+
+        
+
+        <span class="text-primary fw-bold">
+
+            @(product.NetProfit > 0 ? ((product.TopVariant.Total / product.NetProfit) * 100).ToString("0") : "0")%
+
+        </span>
+
+    </div>
+
+    
+
+    <div class="progress rounded-pill shadow-none" style="height: 10px;">
+
+        <div class="progress-bar bg-primary" 
+
+             style="width: @(product.NetProfit > 0 ? ((product.TopVariant.Total / product.NetProfit) * 100).ToString("0") : "0")%">
+
+        </div>
+
+    </div></div>
+
+
+
+            }
+
+       </div>
         </div>
     </div>
-</div>
+    </div>
+
 }
 else
 {
@@ -654,7 +694,9 @@ else
                 product = result.Data!; 
             else
                 product = null!; 
+            
         }
+
     }
     protected override async Task OnParametersSetAsync()
     {
