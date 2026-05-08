@@ -1,0 +1,426 @@
+﻿@page "/dashboard"
+@inject InvoiceService invoiceService
+@if (confirmingReturn)
+{
+    <div class="modal fade show" id="returnModal" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد عملية المرتجع ⚠️</h5>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="fs-5">هل أنت متأكد من إرجاع الفاتورة رقم <span class="badge bg-dark">#@invoiceToReturnSerial</span>   ؟ </p>
+                    <p class="text-secondary mb-0">بمجرد التأكيد، ستعود الكميات للمخزن وتتحول الفاتورة لحالة مرتجع.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary px-4" @onclick="() => confirmingReturn = false">إلغاء</button>
+                    <button type="button" class="btn btn-outline-danger px-4" @onclick="ExecuteReturn">تأكيد وإرجاع الكل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (isModalVisible && selectedInvoice != null)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                
+                <div class="modal-header @(selectedInvoice.Status == InvoiceStatus.completed ? "bg-success" : "bg-danger") text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-receipt"></i> تفاصيل فاتورة : @selectedInvoice.SerialNumber
+                    </h5>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row mb-3 text-end" dir="rtl">
+                        <div class="col-6">
+                            <strong>حالة الفاتورة:</strong>
+                            <span class="badge @(selectedInvoice.Status == InvoiceStatus.completed ? "bg-success" : "bg-danger")">
+                                @(selectedInvoice.Status == InvoiceStatus.completed ? "مكتملة ✅" : "مرتجعة 🔄")
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <strong> تاريخ التحديث : </strong> 
+                            <span class="text-secondary">@selectedInvoice.LastUpdate.ToString("dd/MM/yyyy")</span>
+                            <span class="mx-1 text-muted">|</span>
+                            <span class="fw-bold">@selectedInvoice.LastUpdate.ToString("hh:mm tt")</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" dir="rtl">
+                        <table class="table table-hover text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>المنتج</th>
+                                    <th>اللون/المقاس</th>
+                                    <th>السعر</th>
+                                    <th>الكمية</th>
+                                    <th>المتاح حالياً</th>
+                                    <th>الخصم</th>
+                                    <th>الإجمالي</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in selectedInvoice.Items)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@item.ProductName</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">@item.Color</span>
+                                            <span class="badge bg-secondary">@item.Size</span>
+                                        </td>
+                                        <td>@item.Price.ToString("N2")</td>
+                                        <td><span class="fw-bold">@item.Quantity</span></td>
+                                        <td>
+                                            <span class="@(item.AvailableQuantity < item.Quantity ? "text-danger fw-bold" : "text-muted")">
+                                                @item.AvailableQuantity
+                                                @if (item.AvailableQuantity < item.Quantity)
+                                                {
+                                                    <i class="bi bi-exclamation-triangle-fill small"></i>
+                                                }
+                                            </span>
+                                        </td>
+                                        <td class="text-danger">% @item.Discount.ToString("N2")</td>
+                                        <td class="table-primary fw-bold">
+                                        
+                                            @{
+                                                var subTotal = item.Quantity * item.Price;
+                                                var discountAmount = subTotal * (item.Discount / 100);
+                                                var finalItemTotal = subTotal - discountAmount;
+                                            }
+                                            @finalItemTotal.ToString("N2")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+             
+                    <div class="card bg-light border-0 mt-3" dir="rtl">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span> إجمالي الفاتورة : </span>
+                                <span>@selectedInvoice.TotalAmount.ToString("N2") ج.م</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-danger mb-2">
+                                <span>إجمالي الخصومات : </span>
+                                <span>- @((selectedInvoice.TotalAmount - selectedInvoice.TotalAmountWithDiscount).ToString("N2")) ج.م</span>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
+                                <span>الصافي النهائي : </span>
+                                <span>@selectedInvoice.TotalAmountWithDiscount.ToString("N2") ج.م</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button class="btn btn-secondary" @onclick="CloseModal">إغلاق</button>
+                    @if (selectedInvoice.Status == InvoiceStatus.completed)
+                    {
+                        <button class="btn btn-primary">
+                        <i class="bi bi-printer"></i> طباعة الفاتورة
+                    </button>
+                    }
+        
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div class="row g-3 align-items-center mb-4">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+            <div class="flex-grow-1">
+                &nbsp;@errorMessage
+            </div>
+        </div>
+    }
+        <div class="col-lg-4 d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
+                <i class="bi bi-receipt text-primary fs-4"></i>
+            </div>
+            <h3 class="fw-bold text-secondary mb-0">إدارة الفواتير</h3>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
+                <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button">
+               ابحث 
+                </button>
+                
+            <input @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" type="text"
+                       class="form-control border-0 bg-transparent text-end"
+                       placeholder="ابحث برقم الفاتورة أو اسم العميل..."
+                       style="box-shadow: none;" />
+                
+                <span class="input-group-text bg-transparent border-0 text-muted px-3">
+                    <i class="bi bi-search"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="col-lg-3 text-start">
+            <a href="/pos" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+                    style="height: 56px;">
+                <i class="bi bi-plus-circle fs-5"></i>
+                <span>فاتورة جديدة</span>
+            </a>
+        </div>
+    </div>
+    
+<div class="row g-3 mb-4 text-center">
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-primary border-4">
+                <small class="text-muted">إجمالي فواتير اليوم</small>
+                <h4 class="fw-bold mb-0">1,250.00 ج.م</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-success border-4">
+                <small class="text-muted">المدفوع</small>
+                <h4 class="fw-bold mb-0 text-success">1,000.00 ج.م</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 shadow-sm rounded-4 bg-white border-start border-warning border-4">
+                <small class="text-muted">قيد التنفيذ (Draft)</small>
+                <h4 class="fw-bold mb-0 text-warning">250.00 ج.م</h4>
+            </div>
+        </div>
+    </div>
+
+
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4" dir="rtl">
+    <div class="row g-3 align-items-end justify-content-center">
+        
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">📅 من تاريخ:</label>
+            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
+                   @bind="StartDate" style="text-align: right;" />
+        </div>
+        
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted mb-1">📅 إلى تاريخ:</label>
+            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
+                   @bind="EndDate" style="text-align: right;" />
+        </div>
+
+        <div class="col-md-6 d-flex justify-content-center mt-4 mt-md-0">
+            <div class="btn-group p-1 bg-white rounded-pill border shadow-sm">
+                <button @onclick='() => FilterByStatus(null)'
+                        class="btn rounded-pill px-4 @(status == null ? "btn-primary shadow-sm" : "btn-outline-secondary border-0")">
+                    الكل
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.pending ? "btn-warning shadow-sm text-dark" : "btn-outline-warning border-0")">
+                    المسودات
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.completed ? "btn-success shadow-sm" : "btn-outline-success border-0")">
+                    المدفوعة
+                </button>
+
+                <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
+                        class="btn rounded-pill px-4 @(status == InvoiceStatus.returned ? "btn-danger shadow-sm" : "btn-outline-danger border-0")">
+                    المرتجعة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light py-3">
+                    <tr>
+                        <th class="py-3">رقم الفاتورة</th>
+                        <th class="py-3">التاريخ</th>
+                        <th class="py-3">الإجمالي</th>
+                        <th class="py-3">الحالة</th>
+                        <th class="py-3">الإجراءات</th>
+                    </tr>
+                </thead>
+            <tbody>
+                @if (invoices != null)
+                {
+                    foreach (var invoice in invoices)
+                    {
+                        <tr>
+                            <td class="fw-bold text-primary">#@invoice.Serial</td>
+                
+                            <td>
+                                <span class="text-secondary">@invoice.LastUpdatedAt.ToString("dd/MM/yyyy")</span>
+                                <span class="mx-1 text-muted">|</span>
+                                <span class="fw-bold">@invoice.LastUpdatedAt.ToString("hh:mm tt")</span>
+                            </td>
+
+                            <td class="fw-bold">@invoice.TotalAmount ج.م</td>
+
+                            <td>
+                                @if (invoice.Status == InvoiceStatus.pending)
+                                {
+                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-pencil-square me-1"></i> مسودة
+                                    </span>
+                                }
+                                else if (invoice.Status == InvoiceStatus.completed)
+                                {
+                                    <span class="badge rounded-pill bg-success px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-check-circle me-1"></i> مدفوعة
+                                    </span>
+                                }
+                                else if (invoice.Status == InvoiceStatus.returned)
+                                {
+                                    <span class="badge rounded-pill bg-danger px-3 py-2" style="min-width: 100px;">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> مرتجع
+                                    </span>
+                                }
+                            </td>
+
+ 
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    @if (invoice.Status == InvoiceStatus.pending)
+                                    {
+                                        <a href="/pos/@invoice.Id.ToString()"
+                                               class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-pencil-square me-2"></i>
+                                            تكملة الفاتورة
+                                        </a>
+                                        <button @onclick="()=> Remove(invoice.Id)" class="btn btn-sm btn-outline-danger rounded-circle p-2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                    else if (invoice.Status == InvoiceStatus.completed)
+                                    {
+                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
+                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-eye-fill me-2"> </i> 
+                                              عرض  
+                                        </button>
+
+                                        <button @onclick="() => ReturnInvoice(invoice.Id, invoice.Serial)"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                            مرتجع
+                                        </button>
+                                    }
+                                    else if (invoice.Status == InvoiceStatus.returned)
+                                    {
+                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
+                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-eye-fill me-2"></i>
+                                            عرض
+                                        </button>
+                                        <a  href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" >
+                                            <i class="bi bi-pencil-square"></i> تعديل واستكمال
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            </table>
+        </div>
+    </div>
+
+@code
+{
+    private DateTime ? StartDate ; 
+    private DateTime ? EndDate ;  
+    private string? searchTerm;
+    private InvoiceStatus ? status;
+    private IEnumerable<InvoiceLockUpDTO>? invoices ;
+    private int invoiceToReturnId ;
+    private string invoiceToReturnSerial = string.Empty;    
+    private bool confirmingReturn = false;
+    private string? errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoicesAsync();
+    }
+    private async Task LoadInvoicesAsync()
+    {
+        var result = await invoiceService.GetInvoicesLookUpAsync(searchTerm , status , StartDate , EndDate);
+        invoices = result.Data!;
+    }    
+
+    public async Task FilterByStatus(InvoiceStatus ? status)
+    {
+        this.status = status;
+        await LoadInvoicesAsync() ; 
+    }
+    private async Task ApplySearch()
+    {
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            await LoadInvoicesAsync();
+        }
+    }
+
+    private async Task Remove (int id )
+    {
+        await   invoiceService.Remove(id);  
+        await LoadInvoicesAsync();
+    }
+    private InvoiceDTO? selectedInvoice;
+    private bool isModalVisible = false;
+
+    // دالة فتح الـ Modal وجلب البيانات
+    private async Task OpenDetailsModal(int id)
+    {
+        var result = await invoiceService.GetInvoiceById(id);
+        if (result.IsSuccess)
+        {
+            selectedInvoice = result.Data;
+            isModalVisible = true;        }
+        else
+        {
+            await ShowError(result.ErrorMessage!);
+        }
+    }
+
+    private void CloseModal()
+    {
+        isModalVisible = false;
+        selectedInvoice = null;
+    }
+
+    private void ReturnInvoice(int id, string serial)
+    {
+        invoiceToReturnId = id;
+        invoiceToReturnSerial = serial;
+        confirmingReturn = true;
+    }
+    private async Task ExecuteReturn()
+    {
+        confirmingReturn = false;
+        var result = await invoiceService.ReturnInvoice(invoiceToReturnId);
+        if (result.IsSuccess)
+        {
+            await LoadInvoicesAsync();
+        }
+        else
+        {
+            await ShowError(result.ErrorMessage!);
+        }
+    }   
+    private async Task ShowError(string ErrorMessage)
+    {
+        errorMessage = ErrorMessage;
+        await Task.Delay(3000);
+        errorMessage = null!;
+    }
+}

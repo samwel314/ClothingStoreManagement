@@ -5,9 +5,6 @@ using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Application.Services
 {

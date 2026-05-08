@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ClothingStoreManagement.Application.DTO
+﻿namespace ClothingStoreManagement.Application.DTO
 {
     public class CreateProductVariantDto
     {
-        public Guid ? Id { get; set; }
+        public Guid? Id { get; set; }
         public Guid? ProductId { get; set; }
         public int SizeId { get; set; }
         public int ColorId { get; set; }

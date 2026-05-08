@@ -1,8 +1,5 @@
 ﻿using ClothingStoreManagement.Application.DTO;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Application.Validation
 {

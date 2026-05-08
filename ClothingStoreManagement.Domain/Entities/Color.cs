@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-
-namespace ClothingStoreManagement.Domain.Entities
+﻿namespace ClothingStoreManagement.Domain.Entities
 {
     public class Color
     {

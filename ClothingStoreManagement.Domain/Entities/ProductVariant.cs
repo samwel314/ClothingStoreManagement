@@ -1,12 +1,10 @@
-﻿using System.Drawing;
-
-namespace ClothingStoreManagement.Domain.Entities
+﻿namespace ClothingStoreManagement.Domain.Entities
 {
     public class ProductVariant
     {
-        public ProductVariant(Guid parentId, string parentSKU, int sizeId, 
-            string sizeCode , int colorId , string colorCode , int stockQuantity , 
-            decimal sellingPrice ,decimal purchasePrice)
+        public ProductVariant(Guid parentId, string parentSKU, int sizeId,
+            string sizeCode, int colorId, string colorCode, int stockQuantity,
+            decimal sellingPrice, decimal purchasePrice)
         {
             Id = Guid.NewGuid();
             ValidateStockQuantity(stockQuantity);
@@ -22,7 +20,7 @@ namespace ClothingStoreManagement.Domain.Entities
         }
         private ProductVariant()
         {
-            
+
         }
         public Guid Id { get; private set; }
         public Guid ProductId { get; private set; } // الربط بالموديل الأب
@@ -35,6 +33,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public Product Product { get; private set; } = null!; // الربط بالموديل الأب 
         public Color Color { get; private set; } = null!;
         public Size Size { get; private set; } = null!;
+        public IEnumerable<StockMovement> Movements { get; private set; } = null!; 
         private void ValidateSellingPrice(decimal sellingPrice)
         {
             if (sellingPrice <= 0)
@@ -61,8 +60,8 @@ namespace ClothingStoreManagement.Domain.Entities
         }
         private void ValidateStockQuantity(int stockQuantity)
         {
-            if (stockQuantity < 0)
-                throw new ArgumentException("Stock quantity cannot be negative.");
+            if (stockQuantity < 1)
+                throw new ArgumentException("Stock quantity cannot be less than 1.");
         }
         public void UpdateStockQuantity(int newStockQuantity)
         {
@@ -74,6 +73,20 @@ namespace ClothingStoreManagement.Domain.Entities
             VariantSKU = $"{parentSKU}-{sizeCode}-{colorCode}";
             SizeId = sizeId;
             ColorId = colorId;
+        }
+        public bool CanWithdraw(int quantity)
+        {
+            ValidateStockQuantity(quantity);
+            return StockQuantity - quantity >= 0;
+        }
+        public void Withdraw(int quantity)
+        {
+            StockQuantity -= quantity;
+        }
+        // if we return a product we will add the quantity back to the stock
+        public void Deposit(int quantity)
+        {
+            StockQuantity += quantity;
         }
     }
 }

@@ -1,9 +1,5 @@
 ﻿
 using ClothingStoreManagement.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Data.Repository.implementation
 {
@@ -12,7 +8,7 @@ namespace ClothingStoreManagement.Data.Repository.implementation
         private readonly ApplicationDbContext _db;
         public CategoryRepository(ApplicationDbContext db) : base(db)
         {
-           _db = db;    
+            _db = db;
         }
     }
 }

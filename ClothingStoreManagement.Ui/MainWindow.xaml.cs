@@ -6,7 +6,6 @@ using ClothingStoreManagement.Data.Repository.implementation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 namespace ClothingStoreManagement.Ui
 {
@@ -19,7 +18,7 @@ namespace ClothingStoreManagement.Ui
         {
             InitializeComponent();
             WindowState = WindowState.Maximized;
-         //  Icon = new BitmapImage(new Uri("Assets/app.ico", UriKind.Relative));
+            //  Icon = new BitmapImage(new Uri("Assets/app.ico", UriKind.Relative));
             Title = $"🧥 Clothing Store System | Developed by Eng. Samuel Marzouk © {DateTime.Now.Year}"; var serviceCollection = new ServiceCollection();
             serviceCollection.AddWpfBlazorWebView();
             var dbPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app.db");
@@ -32,11 +31,12 @@ namespace ClothingStoreManagement.Ui
             {
                 cfg.AddProfile<MappingProfile>();
             });
-            serviceCollection.AddScoped<IUnitOfWork , UnitOfWork>();
-            serviceCollection.AddScoped<ColorService , ColorService>(); 
-            serviceCollection.AddScoped<SizeService , SizeService>();
-            serviceCollection.AddScoped<CategoryService , CategoryService>();
-            serviceCollection.AddScoped<ProductService , ProductService>(); 
+            serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+            serviceCollection.AddScoped<ColorService, ColorService>();
+            serviceCollection.AddScoped<SizeService, SizeService>();
+            serviceCollection.AddScoped<CategoryService, CategoryService>();
+            serviceCollection.AddScoped<ProductService, ProductService>();
+            serviceCollection.AddScoped<InvoiceService, InvoiceService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

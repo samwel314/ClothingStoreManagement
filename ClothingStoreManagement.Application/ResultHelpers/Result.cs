@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ClothingStoreManagement.Application.ResultHelpers
+﻿namespace ClothingStoreManagement.Application.ResultHelpers
 {
     public class Result<T>
     {
@@ -26,7 +22,7 @@ namespace ClothingStoreManagement.Application.ResultHelpers
     {
         Success,
         notFound,
-        conflict, 
+        conflict,
         validation
     }
 }

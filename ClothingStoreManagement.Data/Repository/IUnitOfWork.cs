@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ClothingStoreManagement.Data.Repository
+﻿namespace ClothingStoreManagement.Data.Repository
 {
-    public interface IUnitOfWork 
-    { 
+    public interface IUnitOfWork
+    {
         IColorRepository Colors { get; }
         ISizeRepository Sizes { get; }
-        IProductRepository Products {  get; }
+        IProductRepository Products { get; }
         ICategoryRepository Categories { get; }
-        IProductProductVariantRepository ProductVariants { get; }  
+        IProductProductVariantRepository ProductVariants { get; }
+        IInvoiceRepository Invoices { get; }
+        IStockMovementRepository Movements { get; } 
         Task Save();
     }
-    
+
 }

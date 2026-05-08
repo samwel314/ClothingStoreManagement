@@ -1,0 +1,259 @@
+﻿@using ClothingStoreManagement.Application.DTO
+@inject IJSRuntime JSRuntime
+
+<script>
+    window.printInvoice = () => {
+        window.print();
+    };
+</script>
+
+@if (InvoiceModel != null)
+{
+    <div class="print-container">
+
+ 
+        <button class="btn btn-success no-print w-100 mb-2" @onclick="HandlePrint">
+            طباعة الفاتورة 🖨️
+        </button>
+
+        <div class="ticket">
+
+            <div class="header">
+                <h2 class="store-name">🛒 متجر الملابس</h2>
+
+                <div class="store-info">
+                    <p>📍 العنوان: أسيوط - شارع الجمهورية</p>
+                    <p>📞 تليفون المحل: 01000000000</p>
+           
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="invoice-meta">
+                    <p>رقم: @InvoiceModel.SerialNumber</p>
+                    <p>التاريخ: @InvoiceModel.LastUpdate.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>الصنف</th>
+                        <th class="text-center">كمية</th>
+                        <th class="text-end">إجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in InvoiceModel.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="item-name">@item.ProductName</div>
+                                <div class="item-details">@item.Size | @item.Color</div>
+
+                                @if (item.Discount > 0)
+                                {
+                                    <div class="item-discount">خصم @(item.Discount)%</div>
+                                }
+                            </td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-end">@item.Total.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <div class="summary">
+                <div class="summary-row">
+                    <span>الإجمالي:</span>
+                    <span>@InvoiceModel.TotalAmount.ToString("N2")</span>
+                </div>
+
+                @if (InvoiceModel.TotalAmount > InvoiceModel.TotalAmountWithDiscount)
+                {
+                    <div class="summary-row discount">
+                        <span>إجمالي الخصومات:</span>
+                        <span>-@((InvoiceModel.TotalAmount - InvoiceModel.TotalAmountWithDiscount).ToString("N2"))</span>
+                    </div>
+                }
+
+                <div class="summary-row grand-total">
+                    <span>الصافي النهائي:</span>
+                    <span>@InvoiceModel.TotalAmountWithDiscount.ToString("N2")</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="footer">
+                <p>شكراً لزيارتكم ❤️</p>
+                <p>الاسترجاع خلال 14 يوم</p>
+                <p class="brand-mini">Smart POS | Eng. Samuel Marzouk - 01005415303</p>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public InvoiceDTO InvoiceModel { get; set; }
+
+    private async Task HandlePrint()
+    {
+        await JSRuntime.InvokeVoidAsync("printInvoice");
+    }
+}
+
+<style>
+    body {
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .brand-mini {
+        font-size: 8px;
+        color: #777;
+        margin-top: 2mm;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        text-align: center;
+    }
+
+    .ticket {
+        width: 72mm;
+        background: white;
+        padding: 2mm;
+        margin: 0 auto;
+        direction: rtl;
+        color: black;
+        line-height: 1.3;
+    }
+
+    .header {
+        text-align: center;
+    }
+
+    .store-name {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .store-info {
+        font-size: 9px;
+        margin-top: 1mm;
+    }
+
+        .store-info p {
+            margin: 0;
+        }
+
+    .invoice-meta {
+        font-size: 10px;
+    }
+
+        .invoice-meta p {
+            margin: 0;
+        }
+
+    .divider {
+        border-top: 1px dashed #000;
+        margin: 2mm 0;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
+
+        .items-table th {
+            border-bottom: 1px solid #000;
+            padding: 1mm 0;
+            text-align: right;
+        }
+
+        .items-table td {
+            padding: 0.5mm 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+    .item-name {
+        font-weight: bold;
+    }
+
+    .item-details {
+        font-size: 9px;
+        color: #555;
+    }
+
+    .item-discount {
+        font-size: 9px;
+        color: red;
+    }
+
+    .summary {
+        font-size: 11px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .discount {
+        color: red;
+    }
+
+    .grand-total {
+        font-weight: bold;
+        font-size: 13px;
+        border-top: 1px solid #000;
+        margin-top: 1mm;
+        padding-top: 1mm;
+    }
+
+    .footer {
+        text-align: center;
+        font-size: 9px;
+        margin-top: 3mm;
+    }
+
+    .contact {
+        font-weight: bold;
+    }
+
+    /* 🔥 PRINT FIX */
+    @@media print {
+        @@page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        html, body {
+            width: 80mm;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+            body * {
+                visibility: hidden;
+            }
+
+        .ticket, .ticket * {
+            visibility: visible;
+        }
+
+        .ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>

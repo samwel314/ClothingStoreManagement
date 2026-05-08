@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Application.Mapping
 {
@@ -15,7 +12,6 @@ namespace ClothingStoreManagement.Application.Mapping
             CreateMap<Size, SizeListDTO>();
             CreateMap<Category, CategoryDTO>();
             CreateMap<Category, CategoryListDTO>();
-
         }
     }
 }

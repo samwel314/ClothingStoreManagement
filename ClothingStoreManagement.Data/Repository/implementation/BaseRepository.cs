@@ -1,9 +1,5 @@
-﻿using ClothingStoreManagement.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace ClothingStoreManagement.Data.Repository.implementation
 {
@@ -14,7 +10,7 @@ namespace ClothingStoreManagement.Data.Repository.implementation
         public BaseRepository(ApplicationDbContext db)
         {
             _db = db;
-            _dbSet = _db.Set<T>();  
+            _dbSet = _db.Set<T>();
         }
         public async Task CreateAsync(T model)
         {
@@ -25,27 +21,27 @@ namespace ClothingStoreManagement.Data.Repository.implementation
             return _dbSet.AnyAsync(predicate);
         }
 
-        public IQueryable<T> GetAll(bool track  = false)
+        public IQueryable<T> GetAll(bool track = false)
         {
             if (track)
-                return _dbSet; 
+                return _dbSet;
             return _dbSet.AsNoTracking();
         }
         public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, bool track = false)
         {
             if (track)
-                 return await _dbSet.FirstOrDefaultAsync(predicate);
+                return await _dbSet.FirstOrDefaultAsync(predicate);
 
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
         public void Delete(T model)
         {
-            _db.Remove(model); 
+            _dbSet.Remove(model);
         }
-        public void Delete(IEnumerable <T> models)
+        public void Delete(IEnumerable<T> models)
         {
-            _db.RemoveRange(models);
+            _dbSet.RemoveRange(models);
         }
     }
 }

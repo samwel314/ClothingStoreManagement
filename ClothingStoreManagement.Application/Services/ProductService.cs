@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Application.ResultHelpers;
-using ClothingStoreManagement.Application.Validation;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClothingStoreManagement.Application.Services
 {
@@ -60,6 +54,14 @@ namespace ClothingStoreManagement.Application.Services
                     variantDto.StockQuantity,
                     variantDto.SellingPrice,
                     variantDto.PurchasePrice);
+              await  _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = variant,   
+                    QuantityChange = variant.StockQuantity,
+                    StockAfter = variant.StockQuantity, 
+                    Type = MovementType.Restock,
+                    CreatedAt = DateTime.UtcNow
+                });
                 Product.AddVariant(variant);
             }
 
@@ -149,15 +151,45 @@ namespace ClothingStoreManagement.Application.Services
                         Color = v.Color.Code,
                         ColorId = v.Color.Id,
                         Size = v.Size.Code,
-                        SizeId = v.Size.Id, 
+                        SizeId = v.Size.Id,
                         Purchase = v.PurchasePrice,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
                         Sku = v.VariantSKU
-                    })
+                    }) , 
+                    TotalSalesCount = _db.Invoices.GetAll().
+                    Where(i => i.Status == InvoiceStatus.completed)
+                    .SelectMany(i => i.Items).
+                    Where(ii => ii.ProductVariant.ProductId == p.Id).Count(),   
+                    TotalSalesAmount = _db.Invoices.GetAll()
+    .Where(i => i.Status == InvoiceStatus.completed)
+    .SelectMany(i => i.Items)
+    .Where(ii => ii.ProductVariant.ProductId == p.Id)
+    .Sum(ii => ii.Quantity * ii.SellingPrice) ,
+                    NetProfit = _db.Invoices.GetAll()
+    .Where(i => i.Status == InvoiceStatus.completed)
+    .SelectMany(i => i.Items)
+    .Where(ii => ii.ProductVariant.ProductId == p.Id)
+    .Sum(ii => (ii.SellingPrice - ii.PurchasePrice) * ii.Quantity) 
                 }).FirstOrDefaultAsync((p) => p.Id == Id);
             if (product == null)
                 return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
+
+              product.TopVariant = await  
+                _db.Invoices.GetAll().Where(i => i.Status == InvoiceStatus.completed)
+                .SelectMany(i => i.Items)!
+                .Where(ii => ii.ProductVariant.ProductId == product.Id).
+                GroupBy(ii => ii.ProductVariantId)!
+                .Select(g => new TopVariantDTO
+                {
+                    Total = g.Sum(x => x.Quantity * (x.SellingPrice - x.PurchasePrice)),
+                    Id = g.Key , 
+                    Size = g.First().ProductVariant.Size.Code,
+                    Code = g.First().ProductVariant.Color.Code
+
+                }).OrderByDescending(x => x.Total).FirstOrDefaultAsync()!;
+
+            
             return Result<ProductListDto>.Success(product);
         }
 
@@ -239,15 +271,23 @@ namespace ClothingStoreManagement.Application.Services
             if (size == null)
                 return Result<string>.Failure("هذا المقاس  غير موجود", ErrorType.notFound);
 
-            var isVariantExist =  await _db.ProductVariants.ExistsAsync( pv => product.Id == pv.ProductId && pv.ColorId  == dto.ColorId && pv.SizeId == dto.SizeId);
+            var isVariantExist = await _db.ProductVariants.ExistsAsync(pv => product.Id == pv.ProductId && pv.ColorId == dto.ColorId && pv.SizeId == dto.SizeId);
             if (isVariantExist)
                 return Result<string>.Failure("هذا التنوع موجود بالفعل ", ErrorType.conflict);
             var variant = new ProductVariant
-                (product.Id , product.SKU , dto.SizeId , 
-                size.Code, dto.ColorId, color.Code, dto.StockQuantity , dto.SellingPrice , dto.PurchasePrice); 
+                (product.Id, product.SKU, dto.SizeId,
+                size.Code, dto.ColorId, color.Code, dto.StockQuantity, dto.SellingPrice, dto.PurchasePrice);
 
-            await  _db.ProductVariants.CreateAsync(variant);  
-            product.UpdateChanges();    
+            await _db.ProductVariants.CreateAsync(variant);
+            await _db.Movements.CreateAsync(new StockMovement
+            {
+                ProductVariant = variant,
+                QuantityChange = variant.StockQuantity,
+                StockAfter = variant.StockQuantity,
+                Type = MovementType.Restock,
+                CreatedAt = DateTime.UtcNow , 
+            });
+            product.UpdateChanges();
             await _db.Save();
             return Result<string>.Success("تم إضافة التنوع بنجاح ");
         }
@@ -274,7 +314,17 @@ namespace ClothingStoreManagement.Application.Services
             }
             if (variant.StockQuantity != dto.StockQuantity)
             {
+                var temp = dto.StockQuantity - variant.StockQuantity;
                 variant.UpdateStockQuantity(dto.StockQuantity);
+                await _db.Movements.CreateAsync(new StockMovement
+                {
+                    ProductVariant = variant,
+                    QuantityChange = temp,
+                    StockAfter = variant.StockQuantity,
+                    Type = MovementType.ManualEdit,
+                    CreatedAt = DateTime.UtcNow
+                });
+
                 isChanged = true;
             }
 
@@ -299,7 +349,7 @@ namespace ClothingStoreManagement.Application.Services
 
             if (isChanged)
             {
-                product.UpdateChanges(); 
+                product.UpdateChanges();
                 await _db.Save();
             }
 
@@ -311,10 +361,30 @@ namespace ClothingStoreManagement.Application.Services
             var variant = await _db.ProductVariants.FirstOrDefaultAsync((p) => p.Id == Id);
             if (variant == null)
                 return Result<string>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
-            _db.ProductVariants.Delete(variant);    
+            _db.ProductVariants.Delete(variant);
             await _db.Save();
             return Result<string>.Success();
         }
+
+        public async Task<Result< IEnumerable <VariantMovementsDTO>>> VariantMovementsAsync(Guid Id)
+        {
+            var variant = await _db.ProductVariants.FirstOrDefaultAsync((p) => p.Id == Id);
+            if (variant == null)
+                return Result<IEnumerable<VariantMovementsDTO>>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
+            var movements = await _db.Movements.GetAll().Where(m => m.ProductVariantId == Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new VariantMovementsDTO
+                {
+                    Id = m.Id,
+                    QuantityChange = m.QuantityChange,
+                    StockAfter = m.StockAfter,
+                    Type = m.Type,
+                    ReferenceId = m.ReferenceId,
+                    CreatedAt = m.CreatedAt,
+                    CreatedBy = m.CreatedBy
+                }).ToListAsync();
+            return Result<IEnumerable<VariantMovementsDTO>>.Success(movements);
+        }
     }
 
-    }
+}

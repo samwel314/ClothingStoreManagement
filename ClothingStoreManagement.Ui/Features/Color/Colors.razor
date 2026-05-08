@@ -105,7 +105,7 @@
                                 <InputText @bind-Value="colorModel.Code" class="form-control form-control-lg bg-light border-0" placeholder="#FF0000" />
                                 <input type="color" class="form-control form-control-color border-0 p-1 bg-light"
                                        style="width: 60px; height: 48px;"
-                                       @onchange="(e) => colorModel.Code = e.Value.ToString()"
+                                       @onchange="(e) => colorModel.Code = e!.Value.ToString()!"
                                        value="@colorModel.Code" />
                             </div>
                             <ValidationMessage For="@(() => colorModel.Code)" class="text-danger small mt-1" />
