@@ -1,101 +1,231 @@
 @page "/"
 
-<div class="container-fluid" dir="rtl">
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-        <h2 class="fw-bold text-dark">نظرة عامة على المتجر</h2>
-        <span class="badge bg-primary p-2">اليوم: @DateTime.Now.ToString("dd/MM/yyyy")</span>
+<div class="container-fluid py-4 bg-light min-vh-100" dir="rtl">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">مرحباً 👋</h2>
+            <p class="text-muted mb-0 small">نظرة سريعة على أداء النظام اليوم</p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-dark rounded-4 px-4 shadow-sm">
+                <i class="bi bi-receipt-cutoff ms-1"></i>
+                فاتورة جديدة
+            </button>
+
+            <button class="btn btn-primary rounded-4 px-4 shadow-sm">
+                <i class="bi bi-plus-circle ms-1"></i>
+                إضافة منتج
+            </button>
+        </div>
     </div>
 
+    <!-- Statistics -->
     <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-primary text-white py-3">
-                <div class="card-body text-center">
-                    <h6 class="card-title opacity-75">إجمالي مبيعات اليوم</h6>
-                    <h2 class="display-6 fw-bold mb-0">1,550 ج.م</h2>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <small class="text-muted">مبيعات اليوم</small>
+                            <h3 class="fw-bold mt-2 mb-0">12,450 ج.م</h3>
+                        </div>
+
+                        <div class="bg-success bg-opacity-10 text-success rounded-4 p-3">
+                            <i class="bi bi-cash-stack fs-4"></i>
+                        </div>
+                    </div>
+
+                    <small class="text-success fw-semibold">
+                        <i class="bi bi-arrow-up"></i>
+                        +18% مقارنة بالأمس
+                    </small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-success text-white py-3">
-                <div class="card-body text-center">
-                    <h6 class="card-title opacity-75">عدد الفواتير</h6>
-                    <h2 class="display-6 fw-bold mb-0">12</h2>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <small class="text-muted">عدد الفواتير</small>
+                            <h3 class="fw-bold mt-2 mb-0">84</h3>
+                        </div>
+
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-4 p-3">
+                            <i class="bi bi-receipt fs-4"></i>
+                        </div>
+                    </div>
+
+                    <small class="text-muted">اليوم الحالي</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-warning text-dark py-3">
-                <div class="card-body text-center">
-                    <h6 class="card-title opacity-75">الأصناف المتوفرة</h6>
-                    <h2 class="display-6 fw-bold mb-0">342</h2>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <small class="text-muted">المنتجات</small>
+                            <h3 class="fw-bold mt-2 mb-0">1,245</h3>
+                        </div>
+
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-4 p-3">
+                            <i class="bi bi-box-seam fs-4"></i>
+                        </div>
+                    </div>
+
+                    <small class="text-muted">إجمالي المنتجات</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-danger text-white py-3">
-                <div class="card-body text-center">
-                    <h6 class="card-title opacity-75">نواقص المخزن</h6>
-                    <h2 class="display-6 fw-bold mb-0">8</h2>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <small class="text-muted">العملاء</small>
+                            <h3 class="fw-bold mt-2 mb-0">325</h3>
+                        </div>
+
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-4 p-3">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                    </div>
+
+                    <small class="text-muted">عملاء مسجلين</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold">آخر عمليات البيع</h5>
-                    <button class="btn btn-sm btn-outline-primary">عرض الكل</button>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="px-4">رقم الفاتورة</th>
-                                    <th>الوقت</th>
-                                    <th>عدد القطع</th>
-                                    <th>الإجمالي</th>
-                                    <th class="text-center">الحالة</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="px-4 fw-bold">#5501</td>
-                                    <td>02:30 م</td>
-                                    <td>3 قطع</td>
-                                    <td class="fw-bold">1,200 ج.م</td>
-                                    <td class="text-center"><span class="badge rounded-pill bg-success-subtle text-success border border-success px-3">مكتملة</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="px-4 fw-bold">#5502</td>
-                                    <td>03:15 م</td>
-                                    <td>1 قطعة</td>
-                                    <td class="fw-bold">450 ج.م</td>
-                                    <td class="text-center"><span class="badge rounded-pill bg-success-subtle text-success border border-success px-3">مكتملة</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+    <!-- Charts + Alerts -->
+    <div class="row g-4">
+
+        <!-- Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-1">إحصائيات المبيعات 📈</h5>
+                            <small class="text-muted">آخر 7 أيام</small>
+                        </div>
+
+                        <button class="btn btn-light border rounded-3 px-3">
+                            <i class="bi bi-download"></i>
+                        </button>
                     </div>
+
+                    <div style="height:300px">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-dark text-white p-2">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-4 border-bottom pb-2">سجل النشاط</h5>
-                    <div class="mb-3 small">
-                        <p class="mb-1 fw-bold text-info">تنبيه مخزني</p>
-                        <p class="mb-0 opacity-75">"بنطلون جينز ليكرا" وصل للحد الأدنى.</p>
+        <!-- Right Side -->
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-4">التنبيهات 🔔</h5>
+
+                    <div class="vstack gap-3">
+
+                        <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25">
+                            <div class="d-flex align-items-start">
+                                <div class="text-danger ms-3">
+                                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                                </div>
+
+                                <div>
+                                    <h6 class="fw-bold mb-1">مخزون منخفض</h6>
+                                    <small class="text-muted">
+                                        تيشيرت أسود — متبقي قطعتين فقط
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                            <div class="d-flex align-items-start">
+                                <div class="text-warning ms-3">
+                                    <i class="bi bi-clock-history fs-5"></i>
+                                </div>
+
+                                <div>
+                                    <h6 class="fw-bold mb-1">فاتورة معلقة</h6>
+                                    <small class="text-muted">
+                                        يوجد 5 فواتير لم يتم تأكيدها
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="mb-3 small border-top pt-2">
-                        <p class="mb-1 fw-bold text-success">عملية بيع</p>
-                        <p class="mb-0 opacity-75">تم إصدار فاتورة جديدة بمبلغ 1,200 ج.م</p>
-                    </div>
+
                 </div>
             </div>
+
+            <!-- Top Products -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-4">الأكثر مبيعاً 🔥</h5>
+
+                    <div class="vstack gap-3">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:45px;height:45px;">
+                                    <i class="bi bi-bag"></i>
+                                </div>
+
+                                <div class="me-3">
+                                    <h6 class="mb-0 fw-bold">حذاء رياضي</h6>
+                                    <small class="text-muted">120 عملية بيع</small>
+                                </div>
+                            </div>
+
+                            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                                +12%
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:45px;height:45px;">
+                                    <i class="bi bi-phone"></i>
+                                </div>
+
+                                <div class="me-3">
+                                    <h6 class="mb-0 fw-bold">سماعات بلوتوث</h6>
+                                    <small class="text-muted">85 عملية بيع</small>
+                                </div>
+                            </div>
+
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                                +8%
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
