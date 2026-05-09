@@ -1,8 +1,8 @@
 @page "/"
-
+@inject InvoiceService InvoiceService   
+@inject IJSRuntime JS
 <div class="container-fluid py-4 bg-light min-vh-100" dir="rtl">
 
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
             <h2 class="fw-bold mb-1 text-dark">مرحباً 👋</h2>
@@ -21,27 +21,27 @@
             </button>
         </div>
     </div>
-
-    <!-- Statistics -->
-    <div class="row g-4 mb-4">
-
+    <div class="row g-4 mb-4 justify-content-center">
         <div class="col-xl-3 col-md-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <small class="text-muted">مبيعات اليوم</small>
-                            <h3 class="fw-bold mt-2 mb-0">12,450 ج.م</h3>
+                            <h3 class="fw-bold mt-2 mb-0">@HomeData.TotalDayRevenue.ToString("N0") ج.م</h3>
                         </div>
-
                         <div class="bg-success bg-opacity-10 text-success rounded-4 p-3">
                             <i class="bi bi-cash-stack fs-4"></i>
                         </div>
                     </div>
-
-                    <small class="text-success fw-semibold">
-                        <i class="bi bi-arrow-up"></i>
-                        +18% مقارنة بالأمس
+                    @{
+                        var change = HomeData.CalculatePercentageChange();
+                        var colorClass = change >= 0 ? "text-success" : "text-danger";
+                        var iconClass = change >= 0 ? "bi-arrow-up" : "bi-arrow-down";
+                    }
+                    <small class="@colorClass fw-semibold">
+                        <i class="bi @iconClass"></i>
+                        @(change > 0 ? "+" : "")@change% مقارنة بالأمس
                     </small>
                 </div>
             </div>
@@ -53,14 +53,12 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <small class="text-muted">عدد الفواتير</small>
-                            <h3 class="fw-bold mt-2 mb-0">84</h3>
+                            <h3 class="fw-bold mt-2 mb-0">@HomeData.TotalDayInvoices</h3>
                         </div>
-
                         <div class="bg-primary bg-opacity-10 text-primary rounded-4 p-3">
                             <i class="bi bi-receipt fs-4"></i>
                         </div>
                     </div>
-
                     <small class="text-muted">اليوم الحالي</small>
                 </div>
             </div>
@@ -71,44 +69,23 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <small class="text-muted">المنتجات</small>
-                            <h3 class="fw-bold mt-2 mb-0">1,245</h3>
+                            <small class="text-muted">القطع</small>
+                            <h3 class="fw-bold mt-2 mb-0">@HomeData.TotalProducts.ToString("N0")</h3>
                         </div>
-
                         <div class="bg-warning bg-opacity-10 text-warning rounded-4 p-3">
                             <i class="bi bi-box-seam fs-4"></i>
                         </div>
                     </div>
-
-                    <small class="text-muted">إجمالي المنتجات</small>
+                    <small class="text-muted">إجمالي القطع </small>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <small class="text-muted">العملاء</small>
-                            <h3 class="fw-bold mt-2 mb-0">325</h3>
-                        </div>
-
-                        <div class="bg-danger bg-opacity-10 text-danger rounded-4 p-3">
-                            <i class="bi bi-people fs-4"></i>
-                        </div>
-                    </div>
-
-                    <small class="text-muted">عملاء مسجلين</small>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Charts + Alerts -->
     <div class="row g-4">
 
-        <!-- Chart -->
+
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
@@ -118,10 +95,8 @@
                             <h5 class="fw-bold mb-1">إحصائيات المبيعات 📈</h5>
                             <small class="text-muted">آخر 7 أيام</small>
                         </div>
-
-                        <button class="btn btn-light border rounded-3 px-3">
-                            <i class="bi bi-download"></i>
-                        </button>
+                       
+            
                     </div>
 
                     <div style="height:300px">
@@ -132,50 +107,9 @@
             </div>
         </div>
 
-        <!-- Right Side -->
+
         <div class="col-lg-4">
 
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-body p-4">
-
-                    <h5 class="fw-bold mb-4">التنبيهات 🔔</h5>
-
-                    <div class="vstack gap-3">
-
-                        <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25">
-                            <div class="d-flex align-items-start">
-                                <div class="text-danger ms-3">
-                                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                                </div>
-
-                                <div>
-                                    <h6 class="fw-bold mb-1">مخزون منخفض</h6>
-                                    <small class="text-muted">
-                                        تيشيرت أسود — متبقي قطعتين فقط
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25">
-                            <div class="d-flex align-items-start">
-                                <div class="text-warning ms-3">
-                                    <i class="bi bi-clock-history fs-5"></i>
-                                </div>
-
-                                <div>
-                                    <h6 class="fw-bold mb-1">فاتورة معلقة</h6>
-                                    <small class="text-muted">
-                                        يوجد 5 فواتير لم يتم تأكيدها
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
 
             <!-- Top Products -->
             <div class="card border-0 shadow-sm rounded-4">
@@ -183,49 +117,78 @@
 
                     <h5 class="fw-bold mb-4">الأكثر مبيعاً 🔥</h5>
 
-                    <div class="vstack gap-3">
+                    <div class="vstack gap-4">
+                        @if (HomeData.TopProductDTOs != null && HomeData.TopProductDTOs.Any())
+                        {
+                            @foreach (var item in HomeData.TopProductDTOs)
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-3 shadow-sm d-flex align-items-center justify-content-center border"
+                                             style="width:45px;height:45px; background-color: @item.ColorHex;">
+                                            <i class="bi bi-palette shadow-sm" style="color: rgba(255,255,255,0.8)"></i>
+                                        </div>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-dark text-white rounded-3 d-flex align-items-center justify-content-center"
-                                     style="width:45px;height:45px;">
-                                    <i class="bi bi-bag"></i>
-                                </div>
+                                        <div class="me-3">
+                                            <a href="/product-details/@item.Id" class="text-decoration-none">
+                                                <h6 class="mb-0 fw-bold text-dark hover-primary">
+                                                    @item.ProductName
+                                                    <span class="badge bg-light text-dark border ms-1 fw-normal">
+                                                        @item.SizeName
+                                                    </span>
+                                                </h6>
+                                            </a>
+                                            <small class="text-muted">@item.TotalQuantity قطعة مباعة</small>
+                                        </div>
+                                    </div>
 
-                                <div class="me-3">
-                                    <h6 class="mb-0 fw-bold">حذاء رياضي</h6>
-                                    <small class="text-muted">120 عملية بيع</small>
+                                    <span class="text-muted small">
+                                        @item.InvoicesCount فاتورة
+                                    </span>
                                 </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="bi bi-graph-up-arrow fs-1 text-light"></i>
+                                <p class="text-muted mt-2">لا توجد مبيعات مسجلة حتى الآن</p>
                             </div>
-
-                            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
-                                +12%
-                            </span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center"
-                                     style="width:45px;height:45px;">
-                                    <i class="bi bi-phone"></i>
-                                </div>
-
-                                <div class="me-3">
-                                    <h6 class="mb-0 fw-bold">سماعات بلوتوث</h6>
-                                    <small class="text-muted">85 عملية بيع</small>
-                                </div>
-                            </div>
-
-                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
-                                +8%
-                            </span>
-                        </div>
-
+                        }
                     </div>
 
                 </div>
             </div>
-
+  
         </div>
     </div>
 </div>
+<style>
+    /* لمسة بسيطة عشان المستخدم يعرف إن الاسم قابل للضغط */
+    .hover-primary:hover {
+        color: #0d6efd !important;
+        text-decoration: underline !important;
+    }
+</style>
+@code 
+{
+    private HomeDTO HomeData = new () ; 
+    protected override async Task OnInitializedAsync()
+    {
+        HomeData = await InvoiceService.LoadHomePageDataAsync() ; 
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var salesData = await InvoiceService.GetLast7DaysSalesAsync();
+            
+            var labels = salesData.Select(x => x.Date).ToArray();
+            var amounts = salesData.Select(x => x.TotalAmount).ToArray();
+
+            // استدعاء JavaScript لرسم الشارت بالبيانات الحقيقية
+            await JS.InvokeVoidAsync("renderSalesChart", labels, amounts);
+        }
+    }
+
+}

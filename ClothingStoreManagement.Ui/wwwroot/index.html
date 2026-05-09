@@ -20,13 +20,50 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webview.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/bootstrap.js"></script>
     <script>
         // هذه الدالة هي التي يتم استدعاؤها من كود الـ C#
         window.printInvoice = () => {
             window.print();
         };
-    </script>
+
+        window.renderSalesChart = (labels, data) => {
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) return; // تأكيد إن الكانفاس موجود
+
+            // لو فيه شارت قديم امسحه عشان ميعملش تداخل (Overlapping)
+            let chartStatus = Chart.getChart("salesChart");
+            if (chartStatus != undefined) {
+                chartStatus.destroy();
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'إجمالي المبيعات',
+                        data: data,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#0d6efd',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, border: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        };    </script>
 </body>
 
 </html>

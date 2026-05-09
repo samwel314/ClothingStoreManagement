@@ -67,6 +67,7 @@ namespace ClothingStoreManagement.Application.Services
 
             await _db.Products.CreateAsync(Product);
             await _db.Save();
+            _db.Clear();
             return Result<string>.Success("تم إضافة المنتج بنجاح ");
         }
 
@@ -223,6 +224,7 @@ namespace ClothingStoreManagement.Application.Services
             if (nameChanged)
                 product.UpdateName(dto.Name);
             await _db.Save();
+            _db.Clear();
             return Result<string>.Success();
         }
         public async Task<Result<string>> UpdateProductSkuAsync(UpdateProductSkuDto dto)
@@ -250,6 +252,7 @@ namespace ClothingStoreManagement.Application.Services
             }
 
             await _db.Save();
+            _db.Clear();
             return Result<string>.Success();
         }
 
@@ -289,6 +292,7 @@ namespace ClothingStoreManagement.Application.Services
             });
             product.UpdateChanges();
             await _db.Save();
+            _db.Clear();
             return Result<string>.Success("تم إضافة التنوع بنجاح ");
         }
 
@@ -352,7 +356,7 @@ namespace ClothingStoreManagement.Application.Services
                 product.UpdateChanges();
                 await _db.Save();
             }
-
+            _db.Clear();
             return Result<string>.Success("تم تحديث التنوع بنجاح");
         }
         public async Task<Result<string>> DeleteVariant(Guid Id)
@@ -363,6 +367,7 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<string>.Failure("هذا التنوع غير موجود", ErrorType.notFound);
             _db.ProductVariants.Delete(variant);
             await _db.Save();
+            _db.Clear();
             return Result<string>.Success();
         }
 

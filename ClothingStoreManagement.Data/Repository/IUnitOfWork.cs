@@ -10,6 +10,7 @@
         IInvoiceRepository Invoices { get; }
         IStockMovementRepository Movements { get; } 
         Task Save();
+        void Clear(); //
     }
 
 }

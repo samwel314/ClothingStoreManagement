@@ -5,7 +5,6 @@ namespace ClothingStoreManagement.Data.Repository
 {
     public interface IInvoiceRepository : IBaseRepository<Invoice>
     {
-        void Detach(Invoice model); 
       
     }
 }

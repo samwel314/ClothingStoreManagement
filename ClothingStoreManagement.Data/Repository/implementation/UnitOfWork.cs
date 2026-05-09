@@ -29,5 +29,9 @@
         {
             await _db.SaveChangesAsync();
         }
+        public void Clear()
+        {
+            _db.ChangeTracker.Clear();
+        }   
     }
 }

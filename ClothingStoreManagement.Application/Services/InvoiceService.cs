@@ -5,6 +5,8 @@ using ClothingStoreManagement.Application.ResultHelpers;
 using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 namespace ClothingStoreManagement.Application.Services
 {
     public class InvoiceService
@@ -21,7 +23,7 @@ namespace ClothingStoreManagement.Application.Services
             var invoice = new Invoice();
             await _db.Invoices.CreateAsync(invoice);
             await _db.Save();
-            _db.Invoices.Detach(invoice);
+            _db.Clear();
             return Result<InvoiceDTO>.Success(new InvoiceDTO
             {
                 Id = invoice.Id,
@@ -67,7 +69,7 @@ namespace ClothingStoreManagement.Application.Services
                     return Result<string>.Failure($" هذا الصنف غير موجود ({item.ProductName})  ", ErrorType.notFound);
                 if (!variant.CanWithdraw(item.Quantity))
                     return Result<string>.Failure($"  الكيمة المطلوبة غير متوفرة     ({item.ProductName})  ", ErrorType.notFound);
-                newItems.Add(new InvoiceItem( item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
+                newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
                 {
                     ProductVariant = variant,
                     Invoice = invoice
@@ -77,6 +79,8 @@ namespace ClothingStoreManagement.Application.Services
             invoice.SetTotal(dto.TotalAmount);
             invoice.Items = newItems;
             await _db.Save();
+            _db.Clear();
+
             return Result<string>.Success(" تم ارشافة الفاتور ");
         }
         public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto)
@@ -118,13 +122,13 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = -item.Quantity,
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.Sale,
-                    CreatedAt = DateTime.UtcNow ,
+                    CreatedAt = DateTime.UtcNow,
                     ReferenceId = targetInvoice.Serial
                 });
                 newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
                 {
-                    ProductVariant = variant,   
-                    Invoice = targetInvoice 
+                    ProductVariant = variant,
+                    Invoice = targetInvoice
                 });
             }
             targetInvoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
@@ -132,6 +136,7 @@ namespace ClothingStoreManagement.Application.Services
             targetInvoice.UpdateStatus(InvoiceStatus.completed);
             targetInvoice.Items = newItems;
             await _db.Save();
+            _db.Clear();
             dto.Id = targetInvoice.Id;
             dto.SerialNumber = targetInvoice.Serial;
             dto.LastUpdate = targetInvoice.LastUpdatedAt ?? targetInvoice.CreatedAt;
@@ -158,13 +163,13 @@ namespace ClothingStoreManagement.Application.Services
                     Quantity = i.Quantity,
                     Discount = i.Discount
                 }).ToList()),
-            }).FirstOrDefaultAsync(); 
+            }).FirstOrDefaultAsync();
             if (invoiceDto == null)
-                return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);   
+                return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
 
             invoiceDto.UpdateTotalWithDiscount();
-            invoiceDto.UpdateTotal();   
-            invoiceDto.UpdateTotalQuantity();   
+            invoiceDto.UpdateTotal();
+            invoiceDto.UpdateTotalQuantity();
             return Result<InvoiceDTO>.Success(invoiceDto);
         }
         public async Task Remove(int id)
@@ -177,7 +182,7 @@ namespace ClothingStoreManagement.Application.Services
             }
         }
         public async Task<Result<IEnumerable<InvoiceLockUpDTO>>>
-            GetInvoicesLookUpAsync(string? searchTerm = null, InvoiceStatus? status = null , DateTime ? start = null , DateTime ? end = null)
+            GetInvoicesLookUpAsync(string? searchTerm = null, InvoiceStatus? status = null, DateTime? start = null, DateTime? end = null)
         {
             var invoices = _db.Invoices.GetAll();
             if (status != null)
@@ -208,9 +213,9 @@ namespace ClothingStoreManagement.Application.Services
             }).OrderByDescending(i => i.LastUpdatedAt).ToListAsync();
             return Result<IEnumerable<InvoiceLockUpDTO>>.Success(invoiceLookUpDtos);
         }
-         
-    
-        public async Task<Result<string>> ReturnInvoice (int id)
+
+
+        public async Task<Result<string>> ReturnInvoice(int id)
         {
             var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items)
                 .ThenInclude(i => i.ProductVariant).FirstOrDefaultAsync(i => i.Id == id);
@@ -226,15 +231,84 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = item.Quantity,
                     StockAfter = item.ProductVariant.StockQuantity,
                     Type = MovementType.Return,
-                    CreatedAt = DateTime.UtcNow , 
-                    ReferenceId = invoice.Serial 
+                    CreatedAt = DateTime.UtcNow,
+                    ReferenceId = invoice.Serial
                 });
             }
-            invoice.UpdateStatus(InvoiceStatus.returned);   
-            await _db.Save(); 
-            return Result<string>.Success("تمت إعادة الفاتورة بنجاح");  
+            invoice.UpdateStatus(InvoiceStatus.returned);
+            await _db.Save();
+            _db.Clear();
+            return Result<string>.Success("تمت إعادة الفاتورة بنجاح");
+        }
+
+        public async Task<HomeDTO> LoadHomePageDataAsync()
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var yesterday = today.AddDays(-1);
+            var invoices = await _db.Invoices.GetAll()
+                .Where(i => i.Status == InvoiceStatus.completed &&
+                            (DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) == today ||
+                             DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) == yesterday))
+                .ToListAsync();
+
+            var todayInvoices = invoices.Where(i => DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) == today).ToList();
+            var yesterdayInvoices = invoices.Where(i => DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) == yesterday).ToList();
+            var topProducts = await _db.Invoices.GetAll()
+                .Where(i => i.Status == InvoiceStatus.completed)
+                .SelectMany(i => i.Items)
+                .GroupBy(ii => new
+                {
+                    ii.ProductVariantId,
+                    ii.ProductVariant.Product.Name,
+                    ProductId = ii.ProductVariant.Product.Id,
+                    SizeCode = ii.ProductVariant.Size.Code, // ضيف المقاس واللون في الجروب عشان تعرف تختارهم
+                    ColorCode = ii.ProductVariant.Color.Code
+                }).Select ( g => new TopProductDTO
+                {
+                    ProductName = g.Key.Name,
+                    Id = g.Key.ProductId,
+                    SizeName = g.First().ProductVariant.Size.Code,            
+                    ColorHex = g.First().ProductVariant.Color.Code,   
+                    TotalQuantity = g.Sum(x => x.Quantity),
+                    InvoicesCount = g.Count()
+                }).OrderByDescending(tp => tp.TotalQuantity).Take(2).ToListAsync();   
+
+            return new HomeDTO
+            {
+                TotalProducts = await _db.ProductVariants.GetAll().CountAsync(),
+
+                TotalDayInvoices = todayInvoices.Count,
+
+                TotalDayRevenue = todayInvoices.Sum(i => i.TotalAmountWithDiscount),
+
+                PreviousDayRevenue = yesterdayInvoices.Sum(i => i.TotalAmountWithDiscount) , 
+                TopProductDTOs = topProducts    
+            };
+        }
+
+        public async Task<List<DailySalesDTO>> GetLast7DaysSalesAsync()
+        {
+            var lastWeek = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
+
+            var sales = await _db.Invoices.GetAll()
+                .AsNoTracking()
+                .Where(i => i.Status == InvoiceStatus.completed &&
+                            DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) >= lastWeek)
+                .ToListAsync();
+
+            // تجميع المبيعات حسب التاريخ
+            return sales.GroupBy(i => DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt))
+                .Select(g => new DailySalesDTO
+                {
+                    Date = g.Key.ToString("MM/dd"), // شكل التاريخ على المحور
+                    TotalAmount = g.Sum(x => x.TotalAmountWithDiscount)
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
         }
     }
-}
 
+
+
+    }
 

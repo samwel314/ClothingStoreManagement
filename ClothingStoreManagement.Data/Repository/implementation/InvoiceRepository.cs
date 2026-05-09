@@ -11,9 +11,5 @@ namespace ClothingStoreManagement.Data.Repository.implementation
             _db = db;
         }
 
-        public void Detach(Invoice model)
-        {
-            _db.Entry(model).State = EntityState.Detached;
-        }
     }
 }

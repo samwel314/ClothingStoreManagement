@@ -16,8 +16,10 @@
     public class TopVariantDTO
     {
         public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
         public string Size { get; set; } = null!;
         public string  Code  { get; set; }
         public decimal Total  { get; set; }
+
     }
 }
