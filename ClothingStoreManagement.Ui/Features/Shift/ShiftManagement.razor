@@ -1,0 +1,127 @@
+﻿@page "/shift-management"
+
+
+ <div class="container-fluid p-4" style="direction: rtl; text-align: right;">
+    
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0">إدارة الوردية الحالية</h4>
+            <span class="badge bg-dark p-2 shadow-sm">
+                <i class="bi bi-clock-history ms-1 text-warning"></i>
+                وقت فتح الوردية: 10:05 ص | 2024/05/20
+            </span>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-primary text-white p-3">
+                    <small>رصيد بداية الوردية</small>
+                    <h3 class="fw-bold">500.00 <small>ج.م</small></h3>
+                    <i class="bi bi-door-open position-absolute opacity-25" style="left:10px; bottom:10px; font-size: 2rem;"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-success text-white p-3">
+                    <small>إجمالي المبيعات (كاش)</small>
+                    <h3 class="fw-bold">2,450.00 <small>ج.م</small></h3>
+                    <i class="bi bi-cart-plus position-absolute opacity-25" style="left:10px; bottom:10px; font-size: 2rem;"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-danger text-white p-3">
+                    <small>إجمالي المصاريف</small>
+                    <h3 class="fw-bold">120.00 <small>ج.م</small></h3>
+                    <i class="bi bi-cash-stack position-absolute opacity-25" style="left:10px; bottom:10px; font-size: 2rem;"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm bg-dark text-white p-3">
+                    <small>الرصيد الحالي بالدرج</small>
+                    <h3 class="fw-bold text-warning">2,830.00 <small>ج.م</small></h3>
+                    <i class="bi bi-safe position-absolute opacity-25" style="left:10px; bottom:10px; font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-bold">
+                        <i class="bi bi-plus-circle-fill text-danger me-2"></i> تسجيل مصروف جديد
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">المبلغ</label>
+                                <input type="number" class="form-control form-control-lg border-danger-subtle" placeholder="0.00">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">نوع المصروف</label>
+                                <select class="form-select">
+                                    <option>نثريات (شاي/نظافة)</option>
+                                    <option>كهرباء / مياه</option>
+                                    <option>رواتب وسلف</option>
+                                    <option>إيجار</option>
+                                    <option>أخرى</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">البيان (ملاحظات)</label>
+                                <textarea class="form-control" rows="2" placeholder="اكتب تفاصيل المصروف هنا..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-danger w-100 py-2 fw-bold">
+                                تأكيد صرف المبلغ من الدرج
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">سجل حركة الخزنة اللحظي</span>
+                        <button class="btn btn-sm btn-outline-dark fw-bold text-danger border-danger">
+                            <i class="bi bi-lock-fill"></i> إنهاء الوردية وجرد الدرج
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>الوقت</th>
+                                        <th>النوع</th>
+                                        <th>البيان</th>
+                                        <th>المبلغ</th>
+                                        <th>الموظف</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>10:05 ص</td>
+                                        <td><span class="badge bg-primary">بداية</span></td>
+                                        <td>رصيد افتتاح الوردية</td>
+                                        <td class="text-primary fw-bold">+500.00</td>
+                                        <td>أحمد م.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>11:30 ص</td>
+                                        <td><span class="badge bg-success">بيع</span></td>
+                                        <td>فاتورة رقم #5011</td>
+                                        <td class="text-success fw-bold">+850.00</td>
+                                        <td>أحمد م.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>01:15 م</td>
+                                        <td><span class="badge bg-danger">مصروف</span></td>
+                                        <td>كهرباء شهر 5</td>
+                                        <td class="text-danger fw-bold">-120.00</td>
+                                        <td>أحمد م.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

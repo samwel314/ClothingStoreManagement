@@ -1,87 +1,128 @@
 @inherits LayoutComponentBase
 
 <div class="d-flex vh-100" dir="rtl">
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark shadow-lg" style="width: 280px;">
-        <a href="/" class="d-flex align-items-center mb-4 text-white text-decoration-none">
-            <i class="bi bi-cpu-fill fs-3 text-primary ms-2"></i>
-            <span class="fs-4 fw-bold">نظام الملابس PRO</span>
-        </a>
-        <hr>
+    <div class="d-flex flex-column flex-shrink-0 p-2 text-white bg-dark shadow-lg custom-sidebar" style="width: 250px; overflow-y: auto;">
         
-        <ul class="nav nav-pills flex-column mb-auto p-0">
-            <li class="nav-item mb-2">
-                <NavLink class="nav-link text-white py-2" href="" Match="NavLinkMatch.All">
+        <a href="/" class="d-flex align-items-center mb-2 mt-1 text-white text-decoration-none px-2">
+            <i class="bi bi-cpu-fill fs-4 text-primary ms-2"></i>
+            <span class="fs-5 fw-bold">نظام الملابس PRO</span>
+        </a>
+        <hr class="my-2 opacity-25">
+        
+        <ul class="nav nav-pills flex-column p-0 gap-1">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="" Match="NavLinkMatch.All">
                     <i class="bi bi-grid-1x2-fill ms-2"></i> الرئيسية
                 </NavLink>
             </li>
 
-            <li class="mt-3 mb-1">
-                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">إدارة المخزن</small>
+            <li class="mt-2 mb-1 px-2">
+                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">إدارة المخزن</small>
             </li>
-            <li class="mb-1">
-                <NavLink class="nav-link text-white py-2" href="/products">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/products">
                     <i class="bi bi-box-seam-fill ms-2"></i> المنتجات
                 </NavLink>
             </li>
-            <li class="mb-1">
-                <NavLink class="nav-link text-white py-2" href="/categories">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/categories">
                     <i class="bi bi-diagram-3-fill ms-2"></i> الأقسام
                 </NavLink>
             </li>
 
-            <li class="mt-3 mb-1">
-                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">خصائص الموديلات</small>
+            <li class="mt-2 mb-1 px-2">
+                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">خصائص الموديلات</small>
             </li>
-            <li class="mb-1">
-                <NavLink class="nav-link text-white py-2" href="/colors">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/colors">
                     <i class="bi bi-palette-fill ms-2"></i> الألوان
                 </NavLink>
             </li>
-            <li class="mb-1">
-                <NavLink class="nav-link text-white py-2" href="/sizes">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/sizes">
                     <i class="bi bi-rulers ms-2"></i> المقاسات
                 </NavLink>
             </li>
 
-            <li class="mt-3 mb-1">
-                <small class="text-uppercase text-secondary fw-bold px-2" style="font-size: 0.7rem;">العمليات اليومية</small>
+            <li class="mt-2 mb-1 px-2">
+                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">العمليات اليومية</small>
             </li>
-            <li class="mb-1">
-                <NavLink class="nav-link text-white py-2" href="/dashboard">
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/dashboard">
                     <i class="bi bi-pc-display-horizontal ms-2"></i> كاشير البيع
+                </NavLink>
+            </li>
+
+            <li class="mt-2 mb-1 px-2">
+                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">الحسابات</small>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/shift-management">
+                    <i class="bi bi-safe-fill ms-2"></i> إدارة الخزنة
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link text-white py-1 px-3 small" href="/expenses">
+                    <i class="bi bi-cash-stack ms-2"></i> سجل المصاريف
                 </NavLink>
             </li>
         </ul>
         
-        <hr>
-        <div class="d-flex align-items-center p-2 bg-light bg-opacity-10 rounded">
-            <i class="bi bi-person-badge-fill fs-5 ms-2"></i>
-            <div class="small">
-                <div class="fw-bold">أدمن النظام</div>
-                <div class="text-secondary" style="font-size: 0.75rem;">متصل الآن</div>
+        <hr class="my-2 opacity-25">
+        
+        <div class="d-flex align-items-center p-2 bg-light bg-opacity-10 rounded mb-1 mx-1">
+            <i class="bi bi-person-badge-fill fs-5 ms-2 text-primary"></i>
+            <div style="line-height: 1.2;">
+                <div class="fw-bold small">أدمن النظام</div>
+                <div class="text-success" style="font-size: 0.65rem;">متصل الآن</div>
             </div>
         </div>
     </div>
 
-    <div class="flex-grow-1 bg-light overflow-auto">
-        <header class="navbar navbar-expand bg-white shadow-sm px-4 py-2 border-bottom">
+    <div class="flex-grow-1 bg-light d-flex flex-column overflow-hidden text-dark">
+        <header class="navbar navbar-expand bg-white shadow-sm px-3 py-1 border-bottom">
             <div class="container-fluid d-flex justify-content-between">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item small text-primary">لوحة التحكم</li>
-                        <li class="breadcrumb-item small active">الرئيسية</li>
+                    <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
+                        <li class="breadcrumb-item text-primary">لوحة التحكم</li>
+                        <li class="breadcrumb-item active">الرئيسية</li>
                     </ol>
                 </nav>
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
                         <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToShortDateString()
                     </span>
                 </div>
             </div>
         </header>
 
-        <div class="container-fluid p-4">
+        <div class="flex-grow-1 p-3 overflow-auto">
             @Body
         </div>
     </div>
 </div>
+
+<style>
+    /* سكرول بار رفيع جداً */
+    .custom-sidebar::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .custom-sidebar::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 10px;
+    }
+    /* تصغير حجم الخط في اللينكات */
+    .nav-link {
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-link.active {
+            background-color: #0d6efd !important;
+        }
+</style>
