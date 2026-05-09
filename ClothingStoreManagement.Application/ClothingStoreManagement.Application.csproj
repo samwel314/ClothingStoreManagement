@@ -10,6 +10,7 @@
     <ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
     <ProjectReference Include="..\ClothingStoreManagement.Domain\ClothingStoreManagement.Domain.csproj" />
 	  <PackageReference Include="AutoMapper" Version="16.1.1" />
+	  <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
 	  <PackageReference Include="FluentValidation" Version="12.1.1" />
 
   </ItemGroup>

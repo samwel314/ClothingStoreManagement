@@ -386,7 +386,8 @@ namespace ClothingStoreManagement.Application.Services
                     Type = m.Type,
                     ReferenceId = m.ReferenceId,
                     CreatedAt = m.CreatedAt,
-                    CreatedBy = m.CreatedBy
+                    // زود ال USER 
+                    CreatedBy = m.CreatedByUserId.ToString(),   
                 }).ToListAsync();
             return Result<IEnumerable<VariantMovementsDTO>>.Success(movements);
         }

@@ -14,6 +14,7 @@
             ProductVariants = new ProductProductVariantRepository(_db);
             Invoices = new InvoiceRepository(_db);
             Movements = new StockMovementRepository(_db);
+            Users = new UserRepository(_db);    
         }
 
         public IColorRepository Colors { get; private set; }
@@ -24,7 +25,8 @@
         public IProductProductVariantRepository ProductVariants { get; private set; }
 
         public IInvoiceRepository Invoices { get; private set; }
-        public IStockMovementRepository Movements { get; private set; } 
+        public IStockMovementRepository Movements { get; private set; }
+        public IUserRepository Users { get; private set; }
         public async Task Save()
         {
             await _db.SaveChangesAsync();

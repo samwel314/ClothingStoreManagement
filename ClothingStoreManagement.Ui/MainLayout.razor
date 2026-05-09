@@ -1,100 +1,131 @@
 @inherits LayoutComponentBase
+@inject AppState AppState
+@inject NavigationManager Nav
 
 <div class="d-flex vh-100" dir="rtl">
-    <div class="d-flex flex-column flex-shrink-0 p-2 text-white bg-dark shadow-lg custom-sidebar" style="width: 250px; overflow-y: auto;">
-        
-        <a href="/" class="d-flex align-items-center mb-2 mt-1 text-white text-decoration-none px-2">
-            <i class="bi bi-cpu-fill fs-4 text-primary ms-2"></i>
-            <span class="fs-5 fw-bold">نظام الملابس PRO</span>
-        </a>
-        <hr class="my-2 opacity-25">
-        
-        <ul class="nav nav-pills flex-column p-0 gap-1">
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="" Match="NavLinkMatch.All">
-                    <i class="bi bi-grid-1x2-fill ms-2"></i> الرئيسية
-                </NavLink>
-            </li>
+    @* القائمة الجانبية تظهر فقط إذا كان هناك مستخدم مسجل *@
+    @if (AppState.IsLoggedIn)
+    {
+        <div class="d-flex flex-column flex-shrink-0 p-2 text-white bg-dark shadow-lg custom-sidebar" style="width: 250px; overflow-y: auto;">
+            
+            <a href="/" class="d-flex align-items-center mb-2 mt-1 text-white text-decoration-none px-2">
+                <i class="bi bi-cpu-fill fs-4 text-primary ms-2"></i>
+                <span class="fs-5 fw-bold">نظام الملابس PRO</span>
+            </a>
+            <hr class="my-2 opacity-25">
+            
+            <ul class="nav nav-pills flex-column p-0 gap-1">
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="" Match="NavLinkMatch.All">
+                        <i class="bi bi-grid-1x2-fill ms-2"></i> الرئيسية
+                    </NavLink>
+                </li>
 
-            <li class="mt-2 mb-1 px-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">إدارة المخزن</small>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/products">
-                    <i class="bi bi-box-seam-fill ms-2"></i> المنتجات
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/categories">
-                    <i class="bi bi-diagram-3-fill ms-2"></i> الأقسام
-                </NavLink>
-            </li>
+                @* إدارة المخزن *@
+                <li class="mt-2 mb-1 px-2">
+                    <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">إدارة المخزن</small>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="/products">
+                        <i class="bi bi-box-seam-fill ms-2"></i> المنتجات
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="/categories">
+                        <i class="bi bi-diagram-3-fill ms-2"></i> الأقسام
+                    </NavLink>
+                </li>
 
-            <li class="mt-2 mb-1 px-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">خصائص الموديلات</small>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/colors">
-                    <i class="bi bi-palette-fill ms-2"></i> الألوان
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/sizes">
-                    <i class="bi bi-rulers ms-2"></i> المقاسات
-                </NavLink>
-            </li>
+                @* خصائص الموديلات *@
+                <li class="mt-2 mb-1 px-2">
+                    <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">خصائص الموديلات</small>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="/colors">
+                        <i class="bi bi-palette-fill ms-2"></i> الألوان
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="/sizes">
+                        <i class="bi bi-rulers ms-2"></i> المقاسات
+                    </NavLink>
+                </li>
 
-            <li class="mt-2 mb-1 px-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">العمليات اليومية</small>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/dashboard">
-                    <i class="bi bi-pc-display-horizontal ms-2"></i> كاشير البيع
-                </NavLink>
-            </li>
+                @* العمليات اليومية *@
+                <li class="mt-2 mb-1 px-2">
+                    <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">العمليات اليومية</small>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white py-1 px-3 small" href="/dashboard">
+                        <i class="bi bi-pc-display-horizontal ms-2"></i> كاشير البيع
+                    </NavLink>
+                </li>
 
-            <li class="mt-2 mb-1 px-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">الحسابات</small>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/shift-management">
-                    <i class="bi bi-safe-fill ms-2"></i> إدارة الخزنة
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link text-white py-1 px-3 small" href="/expenses">
-                    <i class="bi bi-cash-stack ms-2"></i> سجل المصاريف
-                </NavLink>
-            </li>
-        </ul>
+                @* الحسابات والنظام - للمدير فقط *@
+                @if (AppState.CurrentUser?.Role == UserRole.Admin)
+                {
+                    <li class="mt-2 mb-1 px-2">
+                        <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">الحسابات والنظام</small>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link text-white py-1 px-3 small" href="/shift-management">
+                            <i class="bi bi-safe-fill ms-2"></i> إدارة الخزنة
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link text-white py-1 px-3 small" href="/expenses">
+                            <i class="bi bi-cash-stack ms-2"></i> سجل المصاريف
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link text-white py-1 px-3 small" href="/users">
+                            <i class="bi bi-people-fill ms-2"></i> إدارة المستخدمين
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+            
+            <hr class="mt-auto mb-2 opacity-25">
+            
+            @* بروفايل المستخدم *@
+            <div class="d-flex align-items-center p-2 bg-light bg-opacity-10 rounded mb-1 mx-1 justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-badge-fill fs-5 ms-2 text-primary"></i>
+                    <div style="line-height: 1.2;">
+                        <div class="fw-bold small text-truncate" style="max-width: 100px;">@AppState.CurrentUser?.UserName</div>
+                        <div class="text-success" style="font-size: 0.65rem;">
+                             @(AppState.CurrentUser?.Role == UserRole.Admin ? "مدير نظام" : "كاشير")
+                        </div>
+                    </div>
+                </div>
         
-        <hr class="my-2 opacity-25">
-        
-        <div class="d-flex align-items-center p-2 bg-light bg-opacity-10 rounded mb-1 mx-1">
-            <i class="bi bi-person-badge-fill fs-5 ms-2 text-primary"></i>
-            <div style="line-height: 1.2;">
-                <div class="fw-bold small">أدمن النظام</div>
-                <div class="text-success" style="font-size: 0.65rem;">متصل الآن</div>
+                <button class="btn btn-sm text-white-50 p-0 hvr-red" title="تسجيل الخروج" @onclick="Logout">
+                    <i class="bi bi-box-arrow-left fs-5"></i>
+                </button>
             </div>
         </div>
-    </div>
+    }
 
+    @* المحتوى الرئيسي *@
     <div class="flex-grow-1 bg-light d-flex flex-column overflow-hidden text-dark">
-        <header class="navbar navbar-expand bg-white shadow-sm px-3 py-1 border-bottom">
-            <div class="container-fluid d-flex justify-content-between">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
-                        <li class="breadcrumb-item text-primary">لوحة التحكم</li>
-                        <li class="breadcrumb-item active">الرئيسية</li>
-                    </ol>
-                </nav>
-                <div>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToShortDateString()
-                    </span>
+        @if (AppState.IsLoggedIn)
+        {
+            <header class="navbar navbar-expand bg-white shadow-sm px-3 py-1 border-bottom">
+                <div class="container-fluid d-flex justify-content-between">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
+                            <li class="breadcrumb-item text-primary">لوحة التحكم</li>
+                            <li class="breadcrumb-item active">@GetActivePageName()</li>
+                        </ol>
+                    </nav>
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                            <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToString("yyyy/MM/dd")
+                        </span>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+        }
 
         <div class="flex-grow-1 p-3 overflow-auto">
             @Body
@@ -102,27 +133,34 @@
     </div>
 </div>
 
+@code {
+    private void Logout()
+    {
+        AppState.Logout();
+        Nav.NavigateTo("/login");
+    }
+
+    private string GetActivePageName()
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri);
+        if (string.IsNullOrEmpty(uri)) return "الرئيسية";
+        if (uri.Contains("users")) return "إدارة المستخدمين";
+        if (uri.Contains("products")) return "المنتجات";
+        if (uri.Contains("categories")) return "الأقسام";
+        if (uri.Contains("colors")) return "الألوان";
+        if (uri.Contains("sizes")) return "المقاسات";
+        if (uri.Contains("dashboard")) return "كاشير البيع";
+        if (uri.Contains("expenses")) return "المصاريف";
+        if (uri.Contains("shift")) return "الخزنة";
+        return "الرئيسية";
+    }
+}
+
 <style>
-    /* سكرول بار رفيع جداً */
-    .custom-sidebar::-webkit-scrollbar {
-        width: 3px;
-    }
-
-    .custom-sidebar::-webkit-scrollbar-thumb {
-        background: #444;
-        border-radius: 10px;
-    }
-    /* تصغير حجم الخط في اللينكات */
-    .nav-link {
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
-
-        .nav-link:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .nav-link.active {
-            background-color: #0d6efd !important;
-        }
+    .custom-sidebar::-webkit-scrollbar { width: 3px; }
+    .custom-sidebar::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+    .nav-link { font-size: 0.85rem; transition: 0.2s; border-radius: 8px !important; margin-bottom: 2px; }
+    .nav-link:hover { background: rgba(255,255,255,0.08); }
+    .nav-link.active { background-color: #0d6efd !important; font-weight: bold; }
+    .hvr-red:hover { color: #ff4d4d !important; }
 </style>

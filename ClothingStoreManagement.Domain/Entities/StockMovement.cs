@@ -13,6 +13,10 @@ namespace ClothingStoreManagement.Domain.Entities
         public MovementType Type { get; set; } 
         public string ? ReferenceId { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string ? CreatedBy { get; set; } 
+        public int ? UserId { get; set; }
+        public int? CreatedByUserId { get; set; } 
+
+        [ForeignKey("CreatedByUserId")]
+        public User CreatedByUser { get; set; } = null!;
     }
 }

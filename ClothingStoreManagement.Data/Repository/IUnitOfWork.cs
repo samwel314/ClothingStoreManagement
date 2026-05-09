@@ -9,6 +9,7 @@
         IProductProductVariantRepository ProductVariants { get; }
         IInvoiceRepository Invoices { get; }
         IStockMovementRepository Movements { get; } 
+        IUserRepository Users { get; }  
         Task Save();
         void Clear(); //
     }
