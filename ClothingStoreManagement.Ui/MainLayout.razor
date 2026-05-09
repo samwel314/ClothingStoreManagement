@@ -3,9 +3,9 @@
 @inject NavigationManager Nav
 
 <div class="d-flex vh-100" dir="rtl">
-    @* القائمة الجانبية تظهر فقط إذا كان هناك مستخدم مسجل *@
     @if (AppState.IsLoggedIn)
     {
+        @* الـ Sidebar - رجعت لك كل التقسيمات زي ما كانت *@
         <div class="d-flex flex-column flex-shrink-0 p-2 text-white bg-dark shadow-lg custom-sidebar" style="width: 250px; overflow-y: auto;">
             
             <a href="/" class="d-flex align-items-center mb-2 mt-1 text-white text-decoration-none px-2">
@@ -21,7 +21,7 @@
                     </NavLink>
                 </li>
 
-                @* إدارة المخزن *@
+                @* --- تقسيم إدارة المخزن --- *@
                 <li class="mt-2 mb-1 px-2">
                     <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">إدارة المخزن</small>
                 </li>
@@ -36,7 +36,7 @@
                     </NavLink>
                 </li>
 
-                @* خصائص الموديلات *@
+                @* --- تقسيم خصائص الموديلات --- *@
                 <li class="mt-2 mb-1 px-2">
                     <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">خصائص الموديلات</small>
                 </li>
@@ -51,7 +51,7 @@
                     </NavLink>
                 </li>
 
-                @* العمليات اليومية *@
+                @* --- تقسيم العمليات اليومية --- *@
                 <li class="mt-2 mb-1 px-2">
                     <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">العمليات اليومية</small>
                 </li>
@@ -61,9 +61,9 @@
                     </NavLink>
                 </li>
 
-                @* الحسابات والنظام - للمدير فقط *@
                 @if (AppState.CurrentUser?.Role == UserRole.Admin)
                 {
+                    @* --- تقسيم الحسابات والنظام للمدير فقط --- *@
                     <li class="mt-2 mb-1 px-2">
                         <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">الحسابات والنظام</small>
                     </li>
@@ -93,12 +93,11 @@
                     <i class="bi bi-person-badge-fill fs-5 ms-2 text-primary"></i>
                     <div style="line-height: 1.2;">
                         <div class="fw-bold small text-truncate" style="max-width: 100px;">@AppState.CurrentUser?.UserName</div>
-                        <div class="text-success" style="font-size: 0.65rem;">
+                        <div class="text-success fw-bold" style="font-size: 0.65rem;">
                              @(AppState.CurrentUser?.Role == UserRole.Admin ? "مدير نظام" : "كاشير")
                         </div>
                     </div>
                 </div>
-        
                 <button class="btn btn-sm text-white-50 p-0 hvr-red" title="تسجيل الخروج" @onclick="Logout">
                     <i class="bi bi-box-arrow-left fs-5"></i>
                 </button>
@@ -107,52 +106,39 @@
     }
 
     @* المحتوى الرئيسي *@
-    <div class="flex-grow-1 bg-light d-flex flex-column overflow-hidden text-dark">
-        @if (AppState.IsLoggedIn)
-        {
-            <header class="navbar navbar-expand bg-white shadow-sm px-3 py-1 border-bottom">
-                <div class="container-fluid d-flex justify-content-between">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
-                            <li class="breadcrumb-item text-primary">لوحة التحكم</li>
-                            <li class="breadcrumb-item active">@GetActivePageName()</li>
-                        </ol>
-                    </nav>
-                    <div>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
-                            <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToString("yyyy/MM/dd")
-                        </span>
-                    </div>
-                </div>
-            </header>
-        }
-
-        <div class="flex-grow-1 p-3 overflow-auto">
-            @Body
+@* المحتوى الرئيسي *@
+<div class="flex-grow-1 d-flex flex-column vh-100 overflow-hidden text-dark bg-light">
+    
+    @* الـ Header: إضافة flex-shrink-0 هي اللي هتمنع الانكماش *@
+    <header class="navbar navbar-expand bg-dark text-white px-3 shadow-sm border-bottom border-secondary border-opacity-25" 
+            style="height: 52px; min-height: 52px; flex-shrink: 0; z-index: 1000;">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            @* محتوى الهيدر (التاريخ، الساعة، واجهة الإدارة) *@
+            <div class="d-flex align-items-center">
+                <small class="text-white-50"><i class="bi bi-display ms-1"></i> واجهة الإدارة</small>
+            </div>
+            <div class="d-flex align-items-center gap-3" dir="ltr">
+                <span class="fw-bold border-start ps-3 border-secondary border-opacity-50" style="font-size: 0.85rem;">
+                    <i class="bi bi-clock ms-1 text-primary"></i> @DateTime.Now.ToString("hh:mm tt")
+                </span>
+                <span class="badge bg-light bg-opacity-10 text-white border border-secondary border-opacity-25 px-3 py-2" style="font-size: 0.75rem;">
+                    <i class="bi bi-calendar3 ms-1"></i> @DateTime.Now.ToString("yyyy/MM/dd")
+                </span>
+            </div>
         </div>
-    </div>
-</div>
+    </header>
+
+    @* منطقة المحتوى: جعلها مستقلة بالسكرول بار *@
+    <main class="flex-grow-1 overflow-auto p-3" style="position: relative;">
+        @Body
+    </main>
+</div></div>
 
 @code {
     private void Logout()
     {
         AppState.Logout();
         Nav.NavigateTo("/login");
-    }
-
-    private string GetActivePageName()
-    {
-        var uri = Nav.ToBaseRelativePath(Nav.Uri);
-        if (string.IsNullOrEmpty(uri)) return "الرئيسية";
-        if (uri.Contains("users")) return "إدارة المستخدمين";
-        if (uri.Contains("products")) return "المنتجات";
-        if (uri.Contains("categories")) return "الأقسام";
-        if (uri.Contains("colors")) return "الألوان";
-        if (uri.Contains("sizes")) return "المقاسات";
-        if (uri.Contains("dashboard")) return "كاشير البيع";
-        if (uri.Contains("expenses")) return "المصاريف";
-        if (uri.Contains("shift")) return "الخزنة";
-        return "الرئيسية";
     }
 }
 
@@ -163,4 +149,6 @@
     .nav-link:hover { background: rgba(255,255,255,0.08); }
     .nav-link.active { background-color: #0d6efd !important; font-weight: bold; }
     .hvr-red:hover { color: #ff4d4d !important; }
+    
+    header.bg-dark { background-color: #212529 !important; }
 </style>
