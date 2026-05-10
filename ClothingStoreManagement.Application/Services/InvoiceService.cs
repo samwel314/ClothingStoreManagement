@@ -13,11 +13,15 @@ namespace ClothingStoreManagement.Application.Services
     {
         private readonly IUnitOfWork _db;
         private readonly IMapper _mapper;
-        public InvoiceService(IUnitOfWork db, IMapper mapper)
+        private readonly AppState _appState;
+
+        public InvoiceService(IUnitOfWork db, IMapper mapper, AppState appState)
         {
             _db = db;
             _mapper = mapper;
+            _appState = appState;
         }
+
         public async Task<Result<InvoiceDTO>> CreateInvoiceAsync()
         {
             var invoice = new Invoice();
@@ -123,7 +127,8 @@ namespace ClothingStoreManagement.Application.Services
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.Sale,
                     CreatedAt = DateTime.UtcNow,
-                    ReferenceId = targetInvoice.Serial
+                    ReferenceId = targetInvoice.Serial,
+                    CreatedByUserId = _appState.CurrentUser!.Id   
                 });
                 newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
                 {
@@ -232,7 +237,8 @@ namespace ClothingStoreManagement.Application.Services
                     StockAfter = item.ProductVariant.StockQuantity,
                     Type = MovementType.Return,
                     CreatedAt = DateTime.UtcNow,
-                    ReferenceId = invoice.Serial
+                    ReferenceId = invoice.Serial,
+                    CreatedByUserId = _appState.CurrentUser!.Id
                 });
             }
             invoice.UpdateStatus(InvoiceStatus.returned);
@@ -296,11 +302,10 @@ namespace ClothingStoreManagement.Application.Services
                             DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt) >= lastWeek)
                 .ToListAsync();
 
-            // تجميع المبيعات حسب التاريخ
             return sales.GroupBy(i => DateOnly.FromDateTime(i.LastUpdatedAt ?? i.CreatedAt))
                 .Select(g => new DailySalesDTO
                 {
-                    Date = g.Key.ToString("MM/dd"), // شكل التاريخ على المحور
+                    Date = g.Key.ToString("MM/dd"), 
                     TotalAmount = g.Sum(x => x.TotalAmountWithDiscount)
                 })
                 .OrderBy(x => x.Date)

@@ -1,4 +1,5 @@
-﻿using ClothingStoreManagement.Domain.Entities;
+﻿using BCrypt.Net;
+using ClothingStoreManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClothingStoreManagement.Data
@@ -18,6 +19,7 @@ namespace ClothingStoreManagement.Data
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<StockMovement> Movements { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Shift> Shifts { get; set; }    
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -91,6 +93,12 @@ namespace ClothingStoreManagement.Data
             modelBuilder.Entity<User>()
             .HasIndex(u => u.UserName)
             .IsUnique();
+
+            modelBuilder.Entity<User>().HasData ( new User ("Samuel" ,
+               "$2a$11$evS/J.Lp6vL8vL8vL8vL8ueXGvS/J.Lp6vL8vL8vL8vL8ueXG", UserRole.Admin)
+            {
+                    Id = 1  
+            });
         }
     }
 }

@@ -107,7 +107,7 @@
     </div>
 
     <div class="product-list">
-        @if (products != null )
+        @if (products != null && products.Any())
         {
       foreach (var product in products)
             {
@@ -216,6 +216,8 @@
 
                                      
                     }
+
+                   
                                     
                 </tbody>
                 </table>
@@ -227,7 +229,11 @@
             }
 
         }
-    </div>
+    else
+    {
+                <p class="text-center">                لا توجد منتجات لعرضها حالياً</p>
+    }
+</div>
 
 
 <style>

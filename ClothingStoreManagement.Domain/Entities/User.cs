@@ -9,7 +9,7 @@
             Role = role;
         }
 
-        public int Id { get; private set; }
+        public int Id { get;  set; }
         public string UserName { get; private set; }
         public string PasswordHash { get; private set; }
         public UserRole Role { get; private set; }

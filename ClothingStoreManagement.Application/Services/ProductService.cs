@@ -64,8 +64,8 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = variant.StockQuantity,
                     StockAfter = variant.StockQuantity, 
                     Type = MovementType.Restock,
-                    CreatedAt = DateTime.UtcNow , 
-                    CreatedByUserId = _appState.CurrentUser?.Id
+                    CreatedAt = DateTime.UtcNow ,
+                  CreatedByUserId = _appState.CurrentUser!.Id
               });
                 Product.AddVariant(variant);
             }
@@ -294,7 +294,7 @@ namespace ClothingStoreManagement.Application.Services
                 StockAfter = variant.StockQuantity,
                 Type = MovementType.Restock,
                 CreatedAt = DateTime.UtcNow ,
-                CreatedByUserId = _appState.CurrentUser?.Id
+                CreatedByUserId = _appState.CurrentUser!.Id
             });
             product.UpdateChanges();
             await _db.Save();
@@ -333,7 +333,7 @@ namespace ClothingStoreManagement.Application.Services
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.ManualEdit,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedByUserId = _appState.CurrentUser?.Id
+                    CreatedByUserId = _appState.CurrentUser!.Id
                 });
 
                 isChanged = true;

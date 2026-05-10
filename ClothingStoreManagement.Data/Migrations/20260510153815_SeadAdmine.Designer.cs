@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClothingStoreManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260504221254_updateInvocieModel")]
-    partial class updateInvocieModel
+    [Migration("20260510153815_SeadAdmine")]
+    partial class SeadAdmine
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,6 +83,9 @@ namespace ClothingStoreManagement.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
@@ -96,6 +99,8 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("Serial")
                         .IsUnique();
+
+                    b.HasIndex("ShiftId");
 
                     b.ToTable("Invoices");
                 });
@@ -223,6 +228,40 @@ namespace ClothingStoreManagement.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Shift", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ExpectedCash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("FinalCashInDrawer")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("InitialCash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Shifts");
+                });
+
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Size", b =>
                 {
                     b.Property<int>("Id")
@@ -242,6 +281,92 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Sizes");
+                });
+
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.StockMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ProductVariantId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("QuantityChange")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferenceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StockAfter")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.ToTable("Movements");
+                });
+
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            PasswordHash = "$2a$11$evS/J.Lp6vL8vL8vL8vL8ueXGvS/J.Lp6vL8vL8vL8vL8ueXG",
+                            Role = 1,
+                            UserName = "Samuel"
+                        });
+                });
+
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Invoice", b =>
+                {
+                    b.HasOne("ClothingStoreManagement.Domain.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shift");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.InvoiceItem", b =>
@@ -301,6 +426,36 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.Navigation("Size");
                 });
 
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Shift", b =>
+                {
+                    b.HasOne("ClothingStoreManagement.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.StockMovement", b =>
+                {
+                    b.HasOne("ClothingStoreManagement.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClothingStoreManagement.Domain.Entities.ProductVariant", "ProductVariant")
+                        .WithMany("Movements")
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("ProductVariant");
+                });
+
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
@@ -314,6 +469,11 @@ namespace ClothingStoreManagement.Data.Migrations
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Product", b =>
                 {
                     b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ProductVariant", b =>
+                {
+                    b.Navigation("Movements");
                 });
 #pragma warning restore 612, 618
         }

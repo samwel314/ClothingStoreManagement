@@ -21,7 +21,7 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<Result<string>> Register(CreateUserDto dto)
         {
-            dto.UserName = dto.UserName.Trim().ToLower();
+            dto.UserName = dto.UserName.Trim();
             var userExist = await _db.Users.ExistsAsync(u => u.UserName == dto.UserName.Trim().ToLower());
             if (userExist)
                 return Result<string>.Failure("اسم المستخدم موجود بالفعل", ErrorType.conflict);
