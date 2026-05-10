@@ -11,11 +11,15 @@ namespace ClothingStoreManagement.Application.Services
     {
         private readonly IUnitOfWork _db;
         private readonly IMapper _mapper;
-        public ProductService(IUnitOfWork db, IMapper mapper)
+        private readonly AppState _appState;
+
+        public ProductService(IUnitOfWork db, IMapper mapper, AppState appState)
         {
             _db = db;
             _mapper = mapper;
+            _appState = appState;
         }
+
         public async Task<Result<string>> CreateProductAsync(CreateProductWithVariantsDto dto)
         {
             var categoryExist = await _db.Categories.ExistsAsync((c) => c.Id == dto.CategoryId);
@@ -60,8 +64,9 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = variant.StockQuantity,
                     StockAfter = variant.StockQuantity, 
                     Type = MovementType.Restock,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    CreatedAt = DateTime.UtcNow , 
+                    CreatedByUserId = _appState.CurrentUser?.Id
+              });
                 Product.AddVariant(variant);
             }
 
@@ -288,7 +293,8 @@ namespace ClothingStoreManagement.Application.Services
                 QuantityChange = variant.StockQuantity,
                 StockAfter = variant.StockQuantity,
                 Type = MovementType.Restock,
-                CreatedAt = DateTime.UtcNow , 
+                CreatedAt = DateTime.UtcNow ,
+                CreatedByUserId = _appState.CurrentUser?.Id
             });
             product.UpdateChanges();
             await _db.Save();
@@ -326,7 +332,8 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = temp,
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.ManualEdit,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByUserId = _appState.CurrentUser?.Id
                 });
 
                 isChanged = true;
@@ -386,8 +393,7 @@ namespace ClothingStoreManagement.Application.Services
                     Type = m.Type,
                     ReferenceId = m.ReferenceId,
                     CreatedAt = m.CreatedAt,
-                    // زود ال USER 
-                    CreatedBy = m.CreatedByUserId.ToString(),   
+                    CreatedBy = m.CreatedByUser == null ? "" : m.CreatedByUser.UserName,   
                 }).ToListAsync();
             return Result<IEnumerable<VariantMovementsDTO>>.Success(movements);
         }

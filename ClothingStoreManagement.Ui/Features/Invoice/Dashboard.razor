@@ -131,7 +131,7 @@
         </div>
     </div>
 }
-<div class="row g-3 align-items-center mb-4">
+
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -142,121 +142,97 @@
             </div>
         </div>
     }
-        <div class="col-lg-4 d-flex align-items-center gap-3">
-            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
+      
+    
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden" dir="rtl">
+
+    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 p-2 rounded-3">
                 <i class="bi bi-receipt text-primary fs-4"></i>
             </div>
-            <h3 class="fw-bold text-secondary mb-0">إدارة الفواتير</h3>
-        </div>
-
-        <div class="col-lg-5">
-            <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
-                <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button">
-               ابحث 
-                </button>
-                
-            <input @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" type="text"
-                       class="form-control border-0 bg-transparent text-end"
-                       placeholder="ابحث برقم الفاتورة أو اسم العميل..."
-                       style="box-shadow: none;" />
-                
-                <span class="input-group-text bg-transparent border-0 text-muted px-3">
-                    <i class="bi bi-search"></i>
-                </span>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">إدارة الفواتير</h5>
+                <p class="text-muted small mb-0">فلترة ومراجعة سجل العمليات</p>
             </div>
         </div>
-
-        <div class="col-lg-3 text-start">
-            <a href="/pos" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
-                    style="height: 56px;">
-                <i class="bi bi-plus-circle fs-5"></i>
-                <span>فاتورة جديدة</span>
-            </a>
-        </div>
+        <a href="/pos" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>فاتورة جديدة</span>
+        </a>
     </div>
 
+    <div class="card-body p-4">
 
-<div class="card border-0 shadow-lg rounded-4 p-4 mb-4 bg-white" dir="rtl">
+        <div class="row g-3 align-items-center">
+            
 
-    <div class="row g-4 align-items-end">
+            <div class="col-lg-4">
+                <div class="input-group rounded-pill border bg-light p-1">
+                    <span class="input-group-text bg-transparent border-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text"  class="form-control border-0 bg-transparent shadow-none"
+                           placeholder="بحث برقم الفاتورة ..." @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" >
+                </div>
+            </div>
 
-        <div class="col-lg-2 col-md-6">
-            <label class="form-label fw-semibold text-secondary small mb-2">
-                <i class="bi bi-calendar2-week ms-1 text-primary"></i>
-                من تاريخ
-            </label>
+ 
+            <div class="col-lg-4">
+                <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 border">
+                    <input type="date" class="form-control form-control-sm border-0 bg-transparent shadow-none" @bind="StartDate">
+                    <span class="text-muted small">إلى</span>
+                    <input type="date" class="form-control form-control-sm border-0 bg-transparent shadow-none" @bind="EndDate">
+                </div>
+            </div>
 
-            <input type="date"
-                   class="form-control rounded-4 border-0 shadow-sm py-2 px-3 bg-light"
-                   @bind="StartDate"
-                   style="text-align:right;" />
-        </div>
-
-        <div class="col-lg-2 col-md-6">
-            <label class="form-label fw-semibold text-secondary small mb-2">
-                <i class="bi bi-calendar2-check ms-1 text-success"></i>
-                إلى تاريخ
-            </label>
-
-            <input type="date"
-                   class="form-control rounded-4 border-0 shadow-sm py-2 px-3 bg-light"
-                   @bind="EndDate"
-                   style="text-align:right;" />
-        </div>
-
-        <!-- Status Buttons -->
-        <div class="col-lg-8">
-            <label class="form-label fw-semibold text-secondary small mb-2 d-block">
-                <i class="bi bi-ui-checks-grid ms-1 text-dark"></i>
-                حالة الفاتورة
-            </label>
-
-            <div class="d-grid gap-2"
-                 style="grid-template-columns: repeat(auto-fit,minmax(140px,1fr));">
-
-                <button @onclick='() => FilterByStatus(null)'
-                        class="btn py-2 rounded-pill fw-semibold
-                    @(status == null
-                                                ? "btn-primary shadow"
-                                                : "btn-light border text-secondary")">
-
-                    <i class="bi bi-grid-3x3-gap-fill ms-1"></i>
-                    الكل
-                </button>
-
-                <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
-                        class="btn py-2 rounded-pill fw-semibold
-                    @(status == InvoiceStatus.pending
-                                                ? "btn-warning text-dark shadow"
-                                                : "btn-light border text-warning")">
-
-                    <i class="bi bi-pencil-square ms-1"></i>
-                    المسودات
-                </button>
-
-                <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
-                        class="btn py-2 rounded-pill fw-semibold
-                    @(status == InvoiceStatus.completed
-                                                ? "btn-success shadow"
-                                                : "btn-light border text-success")">
-
-                    <i class="bi bi-check-circle-fill ms-1"></i>
-                    المدفوعة
-                </button>
-
-                <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
-                        class="btn py-2 rounded-pill fw-semibold
-                    @(status == InvoiceStatus.returned
-                                                ? "btn-danger shadow"
-                                                : "btn-light border text-danger")">
-
-                    <i class="bi bi-arrow-counterclockwise ms-1"></i>
-                    المرتجعة
-                </button>
+   
+            <div class="col-lg-4">
+                <div class="btn-group w-100 bg-light p-1 rounded-pill border" role="group">
+                    <button @onclick='() => FilterByStatus(null)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == null ? "btn-primary shadow-sm" : "text-muted")">
+                        الكل
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.pending ? "btn-warning shadow-sm" : "text-muted")">
+                        مسودة
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.completed ? "btn-success shadow-sm" : "text-muted")">
+                        مدفوع
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.returned ? "btn-danger shadow-sm" : "text-muted")">
+                        مرتجع
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+
+
+<style>
+    /* تحسينات لجمالية المدخلات */
+    .form-control:focus {
+        background-color: transparent;
+    }
+    
+    .btn-group .btn {
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    /* لإخفاء أيقونة الكالندر الافتراضية وجعل الشكل أنضف */
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0.5;
+        cursor: pointer;
+    }
+</style>
+
 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="card-body p-0">
         <div class="table-responsive">

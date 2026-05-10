@@ -92,24 +92,20 @@ namespace ClothingStoreManagement.Application.Services
         {
             try
             {
-                // 1. البحث عن المستخدم في الداتا بيز باسمه
                 var user = await _db.Users
                     .FirstOrDefaultAsync(u => u.UserName == loginDto.UserName);
 
-                // 2. التحقق من وجوده وأنه نشط (Active)
                 if (user == null)
                     return Result<UserSessionDto>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة" , ErrorType.notFound);
 
                 if (!user.IsActive)
                     return Result<UserSessionDto>.Failure("هذا الحساب معطل، يرجى مراجعة الإدارة", ErrorType.validation);
 
-                // 3. التحقق من كلمة المرور (مقارنة النص بـ Hash الداتا بيز)
                 bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
 
                 if (!isPasswordValid)
                     return Result<UserSessionDto>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة", ErrorType.validation);
 
-                // 4. لو كله تمام، نجهز بيانات الجلسة
                 var session = new UserSessionDto
                 {
                     Id = user.Id,
@@ -124,27 +120,5 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<UserSessionDto>.Failure("حدث خطأ غير متوقع: " + ex.Message , ErrorType.validation);
             }
         }
-    }
-    public class AppState
-    {
-        public UserSessionDto? CurrentUser { get; private set; }
-
-        public bool IsLoggedIn => CurrentUser != null;
-
-        public event Action? OnChange;
-
-        public void Login(UserSessionDto user)
-        {
-            CurrentUser = user;
-            NotifyStateChanged();
-        }
-
-        public void Logout()
-        {
-            CurrentUser = null;
-            NotifyStateChanged();
-        }
-
-        private void NotifyStateChanged() => OnChange?.Invoke();
     }
 }
