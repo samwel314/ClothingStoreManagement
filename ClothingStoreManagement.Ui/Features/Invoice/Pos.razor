@@ -1,6 +1,8 @@
 ﻿@page "/pos/{invoiceId:int}"
 @page "/pos"
 @inject InvoiceService invoiceService
+@inject AppState appState
+@inject NavigationManager nav
 @if (isPrintingMode && savedInvoiceDto != null)
 {
 
@@ -212,6 +214,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (appState.CurrentShift == null)
+        {
+            nav.NavigateTo("/shift-decision");
+            return;
+        }
         if (invoiceId != 0)
         {
             var result  = await  invoiceService.GetInvoiceById(invoiceId) ; 
@@ -269,7 +276,7 @@ else
             {
                 if (currentInvoice!.Id == 0) 
                 {
-                    var invoiceResult = await invoiceService.CreateInvoiceAsync();
+                    var invoiceResult = await invoiceService.CreateInvoiceAsync(appState.CurrentShift!.Id , appState.CurrentUser!.Id);
                     if (invoiceResult.IsSuccess)
                     {
                         currentInvoice.Id = invoiceResult.Data!.Id;
@@ -297,7 +304,7 @@ else
     }
     private async Task PendingInvoice( )
     {
-        var result =   await invoiceService.PendingInvoiceWithItems(currentInvoice) ; 
+        var result = await invoiceService.PendingInvoiceWithItems(currentInvoice, appState.CurrentShift!.Id, appState.CurrentUser!.Id);
         if (result.IsSuccess)
         {
             await ShowSuccess (result.Data) ; 
@@ -310,7 +317,7 @@ else
     }
     private async Task CompleteInvoice()
     {
-        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice); //[cite: 2]
+        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice, appState.CurrentShift!.Id, appState.CurrentUser!.Id); //[cite: 2]
     
         if (result.IsSuccess)
         {

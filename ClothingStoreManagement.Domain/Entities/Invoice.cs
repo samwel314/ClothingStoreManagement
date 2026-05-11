@@ -13,6 +13,7 @@
         public User User { get; set; } = null!; 
         public int ShiftId { get; private set; }        
         public Shift Shift { get;  set; } = null!; 
+        public void SetUser(int userId) => UserId = userId;
         public void SetTotal(decimal total) => TotalAmount = total;
         public void SetShift(int shiftId) => ShiftId = shiftId;     
         public void SetTotalWithDiscount(decimal total) => TotalAmountWithDiscount = total;

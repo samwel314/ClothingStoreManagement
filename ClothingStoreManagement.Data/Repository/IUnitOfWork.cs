@@ -11,7 +11,8 @@
         IStockMovementRepository Movements { get; } 
         IUserRepository Users { get; }  
         IShiftRepository Shifts { get; }    
-        IPaymentSourceRepository PaymentSources { get; }    
+        IPaymentSourceRepository PaymentSources { get; }   
+        IShiftTransactionRepository ShiftTransactions {  get; }
         Task Save();
         void Clear(); //
     }

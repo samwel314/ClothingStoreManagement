@@ -1,5 +1,8 @@
 ﻿@page "/dashboard"
 @inject InvoiceService invoiceService
+@inject NavigationManager navigationManager
+@inject ShiftService shiftService       
+@inject AppState appState   
 @if (confirmingReturn)
 {
     <div class="modal fade show" id="returnModal" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5);">
@@ -388,8 +391,13 @@
     }
     private async Task ExecuteReturn()
     {
+        if (appState.CurrentShift == null)
+        {
+            navigationManager.NavigateTo("/shift-decision");
+            return ; 
+        }
         confirmingReturn = false;
-        var result = await invoiceService.ReturnInvoice(invoiceToReturnId);
+        var result = await invoiceService.ReturnInvoice(invoiceToReturnId , appState.CurrentUser!.Id , appState.CurrentShift!.Id  );
         if (result.IsSuccess)
         {
             await LoadInvoicesAsync();
@@ -405,4 +413,5 @@
         await Task.Delay(3000);
         errorMessage = null!;
     }
+   
 }

@@ -39,13 +39,13 @@ namespace ClothingStoreManagement.Application.Services
 
         public async Task<Result<ShiftDTO>> GetOpenShiftAsync()
         {
-            var shift = await _db.Shifts.GetAll()
+            var shift = await _db.Shifts.GetAll().Include(s => s.User)  
                 .OrderByDescending(s => s.Id).FirstOrDefaultAsync(s => s.EndTime == null);
             if (shift == null) 
                 return Result<ShiftDTO>.Failure("No open shift found.", ErrorType.notFound);
             
             var expectedCash = await _db.Invoices.GetAll()
-                .Where(t => t.ShiftId == shift.Id)
+                .Where(t => t.ShiftId == shift.Id && t.Status == InvoiceStatus.completed)
                 .SumAsync(t => t.TotalAmountWithDiscount);   
             return Result<ShiftDTO>.Success(new ShiftDTO
             {

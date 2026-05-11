@@ -15,11 +15,9 @@ namespace ClothingStoreManagement.Domain.Entities
         public User User { get; set; } = null!;
         private ShiftTransaction() { }
 
-        public ShiftTransaction(int shiftId, decimal amount, TransactionType type, string description)
+        public ShiftTransaction(int userId, int shiftId, decimal amount, TransactionType type, string description)
         {
-            if (amount <= 0) throw new ArgumentException("المبلغ لازم يكون أكبر من صفر");
-            if (string.IsNullOrWhiteSpace(description)) throw new ArgumentException("لازم توصف الفلوس دي رايحة فين");
-
+            UserId = userId;    
             ShiftId = shiftId;
             Amount = amount;
             Type = type;

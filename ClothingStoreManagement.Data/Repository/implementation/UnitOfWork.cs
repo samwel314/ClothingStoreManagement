@@ -17,6 +17,7 @@
             Users = new UserRepository(_db);    
             Shifts = new ShiftRepository(_db);      
             PaymentSources = new PaymentSourceRepository(_db);
+            ShiftTransactions = new ShiftTransactionRepository(_db);
         }
 
         public IColorRepository Colors { get; private set; }
@@ -31,6 +32,7 @@
         public IUserRepository Users { get; private set; }
         public IShiftRepository Shifts { get; private set; }
         public IPaymentSourceRepository PaymentSources { get; private set; }
+        public IShiftTransactionRepository ShiftTransactions { get; private set;     }
         public async Task Save()
         {
             await _db.SaveChangesAsync();

@@ -2,7 +2,7 @@
 @inject UserService UserService
 @inject AppState AppState
 @inject NavigationManager Nav
-
+@inject ShiftService ShiftService
 <div class="login-screen">
     @* كارت الدخول *@
     <div class="login-card">
@@ -144,8 +144,16 @@
         if (result.IsSuccess)
         {
             AppState.Login(result.Data!);
-
-            Nav.NavigateTo("/");
+            // *-*- *-* 
+            var shiftResult = await ShiftService.GetOpenShiftAsync(); 
+            if (shiftResult.IsSuccess)
+            {
+                  Nav.NavigateTo("/shift-decision");
+            }
+            else
+            {                                
+                Nav.NavigateTo("/open-shift");
+            }          
         }
         else
         {

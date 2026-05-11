@@ -1,0 +1,185 @@
+﻿@page "/shift-decision"
+@inject NavigationManager Nav
+@inject AppState AppState
+@inject ShiftService ShiftService
+  
+<div class=" d-flex align-items-center justify-content-center bg-light px-3" dir="rtl">
+
+    <div class="col-12 col-lg-8 col-xl-7">
+
+        @if (ActiveShift == null)
+        {
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body text-center py-5">
+
+                    <div class="spinner-border text-secondary mb-3"></div>
+
+                    <p class="text-muted mb-0">
+                        جارِ تحميل بيانات الوردية...
+                    </p>
+
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <!-- Header -->
+                <div class="bg-white border-bottom p-4">
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                        <div>
+                            <h3 class="fw-bold mb-1 text-dark">
+                                استكمال الوردية
+                            </h3>
+
+                            <p class="text-muted mb-0 small">
+                                يوجد شيفت مفتوح حالياً على النظام
+                            </p>
+                        </div>
+
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:70px;height:70px;">
+
+                            <i class="bi bi-clock-history fs-3 text-secondary"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="row g-3 mb-4">
+
+
+                        <div class="col-md-4">
+
+                            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+                                <div class="text-muted small mb-2">
+                                    المسؤول
+                                </div>
+
+                                <div class="fw-bold fs-5">
+                                    @ActiveShift.OpenBy
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+                                <div class="text-muted small mb-2">
+                                    النقدية المتوقعة
+                                </div>
+
+                                <div class="fw-bold fs-4">
+                                    @ActiveShift.ExpectedCash.ToString("N0")
+
+                                    <span class="fs-6 text-muted">
+                                        EGP
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+
+                                <div class="text-muted small mb-2">
+                                    وقت البداية
+                                </div>
+
+                                <div class="fw-semibold">
+                                    @ActiveShift.StartTime.ToString("yyyy/MM/dd")
+                                </div>
+
+                                <div class="text-muted small mt-1">
+                                    @ActiveShift.StartTime.ToString("hh:mm tt")
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-md-row gap-2">
+
+                        <button @onclick="HandleContinue"
+                                class="btn btn-dark rounded-3 px-4 py-3 flex-fill fw-semibold">
+
+                            <i class="bi bi-arrow-left-circle ms-1"></i>
+                            متابعة العمل
+                        </button>
+
+                        <button @onclick="HandleStartNew"
+                                class="btn btn-outline-secondary rounded-3 px-4 py-3 flex-fill fw-semibold">
+
+                            <i class="bi bi-arrow-repeat ms-1"></i>
+                            وردية جديدة
+                        </button>
+
+                    </div>
+
+                    <div class="text-center mt-3">
+
+                        <button @onclick="HandleLogout"
+                                class="btn btn-outline-info text-muted text-decoration-none">
+
+                            تسجيل الخروج
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+@code {
+    public ShiftDTO? ActiveShift { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ShiftService.GetOpenShiftAsync();
+
+        if (result.IsSuccess)
+        {
+            ActiveShift = result.Data;  
+        }
+        else
+        {
+            Nav.NavigateTo("/open-shift");
+        }
+    }
+    private void HandleContinue()
+    {
+        AppState.SetCurrentShift(ActiveShift!);
+        Nav.NavigateTo("/pos");
+    }
+
+    private void HandleStartNew()
+    {
+        Nav.NavigateTo($"/open-shift");
+    }
+
+    private void HandleLogout()
+    {
+        // كود تسجيل الخروج
+        Nav.NavigateTo("/login");
+    }
+}

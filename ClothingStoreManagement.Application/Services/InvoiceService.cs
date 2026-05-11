@@ -13,18 +13,18 @@ namespace ClothingStoreManagement.Application.Services
     {
         private readonly IUnitOfWork _db;
         private readonly IMapper _mapper;
-        private readonly AppState _appState;
 
         public InvoiceService(IUnitOfWork db, IMapper mapper, AppState appState)
         {
             _db = db;
             _mapper = mapper;
-            _appState = appState;
         }
 
-        public async Task<Result<InvoiceDTO>> CreateInvoiceAsync()
+        public async Task<Result<InvoiceDTO>> CreateInvoiceAsync(int shiftId, int userId)
         {
             var invoice = new Invoice();
+            invoice.SetUser(userId); 
+            invoice.SetShift(shiftId);   
             await _db.Invoices.CreateAsync(invoice);
             await _db.Save();
             _db.Clear();
@@ -57,7 +57,7 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<InvoiceItemDetailsDto>.Failure("هذا المنتج غير متوفر الان ", ErrorType.notFound);
             return Result<InvoiceItemDetailsDto>.Success(variantDto);
         }
-        public async Task<Result<string>> PendingInvoiceWithItems(InvoiceDTO dto)
+        public async Task<Result<string>> PendingInvoiceWithItems(InvoiceDTO dto ,int shiftId ,  int userId )
         {
             if (dto.Items.Count() == 0)
                 return Result<string>.Failure("لا يكن انشاء او ارشافة  فاتورة فارغة ", ErrorType.notFound);
@@ -81,13 +81,18 @@ namespace ClothingStoreManagement.Application.Services
             }
             invoice.SetTotalWithDiscount(dto.TotalAmountWithDiscount);
             invoice.SetTotal(dto.TotalAmount);
+
+            if (invoice.UserId != userId)
+                invoice.SetUser(userId);
+            if (invoice.ShiftId != shiftId)
+                invoice.SetShift(shiftId);
             invoice.Items = newItems;
             await _db.Save();
             _db.Clear();
 
             return Result<string>.Success(" تم ارشافة الفاتور ");
         }
-        public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto)
+        public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto , int shiftId, int userId)
         {
             if (dto.Items.Count() == 0)
                 return Result<InvoiceDTO>.Failure("لا يكن انشاء او ارشافة  فاتورة فارغة ", ErrorType.notFound);
@@ -128,7 +133,7 @@ namespace ClothingStoreManagement.Application.Services
                     Type = MovementType.Sale,
                     CreatedAt = DateTime.UtcNow,
                     ReferenceId = targetInvoice.Serial,
-                    CreatedByUserId = _appState.CurrentUser!.Id   
+                    CreatedByUserId = userId
                 });
                 newItems.Add(new InvoiceItem(item.Quantity, variant.SellingPrice, variant.PurchasePrice, item.Discount)
                 {
@@ -140,6 +145,12 @@ namespace ClothingStoreManagement.Application.Services
             targetInvoice.SetTotal(dto.TotalAmount);
             targetInvoice.UpdateStatus(InvoiceStatus.completed);
             targetInvoice.Items = newItems;
+
+            if (targetInvoice.UserId != userId)
+                targetInvoice.SetUser(userId);
+            if (targetInvoice.ShiftId != shiftId)
+                targetInvoice.SetShift(shiftId);
+
             await _db.Save();
             _db.Clear();
             dto.Id = targetInvoice.Id;
@@ -220,7 +231,7 @@ namespace ClothingStoreManagement.Application.Services
         }
 
 
-        public async Task<Result<string>> ReturnInvoice(int id)
+        public async Task<Result<string>> ReturnInvoice(int id , int userId, int shiftId)
         {
             var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items)
                 .ThenInclude(i => i.ProductVariant).FirstOrDefaultAsync(i => i.Id == id);
@@ -238,10 +249,17 @@ namespace ClothingStoreManagement.Application.Services
                     Type = MovementType.Return,
                     CreatedAt = DateTime.UtcNow,
                     ReferenceId = invoice.Serial,
-                    CreatedByUserId = _appState.CurrentUser!.Id
+                    CreatedByUserId = userId    
                 });
             }
             invoice.UpdateStatus(InvoiceStatus.returned);
+            if (invoice.UserId != userId)
+                invoice.SetUser(userId);
+            if (invoice.ShiftId != shiftId)
+                invoice.SetShift(shiftId);
+
+            await _db.ShiftTransactions.CreateAsync(new 
+                ShiftTransaction ( userId , shiftId , -1 * invoice.TotalAmountWithDiscount , TransactionType.Out,   $"مرتجع فاتورة رقم {invoice.Serial}"));
             await _db.Save();
             _db.Clear();
             return Result<string>.Success("تمت إعادة الفاتورة بنجاح");
@@ -315,5 +333,5 @@ namespace ClothingStoreManagement.Application.Services
 
 
 
-    }
+}
 

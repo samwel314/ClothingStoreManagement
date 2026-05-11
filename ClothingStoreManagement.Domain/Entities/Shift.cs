@@ -9,7 +9,7 @@ namespace ClothingStoreManagement.Domain.Entities
             ValidateCash(initialCash); 
             InitialCash = initialCash;
             UserId = userId;
-            StartTime = DateTime.UtcNow;    
+            StartTime = DateTime.Now;    
         }
         public int Id { get; private set; }
         public DateTime StartTime { get; private set; } 
@@ -19,7 +19,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public int UserId { get; private set; }
         [ForeignKey("UserId")]
         public User User { get; set; } = null!;
-        public int ClosedByUserId { get; private set; } 
+        public int ? ClosedByUserId { get; private set; } 
         [ForeignKey("ClosedByUserId")]
         public User ClosedByUser { get; set; } = null!; 
         public IEnumerable<Invoice> Invoices { get; set; } = new List<Invoice>(); 
