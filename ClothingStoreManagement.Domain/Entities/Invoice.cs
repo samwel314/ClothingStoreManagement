@@ -9,8 +9,10 @@
         public decimal TotalAmount { get; private set; } // مجموع سعر البيع لكل الأصناف في الفاتورة
         public decimal TotalAmountWithDiscount { get; private set; }
         public InvoiceStatus Status { get; private set; } = InvoiceStatus.pending;
+        public int UserId { get; private set; } 
+        public User User { get; set; } = null!; 
         public int ShiftId { get; private set; }        
-        public Shift Shift { get;  set; } = null!; // كل فاتورة مرتبطة بشفت معين 
+        public Shift Shift { get;  set; } = null!; 
         public void SetTotal(decimal total) => TotalAmount = total;
         public void SetShift(int shiftId) => ShiftId = shiftId;     
         public void SetTotalWithDiscount(decimal total) => TotalAmountWithDiscount = total;

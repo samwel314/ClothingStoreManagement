@@ -10,6 +10,8 @@
         IInvoiceRepository Invoices { get; }
         IStockMovementRepository Movements { get; } 
         IUserRepository Users { get; }  
+        IShiftRepository Shifts { get; }    
+        IPaymentSourceRepository PaymentSources { get; }    
         Task Save();
         void Clear(); //
     }

@@ -68,7 +68,6 @@
         {
             UpdatedAt = DateTime.Now;
         }
-        // لازم include ProductVariant
         public void AddVariant(ProductVariant variant)
         {
             if (variant == null)

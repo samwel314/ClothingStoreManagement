@@ -15,6 +15,8 @@
             Invoices = new InvoiceRepository(_db);
             Movements = new StockMovementRepository(_db);
             Users = new UserRepository(_db);    
+            Shifts = new ShiftRepository(_db);      
+            PaymentSources = new PaymentSourceRepository(_db);
         }
 
         public IColorRepository Colors { get; private set; }
@@ -27,6 +29,8 @@
         public IInvoiceRepository Invoices { get; private set; }
         public IStockMovementRepository Movements { get; private set; }
         public IUserRepository Users { get; private set; }
+        public IShiftRepository Shifts { get; private set; }
+        public IPaymentSourceRepository PaymentSources { get; private set; }
         public async Task Save()
         {
             await _db.SaveChangesAsync();

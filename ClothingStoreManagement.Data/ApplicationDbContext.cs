@@ -20,6 +20,9 @@ namespace ClothingStoreManagement.Data
         public DbSet<StockMovement> Movements { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Shift> Shifts { get; set; }    
+        public DbSet<InvoicePayment> InvoicePayments { get; set; }  
+        public DbSet<PaymentSource> PaymentSources { get; set; }    
+        public DbSet<ShiftTransaction> ShiftTransactions { get; set; }      
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -65,6 +68,11 @@ namespace ClothingStoreManagement.Data
                     t.HasCheckConstraint("CK_Product_SellingPrice_GreaterThanZero", "[SellingPrice] > 0 ");
                     t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
                 });
+                modelBuilder.Entity<ProductVariant>(entity =>
+                {
+                    entity.Property(e => e.SellingPrice).HasConversion<double>();
+                    entity.Property(e => e.PurchasePrice).HasConversion<double>();
+                });
 
                 modelBuilder.Entity<ProductVariant>()
                                     .Property(p => p.Id)
@@ -81,23 +89,63 @@ namespace ClothingStoreManagement.Data
             //-*-*-*-*Invoice
             modelBuilder.Entity<Invoice>().HasIndex(i => i.Serial).IsUnique();
             modelBuilder.Entity<Invoice>().Property(v => v.Serial).HasMaxLength(50);
+
+            modelBuilder.Entity<Invoice>(entity =>
+            {
+                entity.Property(e => e.TotalAmount).HasConversion<double>();
+                entity.Property(e => e.TotalAmountWithDiscount).HasConversion<double>();
+            });
+
             // -*-*-*-* InvoiceItem
             modelBuilder.Entity<InvoiceItem>()
                 .Property(p => p.ProductVariantId)
                 .HasConversion(
                 v => v.ToString().ToLower(),
                 v => Guid.Parse(v));
-
+            modelBuilder.Entity<InvoiceItem>(entity =>
+            {
+                entity.Property(e => e.SellingPrice).HasConversion<double>();
+                entity.Property(e => e.PurchasePrice).HasConversion<double>();
+                entity.Property(e => e.Discount).HasConversion<double>();
+            });
             // *--* User 
 
             modelBuilder.Entity<User>()
             .HasIndex(u => u.UserName)
             .IsUnique();
+            /// -***-* Shift 
+            modelBuilder.Entity<Shift>()
+    .HasIndex(s => s.EndTime)
+    .HasFilter("[EndTime] IS NULL"); 
 
             modelBuilder.Entity<User>().HasData ( new User ("Samuel" ,
                "$2a$11$evS/J.Lp6vL8vL8vL8vL8ueXGvS/J.Lp6vL8vL8vL8vL8ueXG", UserRole.Admin)
             {
                     Id = 1  
+            });
+   
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var properties = entityType.GetProperties()
+                    .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
+
+                foreach (var property in properties)
+                {
+                    property.SetColumnType("DATETIME");
+                }
+            }
+            modelBuilder.Entity<Shift>(entity =>
+            {
+                entity.Property(e => e.InitialCash).HasConversion<double>();
+                entity.Property(e => e.FinalCashInDrawer).HasConversion<double>();
+            });
+            modelBuilder.Entity<InvoicePayment>(entity =>
+            {
+                entity.Property(e => e.Amount).HasConversion<double>();
+            });
+            modelBuilder.Entity<ShiftTransaction>(entity =>
+            {
+                entity.Property(e => e.Amount).HasConversion<double>();
             });
         }
     }

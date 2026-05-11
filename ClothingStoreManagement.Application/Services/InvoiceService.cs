@@ -281,7 +281,7 @@ namespace ClothingStoreManagement.Application.Services
 
             return new HomeDTO
             {
-                TotalProducts = await _db.ProductVariants.GetAll().CountAsync(),
+                TotalProducts = await _db.ProductVariants.GetAll().SumAsync(pv=>pv.StockQuantity),
 
                 TotalDayInvoices = todayInvoices.Count,
 
