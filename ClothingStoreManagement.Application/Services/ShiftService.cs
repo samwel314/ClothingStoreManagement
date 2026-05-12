@@ -33,28 +33,35 @@ namespace ClothingStoreManagement.Application.Services
                 InitialCash = dto.InitialCash,
                 StartTime   = shift.StartTime,  
                 OpenBy = _appState.CurrentUser!.UserName    , 
-                CloseBy = null  
+ 
             });   
         }
-
+        /// هنا عشان ال Session 
         public async Task<Result<ShiftDTO>> GetOpenShiftAsync()
         {
             var shift = await _db.Shifts.GetAll().Include(s => s.User)  
                 .OrderByDescending(s => s.Id).FirstOrDefaultAsync(s => s.EndTime == null);
             if (shift == null) 
                 return Result<ShiftDTO>.Failure("No open shift found.", ErrorType.notFound);
-            
-            var expectedCash = await _db.Invoices.GetAll()
-                .Where(t => t.ShiftId == shift.Id && t.Status == InvoiceStatus.completed)
-                .SumAsync(t => t.TotalAmountWithDiscount);   
+
+            var payments = await _db.InvoicePayments.GetAll()
+                .Where(p => p.Invoice.ShiftId == shift.Id)
+                .GroupBy(p => new { p.PaymentSource.Name, p.PaymentSource.IsCashSource })
+                .Select(g => new PaymentTypeSummary
+                {
+                    Name = g.Key.Name,
+                    IsCashSource = g.Key.IsCashSource,
+                    TotalAmount = g.Sum(p => p.Amount)
+                })
+                .ToListAsync();
+            // 
             return Result<ShiftDTO>.Success(new ShiftDTO
             {
                 Id = shift.Id,
                 InitialCash = shift.InitialCash,
                 StartTime = shift.StartTime,
                 OpenBy = shift.User.UserName,
-                ExpectedCash = shift.InitialCash+ expectedCash,    
-                CloseBy = null
+    
             });
         }
     }

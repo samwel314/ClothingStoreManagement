@@ -2,7 +2,7 @@
 
 namespace ClothingStoreManagement.Data.Repository
 {
-    public interface IUserRepository : IBaseRepository<User>
+    public interface IInvoicePaymentRepository : IBaseRepository<InvoicePayment>
     {
     } 
 }

@@ -147,6 +147,15 @@ namespace ClothingStoreManagement.Data
             {
                 entity.Property(e => e.Amount).HasConversion<double>();
             });
+
+            modelBuilder.Entity<Shift>(entity =>
+            {
+                entity.Property(e => e.TotalSalesCash).HasConversion<double>();
+                entity.Property(e => e.TotalSalesNonCash).HasConversion<double>();
+                entity.Property(e => e.TotalReturns).HasConversion<double>();
+                entity.Property(e => e.Difference).HasConversion<double>();
+
+            });
         }
     }
 }

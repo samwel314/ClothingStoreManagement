@@ -5,6 +5,7 @@
         public int Id { get; private set; }
         public string Name { get; private set; } = null!;
         public bool IsActive { get; private set; }
+        public bool IsCashSource { get; private set; } = false!;    
         private PaymentSource() { }
         public PaymentSource(string name)
         {

@@ -13,6 +13,7 @@
         IShiftRepository Shifts { get; }    
         IPaymentSourceRepository PaymentSources { get; }   
         IShiftTransactionRepository ShiftTransactions {  get; }
+        IInvoicePaymentRepository InvoicePayments { get; }  
         Task Save();
         void Clear(); //
     }

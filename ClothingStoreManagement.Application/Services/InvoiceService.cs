@@ -259,7 +259,7 @@ namespace ClothingStoreManagement.Application.Services
                 invoice.SetShift(shiftId);
 
             await _db.ShiftTransactions.CreateAsync(new 
-                ShiftTransaction ( userId , shiftId , -1 * invoice.TotalAmountWithDiscount , TransactionType.Out,   $"مرتجع فاتورة رقم {invoice.Serial}"));
+                ShiftTransaction ( userId , shiftId , -1 * invoice.TotalAmountWithDiscount , TransactionType.Return,   $"مرتجع فاتورة رقم {invoice.Serial}"));
             await _db.Save();
             _db.Clear();
             return Result<string>.Success("تمت إعادة الفاتورة بنجاح");
