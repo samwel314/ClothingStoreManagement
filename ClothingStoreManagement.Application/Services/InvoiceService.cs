@@ -92,10 +92,13 @@ namespace ClothingStoreManagement.Application.Services
 
             return Result<string>.Success(" تم ارشافة الفاتور ");
         }
-        public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto , int shiftId, int userId)
+        public async Task<Result<InvoiceDTO>> CompleteInvoiceWithItems(InvoiceDTO dto , int shiftId, int userId , IEnumerable<PaymentPartDto> payments)
         {
             if (dto.Items.Count() == 0)
                 return Result<InvoiceDTO>.Failure("لا يكن انشاء او ارشافة  فاتورة فارغة ", ErrorType.notFound);
+            if (payments.Sum(p=>p.Amount)!= dto.TotalAmountWithDiscount)
+                return Result<InvoiceDTO>.Failure("تاكد من بيانات وسائل الدفع  ", ErrorType.notFound);
+
             var invoice = await _db.Invoices.GetAll(true).Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == dto.Id);
             if (invoice == null)
                 return Result<InvoiceDTO>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
@@ -151,6 +154,21 @@ namespace ClothingStoreManagement.Application.Services
             if (targetInvoice.ShiftId != shiftId)
                 targetInvoice.SetShift(shiftId);
 
+            var CashPart = payments.Where(p=>p.IsCash).FirstOrDefault();    
+            if (CashPart!= null)
+            {
+              await  _db.ShiftTransactions.CreateAsync (
+                                new    ShiftTransaction(userId, shiftId, 
+                               CashPart.Amount, TransactionType.Sale, $"بيع فاتورة رقم  {targetInvoice.Serial}"));
+            }
+            foreach (var part in payments)
+            {
+              await  _db.InvoicePayments.CreateAsync
+                    (new InvoicePayment(targetInvoice.Id, part.PaymentSourceId, part.Amount, part.Reference)
+                    {
+                        Invoice = targetInvoice
+                    }); 
+            }
             await _db.Save();
             _db.Clear();
             dto.Id = targetInvoice.Id;

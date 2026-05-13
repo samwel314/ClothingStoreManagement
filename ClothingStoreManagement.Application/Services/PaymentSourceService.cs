@@ -69,5 +69,18 @@ namespace ClothingStoreManagement.Application.Services
 
             return Result<string>.Success("تم تحديث الحالة بنجاح");
         }
+
+        public async Task <Result< IEnumerable<PaymentPartDto>>> GetPaymentSourcesAsync()
+        {
+            var PaymentSources = await _db.PaymentSources.GetAll()
+                .Select(c => new PaymentPartDto
+                {
+                    PaymentSourceId  = c.Id, 
+                    Name = c.Name,
+                    IsCash  = c.IsCashSource ,
+                }).ToListAsync();
+            return Result<IEnumerable<PaymentPartDto>>.Success(PaymentSources);
+        }
     }
+    
 }

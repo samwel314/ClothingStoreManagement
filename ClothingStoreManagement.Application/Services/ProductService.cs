@@ -176,7 +176,7 @@ namespace ClothingStoreManagement.Application.Services
     .Where(i => i.Status == InvoiceStatus.completed)
     .SelectMany(i => i.Items)
     .Where(ii => ii.ProductVariant.ProductId == p.Id)
-    .Sum(ii => (ii.SellingPrice - ii.PurchasePrice) * ii.Quantity) 
+    .Sum(ii => ( (ii.SellingPrice * (1 -  ii.Discount / 100 )) - ii.PurchasePrice) * ii.Quantity ) 
                 }).FirstOrDefaultAsync((p) => p.Id == Id);
             if (product == null)
                 return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
@@ -188,7 +188,7 @@ namespace ClothingStoreManagement.Application.Services
                 GroupBy(ii => ii.ProductVariantId)!
                 .Select(g => new TopVariantDTO
                 {
-                    Total = g.Sum(x => x.Quantity * (x.SellingPrice - x.PurchasePrice)),
+                    Total = g.Sum(x => x.Quantity * ( (x.SellingPrice * (1 - x.Discount / 100)) - x.PurchasePrice)),
                     Id = g.Key , 
                     Size = g.First().ProductVariant.Size.Code,
                     Code = g.First().ProductVariant.Color.Code

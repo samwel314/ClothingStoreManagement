@@ -8,7 +8,7 @@
         public int PaymentSourceId { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public string? Reference { get; private set; } 
-        public Invoice Invoice { get; private set; } = null!;
+        public Invoice Invoice { get;  set; } = null!;
         public PaymentSource PaymentSource { get; private set; } = null!;
         private InvoicePayment() { }
 
