@@ -56,7 +56,7 @@ This system isn't just a CRUD application; it implements strict **Business Rules
 1.  **Environment:** Ensure [Visual Studio 2022](https://visualstudio.microsoft.com/) is installed with .NET 10 SDK.
 2.  **Clone & Build:**
     ```bash
-    git clone [https://github.com/your-username/clothing-store-management.git](https://github.com/your-username/clothing-store-management.git)
+    git clone [https://github.com/samwel314/ClothingStoreManagement]
     ```
 3.  **Run:** Set the WPF project as your Startup Project and hit `F5`.
 
