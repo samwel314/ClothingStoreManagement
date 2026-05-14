@@ -1,5 +1,8 @@
 ﻿@page "/dashboard"
 @inject InvoiceService invoiceService
+@inject NavigationManager navigationManager
+@inject ShiftService shiftService       
+@inject AppState appState   
 @if (confirmingReturn)
 {
     <div class="modal fade show" id="returnModal" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5);">
@@ -131,7 +134,7 @@
         </div>
     </div>
 }
-<div class="row g-3 align-items-center mb-4">
+
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -142,179 +145,181 @@
             </div>
         </div>
     }
-        <div class="col-lg-4 d-flex align-items-center gap-3">
-            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
+      
+    
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white overflow-hidden" dir="rtl">
+
+    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 p-2 rounded-3">
                 <i class="bi bi-receipt text-primary fs-4"></i>
             </div>
-            <h3 class="fw-bold text-secondary mb-0">إدارة الفواتير</h3>
-        </div>
-
-        <div class="col-lg-5">
-            <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
-                <button class="btn btn-primary rounded-pill px-4 fw-bold" type="button">
-               ابحث 
-                </button>
-                
-            <input @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" type="text"
-                       class="form-control border-0 bg-transparent text-end"
-                       placeholder="ابحث برقم الفاتورة أو اسم العميل..."
-                       style="box-shadow: none;" />
-                
-                <span class="input-group-text bg-transparent border-0 text-muted px-3">
-                    <i class="bi bi-search"></i>
-                </span>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">إدارة الفواتير</h5>
+                <p class="text-muted small mb-0">فلترة ومراجعة سجل العمليات</p>
             </div>
         </div>
-
-        <div class="col-lg-3 text-start">
-            <a href="/pos" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2"
-                    style="height: 56px;">
-                <i class="bi bi-plus-circle fs-5"></i>
-                <span>فاتورة جديدة</span>
-            </a>
-        </div>
+        <a href="/pos" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>فاتورة جديدة</span>
+        </a>
     </div>
 
+    <div class="card-body p-4">
 
+        <div class="row g-3 align-items-center">
+            
 
-<div class="card border-0 shadow-sm rounded-4 p-3 mb-4" dir="rtl">
-    <div class="row g-3 align-items-end justify-content-center">
-        
-        <div class="col-md-3">
-            <label class="form-label small fw-bold text-muted mb-1">📅 من تاريخ:</label>
-            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
-                   @bind="StartDate" style="text-align: right;" />
-        </div>
-        
-        <div class="col-md-3">
-            <label class="form-label small fw-bold text-muted mb-1">📅 إلى تاريخ:</label>
-            <input type="date" class="form-control form-control-sm rounded-pill border-light-subtle shadow-sm px-3"
-                   @bind="EndDate" style="text-align: right;" />
-        </div>
+            <div class="col-lg-4">
+                <div class="input-group rounded-pill border bg-light p-1">
+                    <span class="input-group-text bg-transparent border-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text"  class="form-control border-0 bg-transparent shadow-none"
+                           placeholder="بحث برقم الفاتورة ..." @bind:event="oninput" @bind="searchTerm" @bind:after="ApplySearch" >
+                </div>
+            </div>
 
-        <div class="col-md-6 d-flex justify-content-center mt-4 mt-md-0">
-            <div class="btn-group p-1 bg-white rounded-pill border shadow-sm">
-                <button @onclick='() => FilterByStatus(null)'
-                        class="btn rounded-pill px-4 @(status == null ? "btn-primary shadow-sm" : "btn-outline-secondary border-0")">
-                    الكل
-                </button>
+ 
+            <div class="col-lg-4">
+                <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 border">
+                    <input type="date" class="form-control form-control-sm border-0 bg-transparent shadow-none" @bind="StartDate">
+                    <span class="text-muted small">إلى</span>
+                    <input type="date" class="form-control form-control-sm border-0 bg-transparent shadow-none" @bind="EndDate">
+                </div>
+            </div>
 
-                <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
-                        class="btn rounded-pill px-4 @(status == InvoiceStatus.pending ? "btn-warning shadow-sm text-dark" : "btn-outline-warning border-0")">
-                    المسودات
-                </button>
-
-                <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
-                        class="btn rounded-pill px-4 @(status == InvoiceStatus.completed ? "btn-success shadow-sm" : "btn-outline-success border-0")">
-                    المدفوعة
-                </button>
-
-                <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
-                        class="btn rounded-pill px-4 @(status == InvoiceStatus.returned ? "btn-danger shadow-sm" : "btn-outline-danger border-0")">
-                    المرتجعة
-                </button>
+   
+            <div class="col-lg-4">
+                <div class="btn-group w-100 bg-light p-1 rounded-pill border" role="group">
+                    <button @onclick='() => FilterByStatus(null)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == null ? "btn-primary shadow-sm" : "text-muted")">
+                        الكل
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.pending)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.pending ? "btn-warning shadow-sm" : "text-muted")">
+                        مسودة
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.completed)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.completed ? "btn-success shadow-sm" : "text-muted")">
+                        مدفوع
+                    </button>
+                    <button @onclick='() => FilterByStatus(InvoiceStatus.returned)'
+                            class="btn btn-sm rounded-pill border-0 fw-semibold @(status == InvoiceStatus.returned ? "btn-danger shadow-sm" : "text-muted")">
+                        مرتجع
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="table-responsive text-nowrap">
+
+
+<style>
+    /* تحسينات لجمالية المدخلات */
+    .form-control:focus {
+        background-color: transparent;
+    }
+    
+    .btn-group .btn {
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    /* لإخفاء أيقونة الكالندر الافتراضية وجعل الشكل أنضف */
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0.5;
+        cursor: pointer;
+    }
+</style>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="table-light py-3">
+                <thead class="table-light">
                     <tr>
                         <th class="py-3">رقم الفاتورة</th>
-                        <th class="py-3">التاريخ</th>
+                        <th class="py-3 text-start px-4">التاريخ والوقت</th>
                         <th class="py-3">الإجمالي</th>
                         <th class="py-3">الحالة</th>
                         <th class="py-3">الإجراءات</th>
                     </tr>
                 </thead>
-            <tbody>
-                @if (invoices != null)
-                {
-                    foreach (var invoice in invoices)
+                <tbody>
+                    @if (invoices != null && invoices.Any())
                     {
-                        <tr>
-                            <td class="fw-bold text-primary">#@invoice.Serial</td>
-                
-                            <td>
-                                <span class="text-secondary">@invoice.LastUpdatedAt.ToString("dd/MM/yyyy")</span>
-                                <span class="mx-1 text-muted">|</span>
-                                <span class="fw-bold">@invoice.LastUpdatedAt.ToString("hh:mm tt")</span>
-                            </td>
-
-                            <td class="fw-bold">@invoice.TotalAmount ج.م</td>
-
-                            <td>
-                                @if (invoice.Status == InvoiceStatus.pending)
-                                {
-                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2" style="min-width: 100px;">
-                                        <i class="bi bi-pencil-square me-1"></i> مسودة
-                                    </span>
-                                }
-                                else if (invoice.Status == InvoiceStatus.completed)
-                                {
-                                    <span class="badge rounded-pill bg-success px-3 py-2" style="min-width: 100px;">
-                                        <i class="bi bi-check-circle me-1"></i> مدفوعة
-                                    </span>
-                                }
-                                else if (invoice.Status == InvoiceStatus.returned)
-                                {
-                                    <span class="badge rounded-pill bg-danger px-3 py-2" style="min-width: 100px;">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i> مرتجع
-                                    </span>
-                                }
-                            </td>
-
- 
-                            <td>
-                                <div class="d-flex justify-content-center gap-2">
-                                    @if (invoice.Status == InvoiceStatus.pending)
+                        foreach (var invoice in invoices)
+                        {
+                            <tr>
+                                <td class="fw-bold text-primary">#@invoice.Serial</td>
+                                <td class="text-start px-4 small">
+                                    <div class="fw-bold text-dark">@invoice.LastUpdatedAt.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@invoice.LastUpdatedAt.ToString("hh:mm tt")</div>
+                                </td>
+                                <td class="fw-bold">@invoice.TotalAmount.ToString("N0") ج.م</td>
+                                <td>
+                                    @if (invoice.Status == InvoiceStatus.completed)
                                     {
-                                        <a href="/pos/@invoice.Id.ToString()"
-                                               class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-inline-flex align-items-center">
-                                            <i class="bi bi-pencil-square me-2"></i>
-                                            تكملة الفاتورة
-                                        </a>
-                                        <button @onclick="()=> Remove(invoice.Id)" class="btn btn-sm btn-outline-danger rounded-circle p-2">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    }
-                                    else if (invoice.Status == InvoiceStatus.completed)
-                                    {
-                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
-                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
-                                            <i class="bi bi-eye-fill me-2"> </i> 
-                                              عرض  
-                                        </button>
-
-                                        <button @onclick="() => ReturnInvoice(invoice.Id, invoice.Serial)"
-                                                class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-inline-flex align-items-center">
-                                            <i class="bi bi-arrow-counterclockwise me-2"></i>
-                                            مرتجع
-                                        </button>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                            <i class="bi bi-check-circle-fill ms-1"></i> مدفوعة
+                                        </span>
                                     }
                                     else if (invoice.Status == InvoiceStatus.returned)
                                     {
-                                        <button @onclick="() => OpenDetailsModal(invoice.Id)"
-                                                class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center">
-                                            <i class="bi bi-eye-fill me-2"></i>
-                                            عرض
-                                        </button>
-                                        <a  href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" >
-                                            <i class="bi bi-pencil-square"></i> تعديل واستكمال
-                                        </a>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">
+                                            <i class="bi bi-arrow-counterclockwise ms-1"></i> مرتجع
+                                        </span>
                                     }
-                                </div>
-                            </td>
-                        </tr>
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-3 py-2 rounded-pill">
+                                            <i class="bi bi-pencil-square ms-1"></i> مسودة
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group shadow-sm border rounded-pill bg-white px-1 overflow-hidden">
+                                        @if (invoice.Status == InvoiceStatus.pending)
+                                        {
+                                            <a href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-white text-primary border-0" title="تكملة">
+                                                <i class="bi bi-play-circle-fill fs-5"></i>
+                                            </a>
+                                            <button @onclick="() => Remove(invoice.Id)" class="btn btn-sm btn-white text-danger border-0" title="حذف">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button @onclick="() => OpenDetailsModal(invoice.Id)" class="btn btn-sm btn-white text-dark border-0" title="عرض التفاصيل">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </button>
+                                            @if (invoice.Status == InvoiceStatus.completed)
+                                            {
+                                                <button @onclick="() => ReturnInvoice(invoice.Id, invoice.Serial)" class="btn btn-sm btn-white text-danger border-0" title="عمل مرتجع">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            }
+                                            @if (invoice.Status == InvoiceStatus.returned)
+                                            {
+                                                <a href="/pos/@invoice.Id.ToString()" class="btn btn-sm btn-white text-info border-0" title="تعديل">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-            </tbody>
+                </tbody>
             </table>
         </div>
     </div>
+</div>
 
 @code
 {
@@ -386,8 +391,13 @@
     }
     private async Task ExecuteReturn()
     {
+        if (appState.CurrentShift == null)
+        {
+            navigationManager.NavigateTo("/shift-decision");
+            return ; 
+        }
         confirmingReturn = false;
-        var result = await invoiceService.ReturnInvoice(invoiceToReturnId);
+        var result = await invoiceService.ReturnInvoice(invoiceToReturnId , appState.CurrentUser!.Id , appState.CurrentShift!.Id  );
         if (result.IsSuccess)
         {
             await LoadInvoicesAsync();
@@ -403,4 +413,5 @@
         await Task.Delay(3000);
         errorMessage = null!;
     }
+   
 }

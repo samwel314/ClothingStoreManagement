@@ -1,0 +1,310 @@
+﻿@page "/users"
+@inject UserService UserService 
+@if (ShowEditModal)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold"> تعديل بيانات : @UserToEdit.UserName </h5>
+                </div>
+                <EditForm Model="@UserToEdit" OnValidSubmit="HandleEditSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">اسم المستخدم</label>
+                            <InputText class="form-control" @bind-Value="UserToEdit.UserName" />
+                            <ValidationMessage For="@(() => UserToEdit.UserName)" class="text-danger small" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">تغيير كلمة المرور (اختياري)</label>
+                            <InputText type="password" class="form-control" @bind-Value="UserToEdit.Password" placeholder="اتركه فارغاً لعدم التغيير" />
+                            <ValidationMessage For="@(() => UserToEdit.Password)" class="text-danger small" />
+
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">الدور</label>
+                            <InputSelect class="form-select" @bind-Value="UserToEdit.Role">
+                                @foreach (var role in Enum.GetValues<UserRole>())
+                                {
+                                    <option value="@role">@(role == UserRole.Admin ? "مدير نظام" : "كاشير")</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light px-4" @onclick="CloseEditModal">إلغاء</button>
+                        <button type="submit" class="btn btn-dark px-4">حفظ التعديلات</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+@if (ShowAddModal)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">إضافة موظف جديد</h5>
+                </div>
+                
+                @* استخدام EditForm وربطه بالكائن NewUser *@
+                <EditForm Model="@NewUser" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator /> @* بيفعل الـ Regex والـ Required اللي في الـ User.cs *@
+                    
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">اسم المستخدم</label>
+                            <InputText class="form-control" @bind-Value="NewUser.UserName" placeholder="ahmed_2024" />
+                            <ValidationMessage For="@(() => NewUser.UserName)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">كلمة المرور</label>
+                            <InputText type="password" class="form-control" @bind-Value="NewUser.Password" placeholder="******" />
+                            <ValidationMessage For="@(() => NewUser.Password)" class="text-danger small" />
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">دور الموظف</label>
+                            <InputSelect class="form-select" @bind-Value="NewUser.Role">
+                                @foreach (var role in Enum.GetValues<UserRole>())
+                                {
+                                    <option value="@role">@(role == UserRole.Admin ? "مدير نظام" : "كاشير")</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light px-4" @onclick="CloseModal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary px-4">حفظ البيانات</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+<div class="container-fluid p-4" dir="rtl">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-3"></i>
+    
+            <div class="flex-grow-1">
+                &nbsp;@errorMessage
+            </div>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-errorMessagesm border-0 mb-4 d-flex align-items-center" role="alert" dir="rtl" style="padding-left: 3rem;">
+            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+            &nbsp;
+            <div>
+                <strong class="ms-1">تم بنجاح!</strong>
+                <span>@successMessage</span>
+            </div>
+        </div>
+    }
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold m-0">إدارة موظفي النظام</h4>
+            <small class="text-secondary">عرض وتحكم في صلاحيات الكاشير والمديرين</small>
+        </div>
+        <button @onclick="OpenAddUser" class="btn btn-primary shadow-sm px-4">
+            <i class="bi bi-person-plus-fill ms-1"></i> إضافة موظف جديد
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">اسم المستخدم</th>
+                            <th class="py-3">الدور</th>
+                            <th class="py-3">الحالة</th>
+                            <th class="py-3">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Users != null && Users.Any())
+                        {
+                            foreach (var user in Users)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@user.UserName</td>
+                                    <td>
+                                        @if (user.RoleName == UserRole.Admin)
+                                        {
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3">
+                                                <i class="bi bi-shield-lock-fill ms-1"></i> مدير نظام
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3">
+                                                <i class="bi bi-pc-display ms-1"></i> كاشير
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success text-white px-3" style="font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill ms-1"></i> نشط
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger text-white px-3" style="font-size: 0.75rem;">
+                                                <i class="bi bi-x-circle-fill ms-1"></i> معطل
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" dir="ltr">
+                                            <button @onclick=" () => OpenEditModle(user)" class="btn btn-sm btn-outline-dark" title="تعديل">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        
+                                            @if (user.IsActive)
+                                            {
+                                                <button class="btn btn-sm btn-outline-danger px-3" @onclick="() => ToggleStatus(user)">
+                                                    تعطيل <i class="bi bi-person-x-fill ms-1"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-outline-success px-3" @onclick="() => ToggleStatus(user)">
+                                                    تنشيط <i class="bi bi-person-check-fill ms-1"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+          
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private IEnumerable<UserDto> Users;
+    private CreateUserDto NewUser ; 
+    private UpdateUserDto UserToEdit ; 
+    private bool ShowAddModal = false;  
+    private bool ShowEditModal = false; 
+    private string errorMessage = null!;
+    private string successMessage = null!;
+    private async Task LoadData ()
+    {
+        Users = await UserService.GetAllUsersAsync();        
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData() ; 
+    }   
+    private void CloseModal ()
+    {
+        ShowAddModal = false;
+        NewUser = null; // إعادة تعيين النموذج عند إغلاق المودال
+    }
+
+    private async   Task ToggleStatus(UserDto user)
+    {
+        Result<string> result;
+        if (user.IsActive)
+        {
+            result = await UserService.DeActiveUserAsync(user.Id);
+        }
+        else
+        {
+            result = await UserService.ActiveUserAsync(user.Id);
+        }
+        if (result.IsSuccess)
+        {
+            user.IsActive = !user.IsActive;
+
+            await ShowSuccess(user.IsActive ? "تم تعطيل الموظف بنجاح." : "تم تنشيط الموظف بنجاح.") ; 
+        }
+        else
+        {
+            await ShowError(result.ErrorMessage ?? "حدث خطأ أثناء تحديث حالة الموظف.");
+        }   
+    }
+    private async Task HandleValidSubmit()
+    {
+        var result =   await  UserService.Register (NewUser) ; 
+        ShowAddModal = false;   
+        if (result.IsSuccess)
+        {
+            CloseModal();
+
+            await LoadData();
+
+            await ShowSuccess("تم إضافة الموظف بنجاح.");
+        }
+        else
+        {
+            await ShowError(result.ErrorMessage ?? "حدث خطأ أثناء إضافة الموظف.");
+        }
+    }
+    private async Task ShowError(string ErrorMessage)
+    {
+        errorMessage = ErrorMessage;
+        await Task.Delay(3000);
+        errorMessage = null!;
+    }
+    private async Task ShowSuccess(string SucsussMessage)
+    {
+        successMessage = SucsussMessage;
+        await Task.Delay(3000);
+        successMessage = null!;
+    }
+    private void OpenAddUser()
+    {
+        NewUser = new CreateUserDto(); 
+        ShowAddModal = true;
+    }
+    private async Task HandleEditSubmit()
+    {
+        var result = await UserService.UpdateUserData(UserToEdit);
+        ShowEditModal = false;
+        if (result.IsSuccess)
+        {
+            await LoadData();
+
+            await ShowSuccess("تم تعديل البيانات بنجاح.");
+        }
+        else
+        {
+            await ShowError(result.ErrorMessage ?? "حدث خطأ أثناء تعديل البيانات.");
+        }
+    }
+    private void CloseEditModal(MouseEventArgs args)
+    {
+       ShowEditModal = false;   
+    }
+    private void OpenEditModle(UserDto user )
+    {
+        ShowEditModal    = true;  
+        UserToEdit = new UpdateUserDto()
+        {
+            Id = user.Id,   
+            UserName    = user.UserName,    
+            Role    = user.RoleName,      
+        };
+    }
+}

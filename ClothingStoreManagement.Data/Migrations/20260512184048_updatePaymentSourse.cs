@@ -5,25 +5,25 @@
 namespace ClothingStoreManagement.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class updateInvocieModel : Migration
+    public partial class updatePaymentSourse : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "TotalAmountWithDiscount",
-                table: "Invoices",
-                type: "TEXT",
+            migrationBuilder.AddColumn<bool>(
+                name: "IsCashSource",
+                table: "PaymentSources",
+                type: "INTEGER",
                 nullable: false,
-                defaultValue: 0m);
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "TotalAmountWithDiscount",
-                table: "Invoices");
+                name: "IsCashSource",
+                table: "PaymentSources");
         }
     }
 }

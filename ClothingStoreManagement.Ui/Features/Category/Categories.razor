@@ -1,6 +1,6 @@
 ﻿@page "/categories"
 @inject CategoryService CategoryService
-
+@inject AppState AppState   
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -27,10 +27,7 @@
     </div>
 }
 
-@* --- رأس الصفحة والبحث --- *@
-<!-- الكود المحدث للجزء الخاص بالبحث والعناوين -->
 <div class="row align-items-center mb-4 g-4" dir="rtl">
-    <!-- العنوان ووصف القسم -->
     <div class="col-lg-4 text-end">
         <div class="d-flex align-items-center justify-content-start flex-row-reverse">
             <div class="bg-info bg-opacity-10 p-3 rounded-3 shadow-sm">
@@ -46,12 +43,9 @@
 
     <div class="col-lg-5">
         <div class="input-group shadow-sm rounded-pill bg-white p-1 border">
-            <!-- زر البحث بشكل دائري بسيط -->
             <button class="btn btn-primary rounded-pill px-4" @onclick="LoadData">
                 <i class="bi bi-search me-1"></i> بحث
             </button>
-            
-            <!-- حقل الإدخال -->
             <input @bind="searchTerm"
                    @bind:event="oninput"
                    type="text"
@@ -59,7 +53,6 @@
                    placeholder="ابحث عن فئة معينة..."
                    style="box-shadow: none;" />
             
-            <!-- قائمة الفلترة -->
             <select @bind="statusFilter"
                     class="form-select border-0 bg-transparent text-muted fw-bold border-start"
                     style="max-width: 110px; box-shadow: none; cursor: pointer;">
@@ -69,21 +62,21 @@
             </select>
         </div>
     </div>
+    @if (AppState.CurrentUser?.Role == UserRole.Admin)
+    {
+        <div class="col-lg-3 text-start">
+            <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all"
+                    @onclick="OpenAddModal"
+                    style="height: 48px;">
+                <i class="bi bi-plus-circle fs-5"></i>
+                <span> فئة جديدة</span>
+            </button>
+        </div>
 
-    <!-- زر الإضافة -->
-    <div class="col-lg-3 text-start">
-        <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all"
-                @onclick="OpenAddModal"
-                style="height: 48px;">
-            <i class="bi bi-plus-circle fs-5"></i>
-            <span> فئة جديدة</span>
-        </button>
-    </div>
+    }
 </div>
-@* --- الجدول --- *@
 <CategoryGrid Categories="allCategories" OnEdit="Edit" OnToggleStatus="ToggleStatus" />
 
-@* --- Modal الإضافة والتعديل --- *@
 @if (isModalOpen)
 {
     <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;">

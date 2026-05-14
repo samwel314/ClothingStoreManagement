@@ -9,6 +9,11 @@
         IProductProductVariantRepository ProductVariants { get; }
         IInvoiceRepository Invoices { get; }
         IStockMovementRepository Movements { get; } 
+        IUserRepository Users { get; }  
+        IShiftRepository Shifts { get; }    
+        IPaymentSourceRepository PaymentSources { get; }   
+        IShiftTransactionRepository ShiftTransactions {  get; }
+        IInvoicePaymentRepository InvoicePayments { get; }  
         Task Save();
         void Clear(); //
     }

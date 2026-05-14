@@ -1,11 +1,16 @@
-﻿<div class="card shadow-sm border-0 mt-3" dir="rtl">
+﻿@inject AppState AppState   
+<div class="card shadow-sm border-0 mt-3" dir="rtl">
     <div class="card-body p-0">
         <table class="table table-striped table-hover align-middle mb-0">
             <thead style="background-color: #0d6efd; color: white;">
                 <tr>
                     <th class="py-3 ps-4" style="width: 45%;">اسم المقاس</th>
                     <th class="py-3 text-center" style="width: 35%;">الكود</th>
-                    <th class="py-3 text-center pe-4" style="width: 20%;">الإجراءات</th>
+                    @if (AppState.CurrentUser?.Role == UserRole.Admin)
+                    {
+                        <th class="py-3 text-center pe-4" style="width: 20%;">الإجراءات</th>
+
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -18,11 +23,15 @@
                             <td class="text-center">
                                 <span class="badge bg-light text-primary border px-3">@size.Code</span>
                             </td>
-                            <td class="text-center pe-4">
-                                <button class="btn btn-outline-primary btn-sm border-0" @onclick="() => OnEdit.InvokeAsync(size)">
-                                    <i class="bi bi-pencil-square fs-5"></i>
-                                </button>
-                            </td>
+                            @if (AppState.CurrentUser?.Role == UserRole.Admin)
+                            {
+                                <td class="text-center pe-4">
+                                    <button class="btn btn-outline-primary btn-sm border-0" @onclick="() => OnEdit.InvokeAsync(size)">
+                                        <i class="bi bi-pencil-square fs-5"></i>
+                                    </button>
+                                </td>
+                            }
+             
                         </tr>
                     }
                 }

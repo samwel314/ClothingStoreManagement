@@ -4,7 +4,7 @@ namespace ClothingStoreManagement.Application.DTO
 {
     public class HomeDTO
     {
-        public DateOnly ThisDay { get; set; } = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+        public DateOnly ThisDay { get; set; } = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
         public int TotalDayInvoices { get; set; }
         public decimal TotalDayRevenue { get; set; }
         public decimal PreviousDayRevenue { get; set; }

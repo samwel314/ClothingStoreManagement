@@ -1,0 +1,165 @@
+﻿@page "/login"
+@inject UserService UserService
+@inject AppState AppState
+@inject NavigationManager Nav
+@inject ShiftService ShiftService
+<div class="login-screen">
+    @* كارت الدخول *@
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-circle">
+                <i class="bi bi-person-fill-lock"></i>
+            </div>
+            <h3 class="fw-bold m-0">نظام الملابس <span class="text-primary"> @DateTime.Now.Year</span></h3>
+            <p class="text-muted small">تسجيل دخول الموظفين</p>
+        </div>
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            
+            <div class="mb-3">
+                <div class="custom-input">
+                    <i class="bi bi-person"></i>
+                    <InputText @bind-Value="loginModel.UserName" placeholder="اسم المستخدم" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.UserName)" class="text-danger x-small" />
+            </div>
+
+            <div class="mb-4">
+                <div class="custom-input">
+                    <i class="bi bi-key"></i>
+                    <InputText type="password" @bind-Value="loginModel.Password" placeholder="كلمة المرور" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger x-small" />
+            </div>
+
+            <button type="submit" class="login-btn" disabled="@isProcessing">
+                @if (isProcessing) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                دخول للنظام
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="error-msg">@error</div>
+        }
+
+        <div class="brand-footer">
+            <div class="divider"></div>
+            <span class="dev-name">Developed By: <b>Eng. Samuel Marzouk</b></span>
+            <span class="dev-phone"> 01005415303  <i class="bi bi-whatsapp"></i> </span>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    .login-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #f4f7f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999; 
+        overflow: hidden;
+        direction: rtl;
+    }
+
+    .login-card {
+        background: white;
+        width: 380px;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    .logo-circle {
+        width: 70px;
+        height: 70px;
+        background: #f0f7ff;
+        color: #0d6efd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        margin: 0 auto 15px;
+    }
+
+    .custom-input {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 10px 15px;
+        border: 1px solid #eee;
+    }
+
+    .custom-input i { color: #0d6efd; margin-left: 10px; }
+    .custom-input input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #0d6efd;
+        color: white;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .login-btn:hover { background: #0b5ed7; transform: translateY(-2px); }
+
+    .brand-footer { margin-top: 30px; display: flex; flex-direction: column; gap: 5px; }
+    .divider { height: 1px; background: #eee; width: 100%; margin-bottom: 10px; }
+    .dev-name { font-size: 13px; color: #555; }
+    .dev-phone { font-size: 12px; color: #0d6efd; font-weight: bold; }
+    .error-msg { background: #fff5f5; color: #e53e3e; padding: 8px; border-radius: 8px; margin-top: 15px; font-size: 13px; }
+    .x-small { font-size: 11px; }
+</style>
+@code {
+    private LoginRequestDto loginModel = new();
+    private string? error;
+    private bool isProcessing = false;
+
+    private async Task HandleLogin()
+    {
+        isProcessing = true;
+        error = null;
+
+        var result = await UserService.LoginAsync(loginModel);
+
+        if (result.IsSuccess)
+        {
+            AppState.Login(result.Data!);
+            // *-*- *-* 
+            var shiftResult = await ShiftService.GetOpenShiftAsync(); 
+            if (shiftResult.IsSuccess)
+            {
+                  Nav.NavigateTo("/shift-decision");
+            }
+            else
+            {                                
+                Nav.NavigateTo("/open-shift");
+            }          
+        }
+        else
+        {
+            error = result.ErrorMessage;
+        }
+
+        isProcessing = false;
+    }
+}

@@ -1,5 +1,6 @@
 ﻿@page "/sizes"
 @inject SizeService SizeService
+@inject AppState AppState   
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
@@ -28,15 +29,12 @@
 }
 
 <div class="row align-items-center mb-4 g-4" dir="rtl">
-    <!-- العنوان ووصف القسم - مطرف لليسار مع أيقونة المقاسات -->
     <div class="col-lg-4 text-start">
         <div class="d-flex align-items-center justify-content-end">
-            <!-- النص مع المسافة المظبوطة ms-4 للفصل عن الأيقونة -->
             <div class="ms-4 text-end">
                 <h3 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">إدارة المقاسات</h3>
                 <p class="text-muted small mb-0">ضبط وتعديل مقاسات الملابس (S, M, L, XL...)</p>
             </div>
-            <!-- أيقونة المقاسات مع خلفية بنفسجي هادية -->
             <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow-sm">
                 <i class="bi bi-rulers text-primary fs-4"></i>
             </div>
@@ -63,16 +61,18 @@
             </span>
         </div>
     </div>
+    @if (AppState.CurrentUser?.Role == UserRole.Admin)
+    {
+        <div class="col-lg-3 text-start">
+            <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all hover-lift"
+                    @onclick="() => OpenAddModal()"
+                    style="height: 48px;">
+                <i class="bi bi-plus-circle fs-5"></i>
+                <span>مقاس جديد</span>
+            </button>
+        </div>
+    }
 
-    <!-- زر إضافة مقاس جديد -->
-    <div class="col-lg-3 text-start">
-        <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all hover-lift"
-                @onclick="() => OpenAddModal()"
-                style="height: 48px;">
-            <i class="bi bi-plus-circle fs-5"></i>
-            <span>مقاس جديد</span>
-        </button>
-    </div>
 </div>
 
 <SizeGrid Sizes="allSizes" OnEdit="Edit" />

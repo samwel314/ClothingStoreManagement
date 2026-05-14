@@ -11,11 +11,15 @@ namespace ClothingStoreManagement.Application.Services
     {
         private readonly IUnitOfWork _db;
         private readonly IMapper _mapper;
-        public ProductService(IUnitOfWork db, IMapper mapper)
+        private readonly AppState _appState;
+
+        public ProductService(IUnitOfWork db, IMapper mapper, AppState appState)
         {
             _db = db;
             _mapper = mapper;
+            _appState = appState;
         }
+
         public async Task<Result<string>> CreateProductAsync(CreateProductWithVariantsDto dto)
         {
             var categoryExist = await _db.Categories.ExistsAsync((c) => c.Id == dto.CategoryId);
@@ -60,8 +64,9 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = variant.StockQuantity,
                     StockAfter = variant.StockQuantity, 
                     Type = MovementType.Restock,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    CreatedAt = DateTime.Now ,
+                  CreatedByUserId = _appState.CurrentUser!.Id
+              });
                 Product.AddVariant(variant);
             }
 
@@ -171,7 +176,7 @@ namespace ClothingStoreManagement.Application.Services
     .Where(i => i.Status == InvoiceStatus.completed)
     .SelectMany(i => i.Items)
     .Where(ii => ii.ProductVariant.ProductId == p.Id)
-    .Sum(ii => (ii.SellingPrice - ii.PurchasePrice) * ii.Quantity) 
+    .Sum(ii => ( (ii.SellingPrice * (1 -  ii.Discount / 100 )) - ii.PurchasePrice) * ii.Quantity ) 
                 }).FirstOrDefaultAsync((p) => p.Id == Id);
             if (product == null)
                 return Result<ProductListDto>.Failure("هذا المنتج غير موجود", ErrorType.notFound);
@@ -183,7 +188,7 @@ namespace ClothingStoreManagement.Application.Services
                 GroupBy(ii => ii.ProductVariantId)!
                 .Select(g => new TopVariantDTO
                 {
-                    Total = g.Sum(x => x.Quantity * (x.SellingPrice - x.PurchasePrice)),
+                    Total = g.Sum(x => x.Quantity * ( (x.SellingPrice * (1 - x.Discount / 100)) - x.PurchasePrice)),
                     Id = g.Key , 
                     Size = g.First().ProductVariant.Size.Code,
                     Code = g.First().ProductVariant.Color.Code
@@ -288,7 +293,8 @@ namespace ClothingStoreManagement.Application.Services
                 QuantityChange = variant.StockQuantity,
                 StockAfter = variant.StockQuantity,
                 Type = MovementType.Restock,
-                CreatedAt = DateTime.UtcNow , 
+                CreatedAt = DateTime.Now ,
+                CreatedByUserId = _appState.CurrentUser!.Id
             });
             product.UpdateChanges();
             await _db.Save();
@@ -326,7 +332,8 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = temp,
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.ManualEdit,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = _appState.CurrentUser!.Id
                 });
 
                 isChanged = true;
@@ -386,7 +393,7 @@ namespace ClothingStoreManagement.Application.Services
                     Type = m.Type,
                     ReferenceId = m.ReferenceId,
                     CreatedAt = m.CreatedAt,
-                    CreatedBy = m.CreatedBy
+                    CreatedBy = m.CreatedByUser == null ? "" : m.CreatedByUser.UserName,   
                 }).ToListAsync();
             return Result<IEnumerable<VariantMovementsDTO>>.Success(movements);
         }

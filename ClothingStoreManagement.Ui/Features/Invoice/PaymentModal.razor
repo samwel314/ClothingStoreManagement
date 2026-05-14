@@ -1,0 +1,172 @@
+﻿<div class="modal-backdrop fade show"></div>
+<div class="modal d-block" tabindex="-1" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;"> @* حجم ملموم جداً للنافذة *@
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0 text-dark">دفع الفاتورة</h5>
+                    <button type="button" class="btn-close" @onclick="OnCancel"></button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3">
+                    <span class="text-muted">المبلغ المطلوب سداده:</span>
+                    <h3 class="fw-bold m-0 text-dark">@InvoiceTotal.ToString("N2") <small style="font-size: 0.9rem;">ج.م</small></h3>
+                </div>
+
+                <div class="mb-4">
+                    @foreach (var part in PaymentParts.Where(x => x.IsVisible))
+                    {
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-2 bg-white rounded-pill border shadow-sm animate-fade-in" style="transition: all 0.3s ease;">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                @if (part.IsCash)
+                                {
+                                    <span class="oi oi-dollar text-success me-2" style="font-size: 1.2rem;"></span>
+                                }
+                                else
+                                {
+                                    <span class="oi oi-credit-card text-primary me-2" style="font-size: 1.2rem;"></span>
+                                }
+                                <span class="fw-bold text-dark">@part.Name</span>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" class="form-control text-end p-1 border-0 bg-light"
+                                       style="width: 100px; font-weight: bold; border-radius: 15px;"
+                                       @bind="part.Amount" @bind:event="oninput" />
+                                <span class="text-muted small me-2">ج.م</span>
+              
+                                @if (!part.IsCash)
+                                {
+                                         <input type="text" 
+                                                           class="form-control form-control-sm mt-1 @(string.IsNullOrEmpty(part.Reference) ? "border-danger" : "border-success")" 
+                                                           placeholder="رقم العملية (مطلوب) *" 
+                                                           @bind="part.Reference" 
+                                                           @bind:event="oninput"
+                                                           required
+                                                           style="border-radius: 10px; font-size: 0.8rem; border-width: 2px;" />
+
+                                                    @if (string.IsNullOrEmpty(part.Reference))
+                                                    {
+                                                        <small class="text-danger" style="font-size: 0.7rem;">يجب إدخال رقم المرجع للعملية</small>
+                                                    }
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 me-1" @onclick="() => HidePart(part)" title="إزالة">
+                                        &times;
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @{ var hiddenParts = PaymentParts.Where(x => !x.IsVisible).ToList(); }
+                @if (hiddenParts.Any())
+                {
+                    <div class="mb-4 d-flex justify-content-center flex-wrap gap-2 animate-fade-in">
+                        @foreach (var p in hiddenParts)
+                        {
+                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" @onclick="() => ShowPart(p)">
+                                + @p.Name
+                            </button>
+                        }
+                    </div>
+                }
+
+                <hr class="mb-4 border-light">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded-3 shadow-inner">
+                    <span class="text-muted">المتبقي:</span>
+                    <h4 class="fw-bold m-0 @(RemainingAmount == 0 ? "text-success" : "text-danger")">
+                        @RemainingAmount.ToString("N2") <small style="font-size: 0.9rem;">ج.م</small>
+                    </h4>
+                </div>
+                
+                @* الأزرار: عريضة وسهلة جداً للتاتش *@
+                <div class="d-flex gap-3">
+                    <button type="button" class="btn btn-light btn-lg flex-grow-1 py-3" style="border-radius: 15px; font-weight: 600;" @onclick="OnCancel">إلغاء</button>
+             <button type="button" class="btn btn-success btn-lg flex-grow-1 py-3 shadow" 
+        disabled="@(!IsReadyToConfirm())" 
+        @onclick="OnConfirm" 
+        style="border-radius: 15px; font-weight: 600;">
+    تأكيد وطباعة 
+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-content input[type=number]::-webkit-inner-spin-button, 
+    .modal-content input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    .modal-content input[type=number] {
+        -moz-appearance: textfield;
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.4s;
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .shadow-inner {
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+</style>
+
+
+
+@code {
+    [Parameter, EditorRequired] public decimal InvoiceTotal { get; set; }
+    [Parameter, EditorRequired] public IEnumerable<PaymentPartDto> PaymentParts { get; set; }
+    [Parameter, EditorRequired] public EventCallback<List<PaymentPartDto>> OnPaymentConfirmed { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnCancel { get; set; }
+
+    private decimal RemainingAmount => InvoiceTotal - PaymentParts.Sum(x => x.Amount);
+
+    private bool IsReadyToConfirm()
+    {
+        bool isTotalSettled = RemainingAmount == 0;
+
+        bool allReferencesProvided = PaymentParts
+            .Where(p => p.IsVisible && !p.IsCash && p.Amount > 0)
+            .All(p => !string.IsNullOrWhiteSpace(p.Reference));
+
+        return isTotalSettled && allReferencesProvided;
+    }
+
+    protected override void OnInitialized()
+    {
+        var cash = PaymentParts.FirstOrDefault(x => x.IsCash);
+        if (cash != null)
+        {
+            cash.IsVisible = true;
+            if (PaymentParts.Sum(x => x.Amount) == 0) cash.Amount = InvoiceTotal;
+        }
+    }
+
+    private void ShowPart(PaymentPartDto part)
+    {
+        part.IsVisible = true;
+        part.Amount = RemainingAmount > 0 ? RemainingAmount : 0;
+    }
+
+    private void HidePart(PaymentPartDto part)
+    {
+        part.IsVisible = false;
+        part.Amount = 0;
+        part.Reference = string.Empty; 
+    }
+
+    private async Task OnConfirm() 
+    {
+        
+        if (IsReadyToConfirm())
+        {
+            await OnPaymentConfirmed.InvokeAsync(PaymentParts.Where(x => x.Amount > 0).ToList());
+        }
+    }
+}

@@ -6,7 +6,7 @@
         public string Name { get; private set; } = null!;
         public string SKU { get; private set; } = null!; // الباركود - رقم المنتج - رقم تسلسلي
         public bool IsActive { get; private set; } = true;
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; private set; }
         public int CategoryId { get; private set; }
         public Category Category { get; private set; } = null!; // حريمي - رجالي - أطفال
@@ -40,35 +40,34 @@
         {
             ValidateName(name);
             Name = name;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public void UpdateSKU(string sku)
         {
             ValidateSKU(sku);
             SKU = sku;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
 
         public void Activate()
         {
             IsActive = true;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public void Deactivate()
         {
             IsActive = false;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public void ChangeCategory(int categoryId)
         {
             CategoryId = categoryId;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public void UpdateChanges() // if add any change to the product we will call this method to update the updated at time
         {
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
-        // لازم include ProductVariant
         public void AddVariant(ProductVariant variant)
         {
             if (variant == null)
@@ -79,7 +78,7 @@
                 Variants = new List<ProductVariant>();
             var variants = new List<ProductVariant>(Variants) { variant };
             Variants = variants;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public IEnumerable<ProductVariant> Variants { get; private set; } = null!;
     }

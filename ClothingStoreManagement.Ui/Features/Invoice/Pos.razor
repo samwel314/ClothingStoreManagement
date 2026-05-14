@@ -1,6 +1,15 @@
 ﻿@page "/pos/{invoiceId:int}"
 @page "/pos"
+@using ClothingStoreManagement.Ui.Features.Payment
 @inject InvoiceService invoiceService
+@inject AppState appState
+@inject NavigationManager nav
+@inject PaymentSourceService paymentSourceService
+@if (paymentsModel)
+{
+    <PaymentModal OnCancel="Cancel" OnPaymentConfirmed="Confirm" PaymentParts="@payments" InvoiceTotal="@currentInvoice!.TotalAmountWithDiscount"></PaymentModal>
+}
+
 @if (isPrintingMode && savedInvoiceDto != null)
 {
 
@@ -176,8 +185,8 @@ else
                             </div>
                             <!-- أزرار التحكم -->
                             <div class="d-grid gap-2 mt-4">
-                                <button @onclick="CompleteInvoice" class="btn btn-outline-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
-                                    <i class="bi bi-printer-fill me-2"></i> طباعة وحفظ (F5)
+                                <button @onclick="()=> OpenModel()" class="btn btn-outline-primary btn-lg py-3 fw-bold shadow-sm rounded-3">
+                                    <i class="bi bi-printer-fill me-2"></i> ادفع الان ! 
                                 </button>
                                 @if  (currentInvoice.Status == InvoiceStatus.pending)
                                 {
@@ -208,10 +217,15 @@ else
     private string successMessage = null !; 
     InvoiceDTO? savedInvoiceDto; 
     bool isPrintingMode = false;
-
-
+    bool paymentsModel = false ; 
+    IEnumerable <PaymentPartDto> payments ; 
     protected override async Task OnInitializedAsync()
     {
+        if (appState.CurrentShift == null)
+        {
+            nav.NavigateTo("/shift-decision");
+            return;
+        }
         if (invoiceId != 0)
         {
             var result  = await  invoiceService.GetInvoiceById(invoiceId) ; 
@@ -220,6 +234,8 @@ else
                 currentInvoice = result.Data;
             }
         }
+        var payResult = await paymentSourceService.GetPaymentSourcesAsync(); 
+        payments = payResult.Data!  ; 
     }
     private void CalcTotal ()
     {
@@ -269,7 +285,7 @@ else
             {
                 if (currentInvoice!.Id == 0) 
                 {
-                    var invoiceResult = await invoiceService.CreateInvoiceAsync();
+                    var invoiceResult = await invoiceService.CreateInvoiceAsync(appState.CurrentShift!.Id , appState.CurrentUser!.Id);
                     if (invoiceResult.IsSuccess)
                     {
                         currentInvoice.Id = invoiceResult.Data!.Id;
@@ -297,7 +313,7 @@ else
     }
     private async Task PendingInvoice( )
     {
-        var result =   await invoiceService.PendingInvoiceWithItems(currentInvoice) ; 
+        var result = await invoiceService.PendingInvoiceWithItems(currentInvoice, appState.CurrentShift!.Id, appState.CurrentUser!.Id);
         if (result.IsSuccess)
         {
             await ShowSuccess (result.Data) ; 
@@ -310,8 +326,8 @@ else
     }
     private async Task CompleteInvoice()
     {
-        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice); //[cite: 2]
-    
+        var result = await invoiceService.CompleteInvoiceWithItems(currentInvoice, appState.CurrentShift!.Id, appState.CurrentUser!.Id , payments); //[cite: 2]
+
         if (result.IsSuccess)
         {
 
@@ -343,6 +359,25 @@ else
             SerialNumber = $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now:HHmmss}"
         };
         // هنا ممكن تصفر الـ currentInvoice لتبدأ فاتورة جديدة
+    }
+
+    private async Task Confirm(IEnumerable <PaymentPartDto>  pays )
+    {
+        payments = pays ;
+        paymentsModel = false;
+        await  CompleteInvoice () ; 
+    }
+
+    private void Cancel ()
+    {
+        paymentsModel = false ; 
+    }
+    private async Task OpenModel()
+    {
+        if (currentInvoice.Items.Any())
+            paymentsModel = true ;
+        else
+            await ShowError("اضف عناصر للفاتروة ") ; 
     }
 }
 

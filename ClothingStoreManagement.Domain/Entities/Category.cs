@@ -5,7 +5,7 @@
         public int Id { get; private set; }
         public string Name { get; private set; } = null!;
         public bool IsActive { get; private set; } = true;
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; private set; }
         private Category() { } // EF Core يحتاجه
         public Category(string name)
@@ -23,12 +23,12 @@
         public void Activate()
         {
             IsActive = true;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         public void Deactivate()
         {
             IsActive = false;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         // to do this business we must pass it from app layer  
         public bool CanBeDeleted(int productsCount) => productsCount == 0;
@@ -37,7 +37,7 @@
             // app layer must check if the name is not the same as the current name to avoid unnecessary update
             ValidateName(name);
             Name = name;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.Now;
         }
         // nav 
         public IEnumerable<Product> Products { get; private set; } = null!;
