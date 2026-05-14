@@ -132,16 +132,6 @@
 
                     </div>
 
-                    <div class="text-center mt-3">
-
-                        <button @onclick="HandleLogout"
-                                class="btn btn-outline-info text-muted text-decoration-none">
-
-                            تسجيل الخروج
-                        </button>
-
-                    </div>
-
                 </div>
 
             </div>
@@ -177,9 +167,4 @@
         Nav.NavigateTo($"/open-shift");
     }
 
-    private void HandleLogout()
-    {
-        // كود تسجيل الخروج
-        Nav.NavigateTo("/login");
-    }
 }

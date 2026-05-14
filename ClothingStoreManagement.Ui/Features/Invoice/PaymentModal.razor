@@ -38,10 +38,18 @@
               
                                 @if (!part.IsCash)
                                 {
-                                         <input type="text" class="form-control form-control-sm mt-1" 
-                                                   placeholder="رقم العملية" 
-                                                   @bind="part.Reference" @bind:event="oninput"
-                                                   style="border-radius: 10px; font-size: 0.8rem;" />
+                                         <input type="text" 
+                                                           class="form-control form-control-sm mt-1 @(string.IsNullOrEmpty(part.Reference) ? "border-danger" : "border-success")" 
+                                                           placeholder="رقم العملية (مطلوب) *" 
+                                                           @bind="part.Reference" 
+                                                           @bind:event="oninput"
+                                                           required
+                                                           style="border-radius: 10px; font-size: 0.8rem; border-width: 2px;" />
+
+                                                    @if (string.IsNullOrEmpty(part.Reference))
+                                                    {
+                                                        <small class="text-danger" style="font-size: 0.7rem;">يجب إدخال رقم المرجع للعملية</small>
+                                                    }
                                     <button type="button" class="btn btn-sm btn-link text-danger p-0 me-1" @onclick="() => HidePart(part)" title="إزالة">
                                         &times;
                                     </button>
@@ -66,7 +74,6 @@
 
                 <hr class="mb-4 border-light">
 
-                @* المتبقي: هادئ جداً *@
                 <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded-3 shadow-inner">
                     <span class="text-muted">المتبقي:</span>
                     <h4 class="fw-bold m-0 @(RemainingAmount == 0 ? "text-success" : "text-danger")">
@@ -77,10 +84,12 @@
                 @* الأزرار: عريضة وسهلة جداً للتاتش *@
                 <div class="d-flex gap-3">
                     <button type="button" class="btn btn-light btn-lg flex-grow-1 py-3" style="border-radius: 15px; font-weight: 600;" @onclick="OnCancel">إلغاء</button>
-                    <button type="button" class="btn btn-success btn-lg flex-grow-1 py-3 shadow" 
-                            disabled="@(RemainingAmount != 0)" @onclick="OnConfirm" style="border-radius: 15px; font-weight: 600;">
-                        تأكيد وطباعة 
-                    </button>
+             <button type="button" class="btn btn-success btn-lg flex-grow-1 py-3 shadow" 
+        disabled="@(!IsReadyToConfirm())" 
+        @onclick="OnConfirm" 
+        style="border-radius: 15px; font-weight: 600;">
+    تأكيد وطباعة 
+</button>
                 </div>
             </div>
         </div>
@@ -118,6 +127,17 @@
 
     private decimal RemainingAmount => InvoiceTotal - PaymentParts.Sum(x => x.Amount);
 
+    private bool IsReadyToConfirm()
+    {
+        bool isTotalSettled = RemainingAmount == 0;
+
+        bool allReferencesProvided = PaymentParts
+            .Where(p => p.IsVisible && !p.IsCash && p.Amount > 0)
+            .All(p => !string.IsNullOrWhiteSpace(p.Reference));
+
+        return isTotalSettled && allReferencesProvided;
+    }
+
     protected override void OnInitialized()
     {
         var cash = PaymentParts.FirstOrDefault(x => x.IsCash);
@@ -138,7 +158,15 @@
     {
         part.IsVisible = false;
         part.Amount = 0;
+        part.Reference = string.Empty; 
     }
 
-    private async Task OnConfirm() => await OnPaymentConfirmed.InvokeAsync(PaymentParts.Where(x => x.Amount > 0).ToList());
+    private async Task OnConfirm() 
+    {
+        
+        if (IsReadyToConfirm())
+        {
+            await OnPaymentConfirmed.InvokeAsync(PaymentParts.Where(x => x.Amount > 0).ToList());
+        }
+    }
 }

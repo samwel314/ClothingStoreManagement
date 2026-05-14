@@ -19,6 +19,8 @@ namespace ClothingStoreManagement.Domain.Entities
         public decimal TotalSalesCash { get; private set; }    
         public decimal TotalSalesNonCash { get; private set; }  
         public decimal TotalReturns { get; private set; }       
+        public decimal TotalExpenses { get; private set; }  
+        public decimal TotalAdjustments { get; private set; }   
         public decimal Difference { get; private set; }
         public int UserId { get; private set; }
         [ForeignKey("UserId")]
@@ -35,17 +37,33 @@ namespace ClothingStoreManagement.Domain.Entities
             if (cash < 0)
                 throw new ArgumentException("Cash amount cannot be negative.");
         }
-        public void CloseShift(decimal finalCashInDrawer, decimal cashSales, decimal nonCashSales, decimal totalReturns, int closedByUserId)
+        public void CloseShift(
+            decimal finalCashInDrawer,
+            decimal cashSales,
+            decimal nonCashSales,
+            decimal totalReturns,
+            decimal totalExpenses,    // القيمة الجديدة للمصاريف
+            decimal totalAdjustments,  // القيمة الجديدة للتسويات
+            int closedByUserId)
         {
             if (!IsActive)
                 throw new InvalidOperationException("Shift is already closed.");
+
+            // تحديث قيم الـ Snapshot
             TotalSalesCash = cashSales;
             TotalSalesNonCash = nonCashSales;
             TotalReturns = totalReturns;
+            TotalExpenses = totalExpenses;     
+            TotalAdjustments = totalAdjustments; 
+
             FinalCashInDrawer = finalCashInDrawer;
             ClosedByUserId = closedByUserId;
             EndTime = DateTime.Now;
-            Difference = finalCashInDrawer - (InitialCash + cashSales - totalReturns);
+
+            decimal expectedCash = InitialCash + cashSales + totalAdjustments - (totalReturns + totalExpenses);
+
+            Difference = finalCashInDrawer - expectedCash;
+
             IsActive = false;
         }
 

@@ -6,6 +6,8 @@ namespace ClothingStoreManagement.Domain.Entities
     {
         public int Id { get; private set; }
         public int ShiftId { get; private set; }
+        [ForeignKey("ShiftId")]
+        public Shift Shift { get;  set; } = null!;
         public decimal Amount { get; private set; }
         public TransactionType Type { get; private set; }
         public string Description { get; private set; } = null!;

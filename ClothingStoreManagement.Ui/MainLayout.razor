@@ -50,15 +50,8 @@
                         <i class="bi bi-rulers ms-2"></i> المقاسات
                     </NavLink>
                 </li>
-                                <li class="mt-2 mb-1 px-2">
-                    <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">المدفوعات </small>
-                </li>
-                <li class="nav-item">
-    <NavLink class="nav-link text-white py-1 px-3 small" href="/payment-sources">
-        <i class="bi bi-wallet2 ms-2"></i> وسائل الدفع
-    </NavLink>
-</li>
-                <li class="mt-2 mb-1 px-2">
+    
+       <li class="mt-2 mb-1 px-2">
                     <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">العمليات اليومية</small>
                 </li>
                 <li class="nav-item">
@@ -66,17 +59,17 @@
                         <i class="bi bi-pc-display-horizontal ms-2"></i> كاشير البيع
                     </NavLink>
                 </li>
-
+                              <li class="nav-item">
+                        <NavLink class="nav-link text-white py-1 px-3 small" href="/shift-management">
+                            <i class="bi bi-safe-fill ms-2"></i> إدارة الوردية
+                        </NavLink>
+                    </li>
                 @if (AppState.CurrentUser?.Role == UserRole.Admin)
                 {
                     <li class="mt-2 mb-1 px-2">
                         <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">الحسابات والنظام</small>
                     </li>
-                    <li class="nav-item">
-                        <NavLink class="nav-link text-white py-1 px-3 small" href="/shift-management">
-                            <i class="bi bi-safe-fill ms-2"></i> إدارة الخزنة
-                        </NavLink>
-                    </li>
+      
                     <li class="nav-item">
                         <NavLink class="nav-link text-white py-1 px-3 small" href="/expenses">
                             <i class="bi bi-cash-stack ms-2"></i> سجل المصاريف
@@ -87,6 +80,12 @@
                             <i class="bi bi-people-fill ms-2"></i> إدارة المستخدمين
                         </NavLink>
                     </li>
+                                    <li class="nav-item">
+    <NavLink class="nav-link text-white py-1 px-3 small" href="/payment-sources">
+        <i class="bi bi-wallet2 ms-2"></i> وسائل الدفع
+    </NavLink>
+</li>
+         
                 }
             </ul>
             

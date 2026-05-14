@@ -72,7 +72,7 @@ namespace ClothingStoreManagement.Application.Services
 
         public async Task <Result< IEnumerable<PaymentPartDto>>> GetPaymentSourcesAsync()
         {
-            var PaymentSources = await _db.PaymentSources.GetAll()
+            var PaymentSources = await _db.PaymentSources.GetAll().Where(s=> s.IsActive)
                 .Select(c => new PaymentPartDto
                 {
                     PaymentSourceId  = c.Id, 

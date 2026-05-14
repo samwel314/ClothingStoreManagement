@@ -13,11 +13,13 @@ namespace ClothingStoreManagement.Application.Services
     {
         private readonly IUnitOfWork _db;
         private readonly IMapper _mapper;
+        private readonly ShiftService _shiftService;
 
-        public InvoiceService(IUnitOfWork db, IMapper mapper, AppState appState)
+        public InvoiceService(IUnitOfWork db, IMapper mapper, ShiftService shiftService)
         {
             _db = db;
             _mapper = mapper;
+            _shiftService = shiftService;
         }
 
         public async Task<Result<InvoiceDTO>> CreateInvoiceAsync(int shiftId, int userId)
@@ -134,7 +136,7 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = -item.Quantity,
                     StockAfter = variant.StockQuantity,
                     Type = MovementType.Sale,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     ReferenceId = targetInvoice.Serial,
                     CreatedByUserId = userId
                 });
@@ -256,6 +258,12 @@ namespace ClothingStoreManagement.Application.Services
 
             if (invoice == null)
                 return Result<string>.Failure("هذا الفاتورة غير موجودة", ErrorType.notFound);
+            decimal availableCash = await _shiftService.GetTotalExpectedCash(shiftId); 
+
+            if (availableCash < invoice.TotalAmountWithDiscount)
+            {
+                return Result<string>.Failure("لا يوجد مبلغ نقدي متاح لاتمام العملية  ", ErrorType.validation);
+            }
             foreach (var item in invoice.Items)
             {
                 item.ProductVariant.Deposit(item.Quantity);
@@ -265,7 +273,7 @@ namespace ClothingStoreManagement.Application.Services
                     QuantityChange = item.Quantity,
                     StockAfter = item.ProductVariant.StockQuantity,
                     Type = MovementType.Return,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     ReferenceId = invoice.Serial,
                     CreatedByUserId = userId    
                 });
@@ -285,7 +293,7 @@ namespace ClothingStoreManagement.Application.Services
 
         public async Task<HomeDTO> LoadHomePageDataAsync()
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var today = DateOnly.FromDateTime(DateTime.Now);
             var yesterday = today.AddDays(-1);
             var invoices = await _db.Invoices.GetAll()
                 .Where(i => i.Status == InvoiceStatus.completed &&
@@ -330,7 +338,7 @@ namespace ClothingStoreManagement.Application.Services
 
         public async Task<List<DailySalesDTO>> GetLast7DaysSalesAsync()
         {
-            var lastWeek = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
+            var lastWeek = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
 
             var sales = await _db.Invoices.GetAll()
                 .AsNoTracking()
