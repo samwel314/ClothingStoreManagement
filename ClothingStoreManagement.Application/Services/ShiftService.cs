@@ -20,7 +20,6 @@ namespace ClothingStoreManagement.Application.Services
             _db = db;
             _appState = appState;
         }
-
         public async Task<Result<ShiftDTO>> CreateShiftAsync(CreateShiftDTO dto)
         {
             var shift = new Shift(dto.InitialCash, _appState.CurrentUser!.Id);
@@ -92,7 +91,6 @@ namespace ClothingStoreManagement.Application.Services
                 Adjustments = adjustments   
             }); 
         }
-
         public async Task <decimal> GetTotalExpectedCash (int shiftId )
         {
             var initial = _db.Shifts.GetAll().Where(s => s.Id == shiftId).Select(s => s.InitialCash).FirstOrDefault(); 
@@ -145,8 +143,6 @@ namespace ClothingStoreManagement.Application.Services
             return Result<IEnumerable<TransactionListDTO>>.Success(transactions); 
         }
 
-
-
         public async Task <Result<string>> CloseShift (int shiftId , decimal actualCash )
         {
             var shift = await _db.Shifts.FirstOrDefaultAsync (s => s.Id == shiftId , true) ;
@@ -172,6 +168,14 @@ namespace ClothingStoreManagement.Application.Services
             var adjustments = transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Adjustment)?.Total ?? 0; ;
 
             shift.CloseShift(actualCash, cashSales, nonCashSales, totalReturns, totalExpenses, adjustments, _appState.CurrentUser.Id);
+            string statusWord = shift.Difference < 0 ? "بعجز " : (shift.Difference > 0 ? "بزيادة " : "منتظمة ");
+
+            string note = $"إغلاق وترحيل نقدية الوردية {statusWord}" +
+                          (shift.Difference != 0 ? $"({Math.Abs(shift.Difference)} ج.م)" : "");
+            await _db.TreasuryTransactions
+                .CreateAsync(new
+                MainTreasuryTransaction(shift.FinalCashInDrawer, TreasuryTransactionType.ShiftTransfer, note, shiftId)); 
+
             await _db.Save();
             _appState.SetCurrentShift(null!);
            return  Result<string>.Success();
