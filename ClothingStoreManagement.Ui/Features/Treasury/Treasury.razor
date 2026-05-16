@@ -1,0 +1,56 @@
+﻿@page "/treasury"
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 text-gray-800 mb-0">إدارة الخزينة الرئيسية</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+            <i class="bi bi-plus-circle"></i> تسجيل حركة يدوي (مصروف / إيداع)
+        </button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-3">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small mb-2">رصيد الخزينة الحالي</h6>
+                    <h3 class="display-6 fw-bold text-warning">5,450 ج.م</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 fw-bold text-primary">دفتر حركات الخزينة التراكمي</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>المبلغ</th>
+                            <th>نوع الحركة</th>
+                            <th>البيان / الملاحظات</th>
+                            <th>الوردية المرتبطة (وقت الإغلاق)</th>
+                            <th>بواسطة</th>
+                            <th>تاريخ حركة الخزنة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-success">+30 ج.م</td>
+                            <td><span class="badge bg-success-subtle text-success rounded-pill px-3">ترحيل وردية</span></td>
+                            <td class="text-muted text-start ps-4">ترحيل النقدية الفعلية للوردية (تم إثبات عجز 20 ج.م خارج الخزنة)</td>
+                            <td>
+                                <a href="/Shifts/Details/12" class="text-decoration-none fw-bold text-primary">
+                                    <i class="bi bi-clock-history"></i> الأحد (02:57 AM)
+                                </a>
+                            </td>
+                            <td>مينا</td>
+                            <td class="small text-muted">2026/05/17 03:00 AM</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

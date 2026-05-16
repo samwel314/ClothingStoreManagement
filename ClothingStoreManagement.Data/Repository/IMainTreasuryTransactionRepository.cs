@@ -2,7 +2,7 @@
 
 namespace ClothingStoreManagement.Data.Repository
 {
-    public interface ICategoryRepository : IBaseRepository<Category>
+    public interface IMainTreasuryTransactionRepository : IBaseRepository<MainTreasuryTransaction>
     {
 
     }
