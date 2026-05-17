@@ -1,23 +1,154 @@
 ﻿@page "/treasury"
+@inject MainTreasuryService TreasuryService
+@if (addTransactionModel)
+{
+    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+        
+        <div class="card shadow p-4 animate__animated animate__fadeInDown" style="width: 100%; max-width: 500px; direction: rtl; text-align: right; background-color: white; border-radius: 10px;">
+            <h3 class="mb-4 text-primary fw-bold">إضافة حركة خزنة رئيسية</h3>
+
+            <EditForm Model="@transactionModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">نوع الحركة المالية</label>
+                    <InputSelect @bind-Value="transactionModel.Type" class="form-select">
+                        <option value="">-- اختر نوع الحركة --</option>
+                        @foreach (var type in Enum.GetValues<TreasuryTransactionType>())
+                        {
+                            @if (type != TreasuryTransactionType.ShiftTransfer)
+                            {
+                                <option value="@type">@GetTranslationToArabic(type)</option>
+                            }
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => transactionModel.Type)" class="text-danger mt-1" />
+                </div>
+                @if (transactionModel.Type == TreasuryTransactionType.ManualAdjustment)
+                {
+                    <div class="mb-3 d-flex align-items-center justify-content-between animate__animated animate__fadeIn bg-light p-2 rounded">
+                        <label class="form-label fw-bold mb-0 text-secondary" style="font-size: 0.9rem;">اتجاه التسوية:</label>
+        
+                        <div class="btn-group" role="group">
+                            <button type="button"
+                                    class="btn btn-sm fw-bold @(transactionModel.IsNegativeAdjustment ? "btn-danger text-white" : "btn-outline-danger")"
+                                    @onclick="() => SetAdjustmentDirection(true)">
+                                <i class="bi bi-dash-circle"></i> عجز
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm fw-bold @(!transactionModel.IsNegativeAdjustment ? "btn-success text-white" : "btn-outline-success")"
+                                    @onclick="() => SetAdjustmentDirection(false)">
+                                <i class="bi bi-plus-circle"></i> زيادة
+                            </button>
+                        </div>
+                    </div>
+                }
+                <div class="mb-3">
+                    <label class="form-label fw-bold">المبلغ (ج.م)</label>
+                    <InputNumber @bind-Value="transactionModel.Amount" class="form-control" placeholder="0.00" />
+                    <ValidationMessage For="@(() => transactionModel.Amount)" class="text-danger mt-1" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">السبب / البيان</label>
+                    <InputTextArea @bind-Value="transactionModel.Notes" class="form-control" rows="3" placeholder="اكتب تفاصيل الحركة هنا..." />
+                    <ValidationMessage For="@(() => transactionModel.Notes)" class="text-danger mt-1" />
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    @if (transactionModel.Amount > CashBalance)
+                    {
+                        <button disabled type="submit" class="btn btn-success px-4">تأكيد العملية</button>
+                        <span class="text-danger"> المبلغ المطلوب اكبر من المخزون </span>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-success px-4">تأكيد العملية</button>
+                    }
+                    <button type="button" class="btn btn-secondary px-4" @onclick="Cancel">إلغاء</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 text-gray-800 mb-0">إدارة الخزينة الرئيسية</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+        <h2 class="h4 text-gray-800 mb-0">إدارة المالية والحسابات</h2>
+        <button class="btn btn-primary" @onclick="OpenTransactionModal">
             <i class="bi bi-plus-circle"></i> تسجيل حركة يدوي (مصروف / إيداع)
         </button>
     </div>
-
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-dark text-white text-center p-3">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow border-start border-4 border-warning bg-dark text-white text-center p-2">
                 <div class="card-body">
-                    <h6 class="text-uppercase text-muted small mb-2">رصيد الخزينة الحالي</h6>
-                    <h3 class="display-6 fw-bold text-warning">5,450 ج.م</h3>
+                    <h6 class="text-uppercase text-warning small mb-2 fw-bold">
+                        <i class="bi bi-box-seam"></i> نقدية الدرج (الكاش الحالي)
+                    </h6>
+                    <h2 class="fw-bold text-white">@CashBalance.ToString("N0") <span class="small" style="font-size: 0.9rem">ج.م</span></h2>
+                </div>
+            </div>
+        </div>
+
+        @foreach (var method in displayPayments)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-info small mb-2 fw-bold">
+                            <i class="bi bi-credit-card-2-front text-info"></i> رصيد (@method.Name)
+                        </h6>
+                        <h3 class="fw-bold text-info">@method.Amount.ToString("N0") ج.م</h3>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-primary small mb-2">
+                        <i class="bi bi-house-gear text-primary"></i> قيمة بضاعة المخزن (تكلفة)
+                    </h6>
+                    <h3 class="fw-bold text-primary">@TotalStock.ToString("N0") ج.م</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-danger small mb-2">
+                        <i class="bi bi-graph-down text-danger"></i> إجمالي المصاريف 
+                    </h6>
+                    <h3 class="fw-bold text-danger">@TotalExpand.ToString("N0") ج.م</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
+                <div class="card-body">
+                    <h6 class="text-uppercase  small mb-2 fw-bold " style="color: #e066ff;">
+                        <i class="bi bi-person-dash text-magenta" style="color: #e066ff;"></i> مسحوباتك الشخصية
+                    </h6>
+                    <h3 class="fw-bold" style="color: #e066ff;">@OwnerExpand.ToString("N0") ج.م</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-secondary text-white text-center p-2">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-white-50 small mb-2 fw-bold">
+                        <i class="bi bi-trophy text-warning"></i> صافي الأرباح ككل
+                    </h6>
+                    <h3 class="fw-bold text-warning">@NetPoroft.ToString("N0") ج.م</h3>
                 </div>
             </div>
         </div>
     </div>
-
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
             <h6 class="m-0 fw-bold text-primary">دفتر حركات الخزينة التراكمي</h6>
@@ -36,21 +167,120 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="fw-bold text-success">+30 ج.م</td>
-                            <td><span class="badge bg-success-subtle text-success rounded-pill px-3">ترحيل وردية</span></td>
-                            <td class="text-muted text-start ps-4">ترحيل النقدية الفعلية للوردية (تم إثبات عجز 20 ج.م خارج الخزنة)</td>
-                            <td>
-                                <a href="/Shifts/Details/12" class="text-decoration-none fw-bold text-primary">
-                                    <i class="bi bi-clock-history"></i> الأحد (02:57 AM)
-                                </a>
-                            </td>
-                            <td>مينا</td>
-                            <td class="small text-muted">2026/05/17 03:00 AM</td>
-                        </tr>
+                        @if (Transactions == null)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-muted py-4">جاري تحميل البيانات...</td>
+                            </tr>
+                        }
+                        else if (!Transactions.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-muted py-4">لا توجد حركات في الخزينة حتى الآن.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Transactions)
+                            {
+                                bool isIncome = item.Amount >= 0;
+                                string amountClass = isIncome ? "text-success" : "text-danger";
+                                string badgeClass = isIncome ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger";
+                                string amountPrefix = isIncome ? "+" : "";
+
+                                <tr>
+                                    <td class="fw-bold @amountClass">@amountPrefix@item.Amount.ToString("N0") ج.م</td>
+                                    <td>
+                                        <span class="badge @badgeClass rounded-pill px-3">
+                                            @GetTranslationToArabic(item.Type)
+                                        </span>
+                                    </td>
+                                    <td class="text-muted text-start ps-4">@item.Notes</td>
+                                    <td>
+                                        @if (item.ShiftId.HasValue)
+                                        {
+                                            <NavLink Href="@($"/Shifts/Details/{item.ShiftId.ToString()}")" class="text-decoration-none fw-bold text-primary">
+                                                <i class="bi bi-clock-history"></i> @item.CreatedAt.ToString("yyyy/MM/dd hh:mm tt")
+                                            </NavLink>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">  (حركة يدوي)</span>
+                                        }
+                                    </td>
+                                    <td>@item.By</td>
+                                    <td class="small text-muted">@item.CreatedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private IEnumerable<DisplayTreasuryTransactionDTO> Transactions { get; set; } 
+    private IEnumerable <DisplayPaymentPartDto> displayPayments     {get ; set ; }
+    private decimal CashBalance { get; set; }
+    private decimal TotalStock { get; set; } 
+    private decimal TotalExpand   {get ; set ; }
+    private decimal NetPoroft { get; set; }
+    private decimal OwnerExpand { get; set; }
+    private bool addTransactionModel = false ; 
+    private TreasuryTransactionCreateDto transactionModel = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData () ; 
+    }
+    async Task LoadData ()
+    {
+        var result = await TreasuryService.GetMainTreasuryTransactionsAsync();
+        Transactions = result.Data!;
+        CashBalance = Transactions!.Sum(t => t.Amount);
+        displayPayments = await TreasuryService.GetTotalForNonCash();
+        TotalStock = await TreasuryService.GetTotalStock();
+        TotalExpand = await TreasuryService.GetTotalExpand();
+        OwnerExpand = await TreasuryService.GetOwnerExpand();
+        NetPoroft = await TreasuryService.GetProfit();
+        NetPoroft = NetPoroft - TotalExpand;
+    }
+    private void SetAdjustmentDirection(bool isNegative)
+    {
+        transactionModel.IsNegativeAdjustment = isNegative;
+    }
+    private void OpenTransactionModal()
+    {
+        addTransactionModel = true ; 
+    }
+
+
+    private string GetTranslationToArabic(TreasuryTransactionType type)
+    {
+        return type switch
+        {
+            TreasuryTransactionType.ShiftTransfer => "ترحيل وردية",
+            TreasuryTransactionType.GeneralExpense => "مصروفات عامة",
+            TreasuryTransactionType.SupplierPayment => "دفع لمورد",
+            TreasuryTransactionType.OwnerWithdrawal => "مسحوبات المالك",
+            TreasuryTransactionType.CapitalInjection => "إيداع رأسمال",
+            TreasuryTransactionType.ManualAdjustment => "تسوية رصيد",
+            TreasuryTransactionType.CasherSupport => "دعم خزنة" ,
+            _ => type.ToString()
+        };
+    }
+    private async Task  HandleValidSubmit()
+    {
+        addTransactionModel = false ; 
+        await  TreasuryService.CreateTreasuryTransaction(transactionModel) ;
+        transactionModel = new(); 
+        await LoadData();
+
+    }
+    void Cancel ()
+    {
+        addTransactionModel = false; 
+    }
+
+}

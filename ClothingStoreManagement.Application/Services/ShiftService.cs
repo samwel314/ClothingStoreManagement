@@ -180,6 +180,58 @@ namespace ClothingStoreManagement.Application.Services
             _appState.SetCurrentShift(null!);
            return  Result<string>.Success();
         }
+        public async Task<Result<ShiftDetailsDTO>> GetShiftAsync(int shiftId )
+        {
+            var shift = await _db.Shifts.GetAll(true).Include(s => s.ClosedByUser).Include(s => s.User)
+                .Where (s => s.Id == shiftId).FirstOrDefaultAsync( s=>s .Id == shiftId);
+            if (shift == null)
+                if (shift == null)
+                    return Result<ShiftDetailsDTO>.Failure("هذه الوردية غير موجودة.", ErrorType.notFound); 
+            ///////
+
+            var shiftDto = new ShiftDetailsDTO()
+            {
+                ShiftId = shiftId,  
+                ClosedByUserName = shift.ClosedByUser.UserName , 
+                OpenedByUserName = shift.User.UserName, 
+                StartTime = shift.StartTime , 
+                EndTime = shift.EndTime!.Value , 
+                IsActive = shift.IsActive , 
+                InitialCash = shift.InitialCash ,   
+                TotalSalesCash = shift.TotalSalesCash , 
+                FinalCashInDrawer = shift.FinalCashInDrawer ,   
+                TotalSalesNonCash = shift.TotalSalesNonCash ,   
+                TotalExpenses = shift.TotalExpenses ,   
+                TotalAdjustments = shift.TotalAdjustments , 
+                TotalReturnsCash = shift.TotalReturns , 
+            };
+            var transactions = await _db.ShiftTransactions.GetAll().Where(st => st.ShiftId == shiftId).OrderByDescending(st => st.CreatedAt).Select(st => new TransactionListDTO
+            {
+                Amount = st.Amount,
+                Description = st.Description,
+                Type = st.Type,
+                CreatedAt = st.CreatedAt,
+                CreatedBy = st.User.UserName
+            }).ToListAsync();
+            var nonCashPayments = await _db.InvoicePayments.GetAll()
+                        .Where(p => p.Invoice.ShiftId == shift.Id &&
+                                    !p.PaymentSource.IsCashSource).OrderByDescending(ip => ip.CreatedAt)
+                        .Select(ip => new TransactionListDTO
+                        {
+                            Amount = ip.Amount, 
+                            CreatedAt = ip.CreatedAt,   
+                            Type = TransactionType.Sale ,
+                            Description = $"بيع فاتورة {ip.Invoice.Serial} {(ip.Invoice.Status != InvoiceStatus.completed ? "المرتجعة" : "")} - ملاحظات: ({ip.Reference})",
+                            CreatedBy = ip.Invoice.User.UserName,
+                            IsCash = false, 
+                            PaymentMethodName = ip.PaymentSource.Name
+
+                        }).ToListAsync(); 
+              
+            var all = transactions.Concat(nonCashPayments).OrderByDescending(t => t.CreatedAt).ToList();
+            shiftDto.Transactions = all;
+            return Result<ShiftDetailsDTO>.Success(shiftDto);
+        }
     }
 
 }

@@ -36,7 +36,7 @@ namespace ClothingStoreManagement.Application.Services
         }
 
         public async Task<Result<IEnumerable<ColorListDTO>>>
-            GetColorsAsync(string? searchTerm = null, CancellationToken ct = default)
+            GetColorsAsync(string? searchTerm = null)
         {
             var ColorsQuery = _db.Colors.GetAll();
 

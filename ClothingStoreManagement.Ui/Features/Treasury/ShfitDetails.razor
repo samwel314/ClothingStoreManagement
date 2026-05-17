@@ -1,0 +1,240 @@
+﻿@page "/Shifts/Details/{Id:int}"
+
+@inject ShiftService shiftService
+<div class="container-fluid py-4" style="direction: rtl; text-align: right;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-right-success">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold">تقرير مراجعة وإغلاق الوردية </h4>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-warning text-dark px-3 py-2 fs-6">الوردية لا تزال مفتوحة</span>
+            }
+            else
+            {
+                <span class="badge bg-success px-3 py-2 fs-6">مغلقة وتم التسليم</span>
+            }
+        </div>
+        <div class="d-flex flex-column align-items-end text-end text-muted" style="font-size: 0.85rem; min-width: 280px;">
+            <div class="mb-2">
+                <strong><i class="bi bi-door-open text-success ms-1"></i> الفتح بواسطة:</strong>
+                <span class="text-dark fw-bold">@Model.OpenedByUserName</span>
+                <div class="text-secondary small mt-1">@Model.StartTime.ToString(" dd-MM-yyyy -  hh:mm tt")</div>
+            </div>
+            
+            @if (!Model.IsActive)
+            {
+                <div class="mt-1">
+                    <strong><i class="bi bi-door-closed text-danger ms-1"></i> الإغلاق بواسطة:</strong>
+                    <span class="text-dark fw-bold">@Model.ClosedByUserName</span>
+                    <div class="text-secondary small mt-1">@Model.EndTime.ToString(" dd-MM-yyyy -  hh:mm tt")</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-light text-center p-2">
+                <span class="text-secondary small fw-bold mb-1">الافتتاح (فكة)</span>
+                <h4 class="text-dark fw-bold mb-0">@string.Format("{0:N0}", Model.InitialCash) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-success bg-opacity-10 text-center p-2 text-success">
+                <span class="small fw-bold mb-1">مبيعات الكاش</span>
+                <h4 class="fw-bold mb-0">@string.Format("{0:N0}", Model.TotalSalesCash) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-danger bg-opacity-10 text-center p-2 text-danger">
+                <span class="small fw-bold mb-1">إجمالي المرتجعات</span>
+                <h4 class="fw-bold mb-0">-@string.Format("{0:N0}", Model.TotalReturnsCash) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-warning bg-opacity-10 text-center p-2 text-warning-emphasis">
+                <span class="small fw-bold mb-1">إجمالي المصاريف</span>
+                <h4 class="fw-bold mb-0">-@string.Format("{0:N0}", Model.TotalExpenses) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-info bg-opacity-10 text-center p-2 text-info-emphasis">
+                <span class="small fw-bold mb-1">تسويات الوردية</span>
+                <h4 class="fw-bold mb-0">@string.Format("{0:N0}", Model.TotalAdjustments) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-4">
+            <div class="card h-100 border-0 shadow-sm bg-secondary bg-opacity-10 text-center p-2 text-secondary">
+                <span class="small fw-bold mb-1">مبيعات غير نقدية</span>
+                <h4 class="fw-bold mb-0">+@string.Format("{0:N0}", Model.TotalSalesNonCash) <span class="fs-6">ج.م</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm bg-primary text-white text-center p-3">
+                <span class="text-white-50 small fw-bold mb-1">الرصيد المتوقع (بعد انتهاء الوردية)</span>
+                <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.ExpectedCashInDrawer) <span class="fs-6">ج.م</span></h3>
+                <small class="text-white-50" style="font-size: 0.75rem;">(افتتاح + كاش - مرتجع - مصاريف + تسوية)</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm bg-light text-center p-3 border">
+                <span class="text-secondary small fw-bold mb-1">الكاش الفعلي (المسلم من الكاشير)</span>
+                <h3 class="text-dark fw-bold mb-0">@string.Format("{0:N0}", Model.FinalCashInDrawer) <span class="fs-6">ج.م</span></h3>
+                <small class="text-muted" style="font-size: 0.75rem;">(إقرار الكاشير عند التقفيل)</small>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-3 @(Model.Difference >= 0 ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger")">
+                <span class="small fw-bold mb-1">صافي العجز / الزيادة النهائي</span>
+                <h3 class="fw-bold mb-0">
+                    @string.Format("{0:N0}", Model.Difference) ج.م
+                    <span class="fs-6">(@(Model.Difference >= 0 ? "زيادة بالوردية" : "عجز بالوردية"))</span>
+                </h3>
+                <small class="text-muted" style="font-size: 0.75rem;">(الفرق الفعلي بين السيستم والكيس)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="mb-0 text-secondary fw-bold">
+                <i class="bi bi-receipt-cutoff me-2"></i> تفاصيل الحركات المسجلة بالوردية
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th>الوقت</th>
+                        <th>نوع الحركة / الدفع</th>
+                        <th>البيان / الملاحظات</th>
+                        <th>المسؤول</th>
+                        <th>المبلغ</th>
+                    </tr>
+                </thead>
+<tbody>
+    @foreach (var item in Model.Transactions)
+    {
+        <tr>
+            <td class="text-muted">@item.CreatedAt.ToString("hh:mm tt")</td>
+            <td>
+                @if (item.IsCash)
+                {
+                    var badgeClass = item.Type switch
+                    {
+                        TransactionType.OpeningBalance => "badge-opening",
+                        TransactionType.Sale => "badge-sale",
+                        TransactionType.Expense => "badge-expense",
+                        TransactionType.Return => "badge-return",
+                        _ => "badge-adj"
+                    };
+                    var typeName = item.Type switch
+                    {
+                        TransactionType.OpeningBalance => "افتتاح",
+                        TransactionType.Sale => "بيع كاش",
+                        TransactionType.Expense => "مصروف",
+                        TransactionType.Return => "مرتجع",
+                        _ => "تسوية"
+                    };
+                    <span class="@badgeClass px-3 py-2 rounded-pill">
+                        @typeName
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-info bg-opacity-10 text-info-emphasis border border-info border-opacity-25 px-3 py-2 rounded-pill">
+                        بيع (@item.PaymentMethodName)
+                    </span>
+                }
+            </td>
+            <td class="text-secondary text-end" style="font-size: 0.9rem;">@item.Description</td>
+            <td class="text-muted small">@item.CreatedBy</td>
+            <td class="fw-bold @(item.Amount >= 0 ? "text-success" : "text-danger")">
+                @(item.Amount >= 0 ? "+" : "")@string.Format("{0:N0}", item.Amount) ج.م
+                @if (!item.IsCash)
+                {
+                    <small class="d-block text-muted fw-normal" style="font-size: 0.7rem;">(حساب بنكي)</small>
+                }
+            </td>
+        </tr>
+    }
+</tbody>            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-right-success {
+        border-right: 5px solid #198754;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .text-warning-emphasis {
+        color: #664d03 !important;
+    }
+
+    .text-info-emphasis {
+        color: #055160 !important;
+    }
+
+    /* الـ Badges المخصصة مع إجبار المتصفح على قراءة الألوان */
+    .badge-opening {
+        background-color: #e7f5ff !important;
+        color: #0d6efd !important;
+        border: 1px solid #cfe2ff !important;
+        display: inline-block;
+    }
+
+    .badge-sale {
+        background-color: #ebfbee !important;
+        color: #198754 !important;
+        border: 1px solid #d1e7dd !important;
+        display: inline-block;
+    }
+
+    .badge-expense {
+        background-color: #fff5f5 !important;
+        color: #dc3545 !important;
+        border: 1px solid #f8d7da !important;
+        display: inline-block;
+    }
+
+    .badge-return {
+        background-color: #fff4e6 !important;
+        color: #fd7e14 !important;
+        border: 1px solid #ffe8cc !important;
+        display: inline-block;
+    }
+
+    .badge-adj {
+        background-color: #fff9db !important;
+        color: #856404 !important;
+        border: 1px solid #ffeeba !important;
+        display: inline-block;
+    }
+</style>
+@code{
+    [Parameter]
+    public int  Id { get; set; }
+    private ShiftDetailsDTO Model ;
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await shiftService.GetShiftAsync(Id) ; 
+        if (result.IsSuccess)
+           Model = result.Data ; 
+    }
+}
