@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System.ComponentModel;
 
 namespace ClothingStoreManagement.Application.DTO
 {
@@ -18,10 +19,12 @@ namespace ClothingStoreManagement.Application.DTO
                      Math.Abs(TotalExpenses); 
 
     }
-    public class PaymentTypeSummary
+
+    public class SystemTransactionDTO
     {
-        public string Name { get; set; } = null!;
-        public decimal TotalAmount { get; set; }
-        public bool IsCashSource { get; set; } 
+        public decimal Amount { get; set; } 
+        public DateTime CreatedAt { get; set; }
+        public string Note  { get; set; } = null!;  
+        public string By    { get; set; } = null!;  
     }
 }

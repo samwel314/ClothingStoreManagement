@@ -20,7 +20,6 @@ namespace ClothingStoreManagement.Application.Services
             _db = db;
             _appState = appState;
         }
-
         public async Task<Result<ShiftDTO>> CreateShiftAsync(CreateShiftDTO dto)
         {
             var shift = new Shift(dto.InitialCash, _appState.CurrentUser!.Id);
@@ -92,7 +91,6 @@ namespace ClothingStoreManagement.Application.Services
                 Adjustments = adjustments   
             }); 
         }
-
         public async Task <decimal> GetTotalExpectedCash (int shiftId )
         {
             var initial = _db.Shifts.GetAll().Where(s => s.Id == shiftId).Select(s => s.InitialCash).FirstOrDefault(); 
@@ -145,8 +143,6 @@ namespace ClothingStoreManagement.Application.Services
             return Result<IEnumerable<TransactionListDTO>>.Success(transactions); 
         }
 
-
-
         public async Task <Result<string>> CloseShift (int shiftId , decimal actualCash )
         {
             var shift = await _db.Shifts.FirstOrDefaultAsync (s => s.Id == shiftId , true) ;
@@ -172,9 +168,69 @@ namespace ClothingStoreManagement.Application.Services
             var adjustments = transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Adjustment)?.Total ?? 0; ;
 
             shift.CloseShift(actualCash, cashSales, nonCashSales, totalReturns, totalExpenses, adjustments, _appState.CurrentUser.Id);
+            string statusWord = shift.Difference < 0 ? "بعجز " : (shift.Difference > 0 ? "بزيادة " : "منتظمة ");
+
+            string note = $"إغلاق وترحيل نقدية الوردية {statusWord}" +
+                          (shift.Difference != 0 ? $"({Math.Abs(shift.Difference)} ج.م)" : "");
+            await _db.TreasuryTransactions
+                .CreateAsync(new
+                MainTreasuryTransaction(shift.FinalCashInDrawer, TreasuryTransactionType.ShiftTransfer, note, shiftId)); 
+
             await _db.Save();
             _appState.SetCurrentShift(null!);
            return  Result<string>.Success();
+        }
+        public async Task<Result<ShiftDetailsDTO>> GetShiftAsync(int shiftId )
+        {
+            var shift = await _db.Shifts.GetAll(true).Include(s => s.ClosedByUser).Include(s => s.User)
+                .Where (s => s.Id == shiftId).FirstOrDefaultAsync( s=>s .Id == shiftId);
+            if (shift == null)
+                if (shift == null)
+                    return Result<ShiftDetailsDTO>.Failure("هذه الوردية غير موجودة.", ErrorType.notFound); 
+            ///////
+
+            var shiftDto = new ShiftDetailsDTO()
+            {
+                ShiftId = shiftId,  
+                ClosedByUserName = shift.ClosedByUser.UserName , 
+                OpenedByUserName = shift.User.UserName, 
+                StartTime = shift.StartTime , 
+                EndTime = shift.EndTime!.Value , 
+                IsActive = shift.IsActive , 
+                InitialCash = shift.InitialCash ,   
+                TotalSalesCash = shift.TotalSalesCash , 
+                FinalCashInDrawer = shift.FinalCashInDrawer ,   
+                TotalSalesNonCash = shift.TotalSalesNonCash ,   
+                TotalExpenses = shift.TotalExpenses ,   
+                TotalAdjustments = shift.TotalAdjustments , 
+                TotalReturnsCash = shift.TotalReturns , 
+            };
+            var transactions = await _db.ShiftTransactions.GetAll().Where(st => st.ShiftId == shiftId).OrderByDescending(st => st.CreatedAt).Select(st => new TransactionListDTO
+            {
+                Amount = st.Amount,
+                Description = st.Description,
+                Type = st.Type,
+                CreatedAt = st.CreatedAt,
+                CreatedBy = st.User.UserName
+            }).ToListAsync();
+            var nonCashPayments = await _db.InvoicePayments.GetAll()
+                        .Where(p => p.Invoice.ShiftId == shift.Id &&
+                                    !p.PaymentSource.IsCashSource).OrderByDescending(ip => ip.CreatedAt)
+                        .Select(ip => new TransactionListDTO
+                        {
+                            Amount = ip.Amount, 
+                            CreatedAt = ip.CreatedAt,   
+                            Type = TransactionType.Sale ,
+                            Description = $"بيع فاتورة {ip.Invoice.Serial} {(ip.Invoice.Status != InvoiceStatus.completed ? "المرتجعة" : "")} - ملاحظات: ({ip.Reference})",
+                            CreatedBy = ip.Invoice.User.UserName,
+                            IsCash = false, 
+                            PaymentMethodName = ip.PaymentSource.Name
+
+                        }).ToListAsync(); 
+              
+            var all = transactions.Concat(nonCashPayments).OrderByDescending(t => t.CreatedAt).ToList();
+            shiftDto.Transactions = all;
+            return Result<ShiftDetailsDTO>.Success(shiftDto);
         }
     }
 

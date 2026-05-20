@@ -17,7 +17,6 @@ namespace ClothingStoreManagement.Application.DTO
             double change = (double)((TotalDayRevenue - PreviousDayRevenue) / PreviousDayRevenue) * 100;
             return Math.Round(change, 1);
         }
- 
     }
     public class TopProductDTO
     {

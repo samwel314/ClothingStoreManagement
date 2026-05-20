@@ -14,6 +14,7 @@
         IPaymentSourceRepository PaymentSources { get; }   
         IShiftTransactionRepository ShiftTransactions {  get; }
         IInvoicePaymentRepository InvoicePayments { get; }  
+        IMainTreasuryTransactionRepository TreasuryTransactions { get; }    
         Task Save();
         void Clear(); //
     }

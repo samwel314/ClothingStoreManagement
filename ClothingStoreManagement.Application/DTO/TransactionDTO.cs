@@ -12,13 +12,15 @@ namespace ClothingStoreManagement.Application.DTO
         public TransactionType Type { get; set; }
         public string AdjustmentDirection { get; set; } = "in"; // "in" or "out"
     }
+   
     public class TransactionListDTO
     {
         public decimal Amount { get; set; }
-        [Required(ErrorMessage = "ادخل سبب العملية ")]
         public string Description { get; set; }
         public TransactionType Type { get; set; }
         public DateTime CreatedAt {  get; set; }
-        public string CreatedBy { get; set; }   
+        public string CreatedBy { get; set; }
+        public bool IsCash { get; set; } = true; // القيمة الافتراضية كاش
+        public string PaymentMethodName { get; set; } = "كاش";
     }
 }
