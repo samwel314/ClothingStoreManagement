@@ -72,7 +72,40 @@
     </div>
 }
 
+
 <div class="container-fluid py-4">
+
+    <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-muted small text-uppercase">من تاريخ</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-date text-primary"></i></span>
+                    <input type="date" class="form-control bg-light border-start-0" @bind="FromDate" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-muted small text-uppercase">إلى تاريخ</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-date-fill text-primary"></i></span>
+                    <input type="date" class="form-control bg-light border-start-0" @bind="ToDate" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary w-100 py-2 fw-bold shadow-sm" @onclick="LoadData" disabled="@IsLoading">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>جاري التحميل...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-clockwise me-1"></i> <span>تحديث البيانات</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h4 text-gray-800 mb-0">إدارة المالية والحسابات</h2>
         <button class="btn btn-primary" @onclick="OpenTransactionModal">
@@ -90,21 +123,6 @@
                 </div>
             </div>
         </div>
-
-        @foreach (var method in displayPayments)
-        {
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
-                    <div class="card-body">
-                        <h6 class="text-uppercase text-info small mb-2 fw-bold">
-                            <i class="bi bi-credit-card-2-front text-info"></i> رصيد (@method.Name)
-                        </h6>
-                        <h3 class="fw-bold text-info">@method.Amount.ToString("N0") ج.م</h3>
-                    </div>
-                </div>
-            </div>
-        }
-
         <div class="col-md-3 mb-3">
             <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
                 <div class="card-body">
@@ -116,13 +134,39 @@
             </div>
         </div>
 
+        @foreach (var method in displayPayments)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 bg-dark text-white text-center p-2" @onclick="() => OnNonCashCardClick(method.PaymentSourceId, method.Name)" style="cursor: pointer;">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-info small mb-2 fw-bold">
+                            <i class="bi bi-credit-card-2-front text-info"></i> رصيد (@method.Name)
+                        </h6>
+                        <h3 class="fw-bold text-info">@method.Amount.ToString("N0") ج.م</h3>
+                    </div>
+                </div>
+            </div>
+        }
+
+
         <div class="col-md-3 mb-3">
-            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2">
-                <div class="card-body">
+
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2" @onclick="OnExpensesCardClick" style="cursor: pointer;">
+                     <div class="card-body">
                     <h6 class="text-uppercase text-danger small mb-2">
                         <i class="bi bi-graph-down text-danger"></i> إجمالي المصاريف 
                     </h6>
                     <h3 class="fw-bold text-danger">@TotalExpand.ToString("N0") ج.م</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2" @onclick="OnAddjestmentsCardClick" style="cursor: pointer;">
+                <div class="card-body">
+                    <h6 class="text-uppercase small mb-2 fw-bold" style="color: #ff9f43;">
+                        <i class="bi bi-sliders" style="color: #ff9f43;"></i> تسويات الخزنة والنظام
+                    </h6>
+                    <h3 class="fw-bold" style="color: #ff9f43;">@TotalAdjestments.ToString("N0") ج.م</h3>
                 </div>
             </div>
         </div>
@@ -220,7 +264,165 @@
     </div>
 </div>
 
+<div class="panel-backdrop @(isPanelOpen ? "show" : "")" @onclick="ClosePanel"></div>
+
+<div class="sliding-panel @(isPanelOpen ? "open" : "")">
+    <div class="panel-header d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+        <h5 class="m-0 text-primary font-weight-bold"><i class="fas fa-list-ul me-2"></i> @panelTitle</h5>
+        <button type="button" class="btn-close" @onclick="ClosePanel" aria-label="Close"></button>
+    </div>
+
+    <div class="panel-body p-4">
+        @if (isPanelLoading)
+        {
+            <div class="d-flex justify-content-center align-items-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري تحميل البيانات...</span>
+                </div>
+            </div>
+        }
+        else if (panelTransactions == null || !panelTransactions.Any())
+        {
+            <div class="alert alert-warning text-center my-4" role="alert">
+                لا توجد حركات مسجلة لهذه الفترة.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive custom-table-container">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light text-secondary border-bottom">
+                        <tr>
+                            <th class="text-nowrap text-end" style="width: 120px;">المبلغ</th>
+                            <th class="text-nowrap text-center" style="width: 150px;">التاريخ</th>
+                            <th class="text-nowrap text-center" style="width: 100px;">المسؤول</th>
+                            <th class="text-start">البيان والملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tx in panelTransactions)
+                        {
+                            <tr class="transaction-row">
+                                <td class="text-end fw-bold @(tx.Amount < 0 ? "text-danger" : "text-success")" style="font-size: 1.05rem;">
+                                    @tx.Amount.ToString("N0") ج.م
+                                </td>
+                                <td class="text-center text-muted" style="font-size: 0.85rem; direction: ltr;">
+                                    @tx.CreatedAt.ToString("yyyy-MM-dd") <br />
+                                    <small class="text-black-50">@tx.CreatedAt.ToString("hh:mm tt")</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="custom-user-badge">@tx.By</span>
+                                </td>
+                                <td class="text-start text-dark text-wrap-custom">
+                                    @tx.Note
+                                </td>
+                            </tr>
+                        }
+     
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+<style>
+    .panel-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 1040;
+        display: none;
+        backdrop-filter: blur(3px);
+        transition: all 0.3s ease-in-out;
+    }
+
+        .panel-backdrop.show {
+            display: block;
+        }
+
+    .sliding-panel {
+        position: fixed;
+        top: 0;
+        right: -750px;
+        width: 750px;
+        max-width: 95%;
+        height: 100vh;
+        background-color: #ffffff;
+        box-shadow: -8px 0 25px rgba(0,0,0,0.08);
+        z-index: 1050;
+        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); 
+        display: flex;
+        flex-direction: column;
+    }
+
+        .sliding-panel.open {
+            right: 0;
+        }
+
+    .panel-body {
+        overflow-y: auto;
+        flex-grow: 1;
+        background-color: #fafafa;
+    }
+
+    .custom-user-badge {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .text-wrap-custom {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        word-break: break-word;
+        color: #333333;
+    }
+
+    .transaction-row {
+        border-bottom: 1px solid #f1f3f5;
+        transition: background-color 0.2s ease;
+    }
+
+        .transaction-row:hover {
+            background-color: #f8f9fa !important;
+        }
+
+    .custom-table-container {
+        background: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        padding: 10px;
+    }
+
+    .panel-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .panel-body::-webkit-scrollbar-thumb {
+        background-color: #ced4da;
+        border-radius: 4px;
+    }
+</style>
+
 @code {
+
+    private bool isPanelOpen = false;
+    private bool isPanelLoading = false;
+    private string panelTitle = "";
+    private IEnumerable<SystemTransactionDTO> panelTransactions  ; 
+
+    //--*-*
+
+    private DateTime? FromDate { get; set; } = DateTime.Today; 
+    private DateTime? ToDate { get; set; } = DateTime.Today;
+    //// 
     private IEnumerable<DisplayTreasuryTransactionDTO> Transactions { get; set; } 
     private IEnumerable <DisplayPaymentPartDto> displayPayments     {get ; set ; }
     private decimal CashBalance { get; set; }
@@ -228,23 +430,28 @@
     private decimal TotalExpand   {get ; set ; }
     private decimal NetPoroft { get; set; }
     private decimal OwnerExpand { get; set; }
+    private decimal TotalAdjestments   { get; set; }
     private bool addTransactionModel = false ; 
     private TreasuryTransactionCreateDto transactionModel = new();
+    private bool IsLoading { get; set; } = true;
     protected override async Task OnInitializedAsync()
     {
         await LoadData () ; 
     }
     async Task LoadData ()
     {
-        var result = await TreasuryService.GetMainTreasuryTransactionsAsync();
+        IsLoading = true;
+        var result = await TreasuryService.GetMainTreasuryTransactionsAsync(FromDate, ToDate);
         Transactions = result.Data!;
-        CashBalance = Transactions!.Sum(t => t.Amount);
-        displayPayments = await TreasuryService.GetTotalForNonCash();
+        CashBalance = await TreasuryService.GetMainTreasuryTotal();
+        displayPayments = await TreasuryService.GetTotalForNonCash(FromDate, ToDate);
         TotalStock = await TreasuryService.GetTotalStock();
-        TotalExpand = await TreasuryService.GetTotalExpand();
-        OwnerExpand = await TreasuryService.GetOwnerExpand();
-        NetPoroft = await TreasuryService.GetProfit();
+        TotalExpand = await TreasuryService.GetTotalExpand(FromDate, ToDate);
+        OwnerExpand = await TreasuryService.GetOwnerExpand(FromDate, ToDate);
+        NetPoroft = await TreasuryService.GetProfit(FromDate, ToDate);
         NetPoroft = NetPoroft - TotalExpand;
+        TotalAdjestments = await TreasuryService.GetTotalAdjustment(FromDate, ToDate);
+        IsLoading = false;
     }
     private void SetAdjustmentDirection(bool isNegative)
     {
@@ -283,4 +490,40 @@
         addTransactionModel = false; 
     }
 
+
+
+    // -*- panal 
+    private async Task OnExpensesCardClick()
+    {
+        panelTitle = "تفاصيل المصروفات التشغيلية والمسحوبات";
+        isPanelOpen = true;
+        isPanelLoading = true;
+        panelTransactions = null ! ;
+        panelTransactions = await TreasuryService.ExpandTransaction(FromDate, ToDate);
+        isPanelLoading = false;
+
+    }
+    private async Task OnAddjestmentsCardClick()
+    {
+        panelTitle = "تفاصيل التسويات ";
+        isPanelOpen = true;
+        isPanelLoading = true;
+        panelTransactions = null!;
+        panelTransactions = await TreasuryService.AdjustmentTransaction(FromDate, ToDate);
+        isPanelLoading = false;
+    }
+    private async Task OnNonCashCardClick(int methodId, string methodName)
+    {
+        panelTitle = $"تفاصيل حركات وسيلة: {methodName}";
+        isPanelOpen = true;
+        isPanelLoading = true;
+        panelTransactions = null!     ; 
+        panelTransactions = await TreasuryService.NonCashPay(methodId , FromDate , ToDate) ; 
+        isPanelLoading = false ; 
+    }
+
+    private void ClosePanel()
+    {
+        isPanelOpen = false;
+    }
 }
