@@ -74,8 +74,9 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<decimal> GetTotalExpand(DateTime? fromDate = null, DateTime? toDate = null)
         {
-            var shiftQuery = _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense);
-            var treasuryQuery = _db.TreasuryTransactions.GetAll().Where(t => t.Type == TreasuryTransactionType.SupplierPayment || t.Type == TreasuryTransactionType.GeneralExpense);
+            var shiftQuery = _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense ||
+             t.Type == TransactionType.Borrow || t.Type == TransactionType.ReturnBorrow );
+            var treasuryQuery = _db.TreasuryTransactions.GetAll().Where(t =>t.Type == TreasuryTransactionType.GeneralExpense);
 
             if (fromDate.HasValue)
             {
@@ -90,6 +91,23 @@ namespace ClothingStoreManagement.Application.Services
 
             var expandStock = await shiftQuery.SumAsync(t => t.Amount);
             expandStock += await treasuryQuery.SumAsync(t => t.Amount);
+
+            return Math.Abs(expandStock);
+        }
+        public async Task<decimal> GetTotalSupplierPayment(DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            var treasuryQuery = _db.TreasuryTransactions.GetAll().Where(t => t.Type == TreasuryTransactionType.SupplierPayment);
+
+            if (fromDate.HasValue)
+            {
+                treasuryQuery = treasuryQuery.Where(t => t.CreatedAt >= fromDate.Value.Date);
+            }
+            if (toDate.HasValue)
+            {
+                treasuryQuery = treasuryQuery.Where(t => t.CreatedAt <= toDate.Value.Date.AddDays(1).AddTicks(-1));
+            }
+
+          var   expandStock =  await treasuryQuery.SumAsync(t => t.Amount);
 
             return Math.Abs(expandStock);
         }
@@ -160,15 +178,16 @@ namespace ClothingStoreManagement.Application.Services
            await _db.Save(); 
         }
 
-
+        // -*-* -*- - **--*-*-*--*- 
         public async Task<IEnumerable<SystemTransactionDTO>> ExpandTransaction(DateTime? fromDate =  null, DateTime? toDate = null)
         {
             var shiftQuery =
-                _db.ShiftTransactions.GetAll()
-                .Where(t => t.Type == TransactionType.Expense);
+                _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense ||
+             t.Type == TransactionType.Borrow || t.Type == TransactionType.ReturnBorrow);
+          
             var treasuryQuery = _db.TreasuryTransactions.GetAll().
-             Where(t => t.Type == TreasuryTransactionType.SupplierPayment ||
-             t.Type == TreasuryTransactionType.GeneralExpense); 
+             Where(t => t.Type == TreasuryTransactionType.GeneralExpense);
+
             if (fromDate.HasValue)
             {
                 shiftQuery = shiftQuery.Where(t => t.CreatedAt >= fromDate.Value.Date);
@@ -258,7 +277,30 @@ namespace ClothingStoreManagement.Application.Services
 
             return methodTransaction; 
         }
+        public async Task<IEnumerable<SystemTransactionDTO>> GetSupplierTransactionsDetails(DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            var query = _db.TreasuryTransactions.GetAll()
+                .Where(t => t.Type == TreasuryTransactionType.SupplierPayment);
 
+            if (fromDate.HasValue)
+                query = query.Where(t => t.CreatedAt >= fromDate.Value.Date);
+
+            if (toDate.HasValue)
+                query = query.Where(t => t.CreatedAt <= toDate.Value.Date.AddDays(1).AddTicks(-1));
+
+            var supplierDetails = await query
+                .Select(t => new SystemTransactionDTO()
+                {
+                    Amount = t.Amount, 
+                    CreatedAt = t.CreatedAt,
+                    By = "إداري",
+                    Note = t.Notes
+                })
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return supplierDetails;
+        }
 
     }
 }

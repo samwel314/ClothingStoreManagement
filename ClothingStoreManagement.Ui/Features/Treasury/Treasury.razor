@@ -183,10 +183,20 @@
         </div>
 
         <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 bg-dark text-white text-center p-2" @onclick="OnSupplierPaymentCardClick" style="cursor: pointer;">
+                <div class="card-body">
+                    <h6 class="text-uppercase small mb-2 fw-bold" style="color: #d17a7a">
+                        <i class="bi bi-truck me-1" style="color: #d17a7a;"></i> مدفوعات الموردين
+                    </h6>
+                    <h3 class="fw-bold" style="color: #d17a7a">@SupplierPayments.ToString("N0") ج.م</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
             <div class="card shadow-sm border-0 bg-secondary text-white text-center p-2">
                 <div class="card-body">
                     <h6 class="text-uppercase text-white-50 small mb-2 fw-bold">
-                        <i class="bi bi-trophy text-warning"></i> صافي الأرباح ككل
+                        <i class="bi bi-trophy text-warning"></i> صافي  ارباح المبيعات
                     </h6>
                     <h3 class="fw-bold text-warning">@NetPoroft.ToString("N0") ج.م</h3>
                 </div>
@@ -432,6 +442,7 @@
     private decimal OwnerExpand { get; set; }
     private decimal TotalAdjestments   { get; set; }
     private bool addTransactionModel = false ; 
+    private decimal SupplierPayments   {get ; set ; }
     private TreasuryTransactionCreateDto transactionModel = new();
     private bool IsLoading { get; set; } = true;
     protected override async Task OnInitializedAsync()
@@ -449,8 +460,9 @@
         TotalExpand = await TreasuryService.GetTotalExpand(FromDate, ToDate);
         OwnerExpand = await TreasuryService.GetOwnerExpand(FromDate, ToDate);
         NetPoroft = await TreasuryService.GetProfit(FromDate, ToDate);
-        NetPoroft = NetPoroft - TotalExpand;
+        //   NetPoroft = NetPoroft - TotalExpand;
         TotalAdjestments = await TreasuryService.GetTotalAdjustment(FromDate, ToDate);
+        SupplierPayments = await TreasuryService.GetTotalSupplierPayment(FromDate, ToDate);
         IsLoading = false;
     }
     private void SetAdjustmentDirection(bool isNegative)
@@ -520,6 +532,15 @@
         panelTransactions = null!     ; 
         panelTransactions = await TreasuryService.NonCashPay(methodId , FromDate , ToDate) ; 
         isPanelLoading = false ; 
+    }
+    private async Task OnSupplierPaymentCardClick()
+    {
+        panelTitle = $"تفاصيل حركات الموردين";
+        isPanelOpen = true;
+        isPanelLoading = true;
+        panelTransactions = null!;
+        panelTransactions = await TreasuryService.GetSupplierTransactionsDetails( FromDate, ToDate);
+        isPanelLoading = false;
     }
 
     private void ClosePanel()
