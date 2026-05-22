@@ -74,8 +74,7 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<decimal> GetTotalExpand(DateTime? fromDate = null, DateTime? toDate = null)
         {
-            var shiftQuery = _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense ||
-             t.Type == TransactionType.Borrow || t.Type == TransactionType.ReturnBorrow );
+            var shiftQuery = _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense  );
             var treasuryQuery = _db.TreasuryTransactions.GetAll().Where(t =>t.Type == TreasuryTransactionType.GeneralExpense);
 
             if (fromDate.HasValue)
@@ -182,8 +181,8 @@ namespace ClothingStoreManagement.Application.Services
         public async Task<IEnumerable<SystemTransactionDTO>> ExpandTransaction(DateTime? fromDate =  null, DateTime? toDate = null)
         {
             var shiftQuery =
-                _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense ||
-             t.Type == TransactionType.Borrow || t.Type == TransactionType.ReturnBorrow);
+                _db.ShiftTransactions.GetAll().Where(t => t.Type == TransactionType.Expense
+            );
           
             var treasuryQuery = _db.TreasuryTransactions.GetAll().
              Where(t => t.Type == TreasuryTransactionType.GeneralExpense);
