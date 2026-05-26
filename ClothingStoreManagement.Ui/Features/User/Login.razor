@@ -10,125 +10,233 @@
             <div class="logo-circle">
                 <i class="bi bi-person-fill-lock"></i>
             </div>
-            <h3 class="fw-bold m-0">نظام الملابس <span class="text-primary"> @DateTime.Now.Year</span></h3>
-            <p class="text-muted small">تسجيل دخول الموظفين</p>
+            <h3 class="fw-bold m-0 text-dark">نظام الملابس <span class="text-primary">@DateTime.Now.Year</span></h3>
+            <p class="text-muted small mt-1">تسجيل دخول المستخدمين للنظام</p>
         </div>
 
         <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
             <DataAnnotationsValidator />
-            
-            <div class="mb-3">
+
+            <div class="mb-3 text-end">
                 <div class="custom-input">
                     <i class="bi bi-person"></i>
-                    <InputText @bind-Value="loginModel.UserName" placeholder="اسم المستخدم" />
+                    <InputText @bind-Value="loginModel.UserName" placeholder="اسم المستخدم" autocomplete="on" />
                 </div>
-                <ValidationMessage For="@(() => loginModel.UserName)" class="text-danger x-small" />
+                <ValidationMessage For="@(() => loginModel.UserName)" class="text-danger x-small mt-1 d-block mr-2" />
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 text-end">
                 <div class="custom-input">
                     <i class="bi bi-key"></i>
                     <InputText type="password" @bind-Value="loginModel.Password" placeholder="كلمة المرور" />
                 </div>
-                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger x-small" />
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger x-small mt-1 d-block mr-2" />
             </div>
 
             <button type="submit" class="login-btn" disabled="@isProcessing">
-                @if (isProcessing) { <span class="spinner-border spinner-border-sm me-2"></span> }
-                دخول للنظام
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <span>دخول للنظام</span>
+                }
             </button>
         </EditForm>
 
         @if (!string.IsNullOrEmpty(error))
         {
-            <div class="error-msg">@error</div>
+            <div class="error-msg animated shake">
+                <i class="bi bi-exclamation-triangle-fill ml-1"></i> @error
+            </div>
         }
 
         <div class="brand-footer">
             <div class="divider"></div>
             <span class="dev-name">Developed By: <b>Eng. Samuel Marzouk</b></span>
-            <span class="dev-phone"> 01005415303  <i class="bi bi-whatsapp"></i> </span>
+            <a href="https://wa.me/201005415303" target="_blank" class="dev-phone">
+                01005415303 <i class="bi bi-whatsapp"></i>
+            </a>
         </div>
     </div>
 </div>
 
 <style>
-
     .login-screen {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: #f4f7f6;
+        /* خلفية ناعمة مودرن مريحة للعين */
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999; 
+        z-index: 9999;
         overflow: hidden;
         direction: rtl;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .login-card {
-        background: white;
-        width: 380px;
-        padding: 40px 30px;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        width: 400px;
+        padding: 40px 35px;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: transform 0.3s ease;
     }
 
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
     .logo-circle {
-        width: 70px;
-        height: 70px;
-        background: #f0f7ff;
-        color: #0d6efd;
+        width: 75px;
+        height: 75px;
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0284c7;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 30px;
-        margin: 0 auto 15px;
+        font-size: 32px;
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 16px rgba(2, 132, 199, 0.1);
     }
 
     .custom-input {
         display: flex;
         align-items: center;
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 10px 15px;
-        border: 1px solid #eee;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 15px;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.3s ease;
     }
 
-    .custom-input i { color: #0d6efd; margin-left: 10px; }
-    .custom-input input {
-        border: none;
-        background: transparent;
-        width: 100%;
-        outline: none;
-        font-size: 14px;
-    }
+        /* تأثير التركيز عند الكتابة لراحة يد الكاشير */
+        .custom-input:focus-within {
+            background: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .custom-input i {
+            color: #64748b;
+            margin-left: 12px;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+
+        .custom-input:focus-within i {
+            color: #3b82f6;
+        }
+
+        .custom-input input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            outline: none;
+            font-size: 15px;
+            color: #1e293b;
+        }
 
     .login-btn {
         width: 100%;
-        padding: 12px;
-        border-radius: 10px;
+        padding: 14px;
+        border-radius: 12px;
         border: none;
-        background: #0d6efd;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
-        font-weight: bold;
-        transition: 0.3s;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
 
-    .login-btn:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .login-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
 
-    .brand-footer { margin-top: 30px; display: flex; flex-direction: column; gap: 5px; }
-    .divider { height: 1px; background: #eee; width: 100%; margin-bottom: 10px; }
-    .dev-name { font-size: 13px; color: #555; }
-    .dev-phone { font-size: 12px; color: #0d6efd; font-weight: bold; }
-    .error-msg { background: #fff5f5; color: #e53e3e; padding: 8px; border-radius: 8px; margin-top: 15px; font-size: 13px; }
-    .x-small { font-size: 11px; }
+        .login-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+    .brand-footer {
+        margin-top: 35px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .divider {
+        height: 1px;
+        background: linear-gradient(to left, transparent, #e2e8f0, transparent);
+        width: 100%;
+        margin-bottom: 12px;
+    }
+
+    .dev-name {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .dev-phone {
+        font-size: 13px;
+        color: #16a34a;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: color 0.2s;
+    }
+
+        .dev-phone:hover {
+            color: #15803d;
+        }
+
+    .error-msg {
+        background: #fef2f2;
+        color: #dc2626;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-top: 18px;
+        font-size: 13px;
+        border: 1px solid #fca5a5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .x-small {
+        font-size: 12px;
+        font-weight: 500;
+        padding-right: 5px;
+    }
+
+    .ml-1 {
+        margin-left: 5px;
+    }
+
+    .ml-2 {
+        margin-left: 8px;
+    }
 </style>
+
 @code {
     private LoginRequestDto loginModel = new();
     private string? error;

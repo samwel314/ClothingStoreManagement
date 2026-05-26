@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ClothingStoreManagement.Application.DTO
 {
@@ -16,7 +17,9 @@ namespace ClothingStoreManagement.Application.DTO
         public decimal ExpectedCash =>
             InitialCash + Adjustments + 
             (PaymentMethods.FirstOrDefault(p => p.IsCashSource)?.TotalAmount ?? 0) -
-                     Math.Abs(TotalExpenses); 
+                     Math.Abs(TotalExpenses);
+        [Range (0.0 , (double) decimal.MaxValue  ,ErrorMessage = "ادخل قيمة صحيحة")]
+        public decimal AcualCash { get; set; }
 
     }
 

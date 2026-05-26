@@ -2,9 +2,18 @@
 @inject NavigationManager Nav
 @inject AppState AppState
 @inject ShiftService ShiftService
-  
-<div class=" d-flex align-items-center justify-content-center bg-light px-3" dir="rtl">
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3"></i>
 
+        <div class="flex-grow-1">
+            &nbsp;@errorMessage
+        </div>
+    </div>
+}
+<div class=" d-flex align-items-center justify-content-center bg-light px-3" dir="rtl">
+   
     <div class="col-12 col-lg-8 col-xl-7">
 
         @if (ActiveShift == null)
@@ -82,7 +91,6 @@
 
                                 <div class="fw-bold fs-4">
                                     @ActiveShift.ExpectedCash.ToString("N0")
-
                                     <span class="fs-6 text-muted">
                                         EGP
                                     </span>
@@ -114,6 +122,54 @@
 
                     </div>
 
+
+
+<div class="d-flex flex-column flex-md-row gap-3 align-items-stretch bg-light p-3 rounded-3 border mb-3">
+
+    <div class="flex-grow-1 d-flex flex-column justify-content-center text-end">
+
+        <label class="form-label fw-bold text-dark mb-2 fs-6">
+            <i class="bi bi-cash-coin text-success me-1"></i>
+            إجمالي المبلغ الفعلي الموجود في الدرج حالياً:
+        </label>
+
+        <div class="input-group shadow-sm border border-secondary rounded-3 overflow-hidden"
+             style="height:85px;">
+
+            <InputNumber @bind-Value="ActiveShift.AcualCash"
+                         class="form-control fw-bold text-center text-primary bg-white border-0"
+                         style="font-size:2rem;"
+                         placeholder="0.00" />
+
+            <span class="input-group-text bg-dark text-white fw-bold px-4 border-0"
+                  style="font-size:1.5rem;">
+                ج.م
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="flex-grow-1 p-3 bg-warning bg-opacity-10 rounded-3 border border-warning d-flex gap-2 align-items-start">
+
+        <i class="bi bi-exclamation-triangle-fill text-warning fs-3 mt-1"></i>
+
+        <div>
+            <h6 class="fw-bold text-warning-dark mb-1 fs-6">
+                تنبيه هام جداً للموظف المستلم:
+            </h6>
+
+            <p class="text-dark m-0 small lh-base">
+                بمجرد إغلاق هذه الوردية،
+                <b>سيتم ترحيل كامل المبلغ كاملاً إلى الخزينة الرئيسية فوراً</b>.
+                لا يمكنك ترك جزء من هذا المبلغ في الدرج لبدء الوردية الجديدة.
+            </p>
+        </div>
+
+    </div>
+
+</div>                    
+                    
                     <div class="d-flex flex-column flex-md-row gap-2">
 
                         <button @onclick="HandleContinue"
@@ -142,7 +198,7 @@
 </div>
 @code {
     public ShiftDTO? ActiveShift { get; set; }
-
+    string ?errorMessage ; 
     protected override async Task OnInitializedAsync()
     {
         var result = await ShiftService.GetOpenShiftAsync();
@@ -161,9 +217,21 @@
         AppState.SetCurrentShift(ActiveShift!);
         Nav.NavigateTo("/pos");
     }
-
-    private void HandleStartNew()
+    private async Task ShowError(string ErrorMessage)
     {
+        errorMessage = ErrorMessage;
+        await Task.Delay(3000);
+        errorMessage = null!;
+    }
+    private async Task HandleStartNew()
+    {
+        if (ActiveShift.AcualCash < 0)
+        {
+          await ShowError ("ادخل رقم صحيح ") ; 
+            return;
+        }
+
+         await ShiftService.CloseShift(ActiveShift!.Id , ActiveShift.AcualCash);
         Nav.NavigateTo($"/open-shift");
     }
 
