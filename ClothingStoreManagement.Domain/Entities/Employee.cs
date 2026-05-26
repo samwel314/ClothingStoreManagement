@@ -19,5 +19,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public IEnumerable<ShiftTransaction> ShiftTransactions { get; set; } = new List<ShiftTransaction>();
         public IEnumerable<Invoice> Invoices { get; set; } = new List<Invoice>();
+        public void ToggleStatus() => IsActive = !IsActive;
+
     }
 }
