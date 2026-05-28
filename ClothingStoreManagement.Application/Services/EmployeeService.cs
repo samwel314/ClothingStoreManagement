@@ -44,6 +44,18 @@ namespace ClothingStoreManagement.Application.Services
                 BaseSalary  =u.BaseSalary,
             }).ToListAsync();
         }
+        public async Task<IEnumerable<EmployeeDto>> GetAllActiveEmployeesAsync()
+        {
+            return await _db.Employees.GetAll().Where(e => e.IsActive).Select(u => new EmployeeDto
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Type = u.Type,
+                IsActive = u.IsActive,
+                Phone = u.Phone,
+                BaseSalary = u.BaseSalary,
+            }).ToListAsync();
+        }
 
         public async Task<Result<string>> ToggleStatusAsync(int id)
         {

@@ -28,5 +28,7 @@ namespace ClothingStoreManagement.Domain.Entities
             Type = type;
             Description = description;
         }
+        public void AddToEmploy(int employeeId) => EmployeeId   = employeeId;   
+
     }
 }

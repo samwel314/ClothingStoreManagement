@@ -32,5 +32,7 @@ namespace ClothingStoreManagement.Domain.Entities
         public int? EmployeeId { get; private set; }
         [ForeignKey("EmployeeId")]
         public Employee? Employee { get; set; }
+        public void AddToEmploy(int employeeId) => EmployeeId = employeeId;
+
     }
 }
