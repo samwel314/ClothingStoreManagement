@@ -1,10 +1,18 @@
 ﻿@page "/employees/manage/{Id:int}"
-<div class="container-fluid py-4" dir="rtl">
+@inject EmployeeService EmployeeService
 
+<div class="container-fluid py-4" dir="rtl">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 small rounded-3 mb-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-3"></i>
+            <div class="flex-grow-1">&nbsp;&nbsp;@errorMessage</div>
+        </div>
+    }
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold text-dark mb-1">الملف المالي للموظف: <span class="text-primary">مينا مرزوق</span></h3>
-            <p class="text-muted small mb-0">موظف مبيعات / صالة (المرتب الأساسي: 6,200.00 ج.م)</p>
+            <h3 class="fw-bold text-dark mb-1">الملف المالي للموظف : <span class="text-primary"> @employee!.Name</span></h3>
+            <p class="text-muted small mb-0"> @GetEmployeeTypeDisplayName(employee.Type)</p>
         </div>
         <a href="/employees" class="btn btn-outline-secondary fw-bold px-4 shadow-sm">
             <i class="bi bi-arrow-right me-1"></i> العودة
@@ -19,8 +27,8 @@
                 </div>
                 <div class="col-md-4">
                     <div class="input-group">
-                        <input type="month" class="form-control" />
-                        <button class="btn btn-primary fw-bold px-4">تصفية</button>
+                        <input type="month" @bind="monthData" class="form-control" />
+                        <button @onclick="Filter" class="btn btn-primary fw-bold px-4">تصفية</button>
                     </div>
                 </div>
             </div>
@@ -31,31 +39,31 @@
         <div class="col">
             <div class="card shadow-sm border-0 rounded-3 bg-white border-start border-primary border-4 p-3">
                 <div class="text-muted small fw-bold">المرتب الأساسي</div>
-                <div class="fs-4 fw-bold text-dark mt-1">6,200.00 <span class="small fs-6">ج.م</span></div>
+                <div class="fs-4 fw-bold text-dark mt-1">@employee.BaseSalary.ToString("N2") <span class="small fs-6">ج.م</span></div>
             </div>
         </div>
         <div class="col">
             <div class="card shadow-sm border-0 rounded-3 bg-white border-start border-success border-4 p-3">
                 <div class="text-success small fw-bold">➕ المكافآت والحوافز</div>
-                <div class="fs-4 fw-bold text-success mt-1">+ 300.00 <span class="small fs-6">ج.م</span></div>
+                <div class="fs-4 fw-bold text-success mt-1">+ @employeeDetails!.Bonus <span class="small fs-6">ج.م</span></div>
             </div>
         </div>
         <div class="col">
             <div class="card shadow-sm border-0 rounded-3 bg-white border-start border-warning border-4 p-3">
                 <div class="small fw-bold" style="color: #8b4513;">🟤 السلف (من الدرج)</div>
-                <div class="fs-4 fw-bold mt-1" style="color: #8b4513;">- 400.00 <span class="small fs-6">ج.م</span></div>
+                <div class="fs-4 fw-bold mt-1" style="color: #8b4513;">@employeeDetails!.Borrow <span class="small fs-6">ج.م</span></div>
             </div>
         </div>
         <div class="col">
             <div class="card shadow-sm border-0 rounded-3 bg-white border-start border-danger border-4 p-3">
                 <div class="text-danger small fw-bold">⚠️ الجزاءات المالية</div>
-                <div class="fs-4 fw-bold text-danger mt-1">- 150.00 <span class="small fs-6">ج.m</span></div>
+                <div class="fs-4 fw-bold text-danger mt-1">@employeeDetails!.Penalty <span class="small fs-6">ج.م</span></div>
             </div>
         </div>
         <div class="col">
             <div class="card shadow-sm border-0 rounded-3 bg-white border-start border-secondary border-4 p-3">
-                <div class="text-secondary small fw-bold">❌ خصم الغياب (1 يوم)</div>
-                <div class="fs-4 fw-bold text-danger mt-1">- 206.60 <span class="small fs-6">ج.م</span></div>
+                <div class="text-secondary small fw-bold">❌ خصم الغياب (@employeeDetails!.AbsenceDays يوم)</div>
+                <div class="fs-4 fw-bold text-danger mt-1">@employeeDetails!.Absence <span class="small fs-6">ج.م</span></div>
             </div>
         </div>
     </div>
@@ -100,27 +108,38 @@
 
 
             <div class="col-md-7">
+    @if (viewMonthSalary)    
+            {
+                <div class="card shadow-sm border-0 rounded-3 h-100 bg-success bg-opacity-10 border border-success border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
+                    <div class="text-success fw-bold fs-5 mb-2">
+                        <i class="bi bi-cash-coin me-1"></i> صافي المرتب المستحق للصرف حالياً بعد المقاصة:
+                    </div>
+                    <div class="display-4 fw-bold text-success mb-4">5,743.40 <span class="fs-3">ج.م</span></div>
+
+                    <button class="btn btn-success btn-lg py-3 fw-bold rounded-3 shadow w-100">
+                        <i class="bi bi-currency-exchange me-1"></i> تأكيد صرف مرتب الموظف نقداً وخصمه من الدرج
+                    </button>
+                </div>
+
     
-    <div class="card shadow-sm border-0 rounded-3 h-100 bg-success bg-opacity-10 border border-success border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
-        <div class="text-success fw-bold fs-5 mb-2">
-            <i class="bi bi-cash-coin me-1"></i> صافي المرتب المستحق للصرف حالياً بعد المقاصة:
-        </div>
-        <div class="display-4 fw-bold text-success mb-4">5,743.40 <span class="fs-3">ج.م</span></div>
+    }
+    else
         
-        <button class="btn btn-success btn-lg py-3 fw-bold rounded-3 shadow w-100">
-            <i class="bi bi-currency-exchange me-1"></i> تأكيد صرف مرتب الموظف نقداً وخصمه من الدرج
-        </button>
-    </div>
-@*     <div class="card shadow-sm border-0 rounded-3 h-100 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
-        <div class="text-secondary fw-bold fs-4 mb-2">
-            <i class="bi bi-check-circle-fill text-success me-1"></i> تم تقفيل وصرف راتب هذا الشهر
-        </div>
-        <div class="text-muted small mb-3">تمت العملية بنجاح وخصمها من خزينة الدرج ولا يمكن تكرار الصرف.</div>
-        <button class="btn btn-secondary btn-lg py-3 fw-bold rounded-3 w-100" disabled>
-            <i class="bi bi-lock-fill me-1"></i> مغلق - تم الصرف مسبقاً
-        </button>
-    </div>
- *@
+    {
+                <div class="card shadow-sm border-0 rounded-3 h-100 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
+                    <div class="text-secondary fw-bold fs-4 mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i> تم تقفيل وصرف راتب هذا الشهر
+                    </div>
+                    <div class="text-muted small mb-3">تمت العملية بنجاح وخصمها من خزينة الدرج ولا يمكن تكرار الصرف.</div>
+                    <button class="btn btn-secondary btn-lg py-3 fw-bold rounded-3 w-100" disabled>
+                        <i class="bi bi-lock-fill me-1"></i> مغلق - تم الصرف مسبقاً
+                    </button>
+                </div>
+
+                
+    
+            }
+            
 </div>  
 
 
@@ -131,38 +150,85 @@
             <i class="bi bi-clock-history me-1"></i> سجل الحركات التفصيلي للموظف خلال الشهر
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 text-center">
-                    <thead class="table-light text-secondary small fw-bold">
-                        <tr>
-                            <th class="py-3">التاريخ / الوقت</th>
-                            <th class="py-3">نوع الحركة</th>
-                            <th class="py-3">القيمة / التأثير</th>
-                            <th class="py-3">البيان والسبب</th>
-                            <th class="py-3">بواسطة</th>
-                        </tr>
-                    </thead>
-                    <tbody class="small">
-                        <tr>
-                            <td class="text-muted">2026/05/10 04:30 م</td>
-                            <td><span class="badge px-3 py-2 rounded-pill" style="background-color: #fdf5e6; color: #8b4513; border: 1px solid #f5deb3;">سلفة من الدرج</span></td>
-                            <td class="fw-bold">- 400.00 ج.م</td>
-                            <td class="text-secondary">سحب سلفة طارئة من شفت المساء</td>
-                            <td class="fw-semibold">كاشير الشفت</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">2026/05/14 11:00 ص</td>
-                            <td><span class="badge px-3 py-2 rounded-pill" style="background-color: #fff5f5; color: #dc3545; border: 1px solid #f8d7da;">جزاء مالي</span></td>
-                            <td class="fw-bold text-danger">- 150.00 ج.م</td>
-                            <td class="text-secondary">تأخير ساعة كاملة عن فتح المحل</td>
-                            <td class="fw-semibold">المدير العام</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            @if (employeeDetails?.EmployeeTransactions != null && employeeDetails.EmployeeTransactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-center">
+                        <thead class="table-light text-secondary small fw-bold">
+                            <tr>
+                                <th class="py-3">التاريخ / الوقت</th>
+                                <th class="py-3">نوع الحركة</th>
+                                <th class="py-3">القيمة / التأثير</th>
+                                <th class="py-3">البيان والسبب</th>
+                                <th class="py-3">بواسطة</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            @foreach (var transaction in employeeDetails.EmployeeTransactions)
+                            {
+                                <tr>
+                                    <td class="text-muted">@transaction.CreatedAt.ToString("yyyy/MM/dd hh:mm ت")</td>
+
+                                    <td>
+                                        @if (transaction.Type == EmployeeTransactionType.Penalty)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #fff5f5; color: #dc3545; border: 1px solid #f8d7da;">⚠️ جزاء مالي</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.Absence)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #fff4e6; color: #fd7e14; border: 1px solid #ffe8cc;">❌ غياب (@transaction.Days يوم)</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.Bonus)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #ebfbee; color: #198754; border: 1px solid #d1e7dd;">⭐ مكافأة / حافز</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.Borrow)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #fdf5e6; color: #8b4513; border: 1px solid #f5deb3;">💵 سلفة من الدرج</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.Overtime)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #e6f7ff; color: #055160; border: 1px solid #bff0ff;">⏱️ وقت إضافي</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.SalaryPayment)
+                                        {
+                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7;">✅ صرف راتب</span>
+                                        }
+                                    </td>
+
+                                    <td class="fw-bold">
+                                        @if (transaction.Type == EmployeeTransactionType.Bonus || transaction.Type == EmployeeTransactionType.Overtime)
+                                        {
+                                            <span class="text-success">+ @transaction.Amount.ToString("N2") ج.م</span>
+                                        }
+                                        else if (transaction.Type == EmployeeTransactionType.SalaryPayment)
+                                        {
+                                            <span class="text-primary">@transaction.Amount.ToString("N2") ج.م</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">- @transaction.Amount.ToString("N2") ج.م</span>
+                                        }
+                                    </td>
+
+                                    <td class="text-secondary text-wrap" style="max-width: 250px;">@transaction.Description</td>
+
+                                    <td class="fw-semibold text-dark">@transaction.CreatedBy</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-5 text-muted">
+                    <i class="bi bi-folder-x fs-1 mb-2 d-block text-secondary"></i>
+                    <span>لا توجد أي حركات ماليّة أو إداريّة مسجلة للموظف خلال هذا الشهر.</span>
+                </div>
+            }
         </div>
     </div>
-
 </div>
 
 
@@ -171,11 +237,57 @@
 
     [Parameter]
     public int Id { get;set;  }
-    protected override Task OnInitializedAsync()
+    private EmployeeDto? employee; 
+    private string errorMessage = null!;
+    public DateTime monthData = DateTime.Now ; 
+    private EmployeeDetails? employeeDetails ; 
+    private bool viewMonthSalary  = true ; 
+    protected override async Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        await LoadBasicData() ; 
+        await LoadCardsTabelsData () ; 
     }
 
+    async Task LoadCardsTabelsData ()
+    {
+        employeeDetails = await EmployeeService.EmployeeDetailsAsync(Id , monthData ) ; 
+        viewMonthSalary = !employeeDetails.EmployeeTransactions.Any(t => t.Type == EmployeeTransactionType.SalaryPayment) ; 
+    }
+    async Task LoadBasicData ()
+    {
+        var result =   await EmployeeService.GetEmployeeAsync(Id) ; 
+        if (result.IsSuccess)
+        {
+            employee = result.Data ; 
+        }
+        else
+        {
+            await ShowError(result.ErrorMessage ?? "حدث خطأ أثناء تعديل البيانات.");
+        }
+    }
+    private async Task ShowError(string msg)
+    {
+        errorMessage = msg;
+        await Task.Delay(3000);
+        errorMessage = null!;
+    }
 
+    private string GetEmployeeTypeDisplayName(EmployeeType type)
+    {
+        return type switch
+        {
+            EmployeeType.Manager => "مدير المحل",
+            EmployeeType.SalesStaff => "موظف مبيعات / صالة",
+            EmployeeType.Delivery => "طيار / دليفري",
+            EmployeeType.Worker => "عامل / خدمات",
+            EmployeeType.Cashier => "كاشير",
+            _ => type.ToString()
+        };
+    }
+    private async Task Filter ()
+    {
+        await LoadCardsTabelsData();
+
+    }
 }
  

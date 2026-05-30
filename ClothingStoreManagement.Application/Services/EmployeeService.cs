@@ -31,7 +31,6 @@ namespace ClothingStoreManagement.Application.Services
             _db.Clear();    
             return Result<string>.Success(" تم إنشاء المستخدم بنجاح");
         }
-
         public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
         {
             return await _db.Employees.GetAll().Select(u => new EmployeeDto
@@ -56,7 +55,6 @@ namespace ClothingStoreManagement.Application.Services
                 BaseSalary = u.BaseSalary,
             }).ToListAsync();
         }
-
         public async Task<Result<string>> ToggleStatusAsync(int id)
         {
             var employee = await _db.Employees.FirstOrDefaultAsync(p => p.Id == id, true);
@@ -68,8 +66,6 @@ namespace ClothingStoreManagement.Application.Services
             _db.Clear();
             return Result<string>.Success("تم تحديث الحالة بنجاح");
         }
-
-
         public async Task <Result<string>> UpdateEmployeeAsync (UpdateEmployeeDto dto )
         {
             var employee = await _db.Employees.FirstOrDefaultAsync(p => p.Id == dto.Id, true);
@@ -83,6 +79,53 @@ namespace ClothingStoreManagement.Application.Services
             await _db.Save();
             _db.Clear();
             return Result<string>.Success("تم تحديث البيانات بنجاح بنجاح");
+        }
+        public async Task<Result<EmployeeDto>> GetEmployeeAsync(int id )
+        {
+            var employee =
+                await _db.Employees.GetAll().Where(e => e.Id == id)
+                .Select(u => new EmployeeDto
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Type = u.Type,
+                    IsActive = u.IsActive,
+                    Phone = u.Phone,
+                    BaseSalary = u.BaseSalary,
+                }).FirstOrDefaultAsync();
+            if (employee == null)
+                return Result<EmployeeDto>.Failure("هذا الموظف غير موجود ", ErrorType.notFound);
+            return Result<EmployeeDto>.Success(employee);
+        }
+        public async Task <EmployeeDetails> EmployeeDetailsAsync (int id , DateTime date)
+        {
+            DateTime startOfMonth = new DateTime(date.Year, date.Month, 1);
+
+            DateTime endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
+
+            var thisMonthTransactions = await _db.EmployeeTransaction.GetAll()
+                .Where(t => t.EmployeeId == id &&
+                            t.CreatedAt >= startOfMonth &&
+                            t.CreatedAt <= endOfMonth).Select(e => new EmployeeTransactionsDto
+                            {
+                                Amount = e.Amount,  
+                                CreatedAt =   e.CreatedAt,    
+                                Description = e.Notes , 
+                                Type = e.Type ,
+                                Days = e.DaysCount ?? 0,
+                                CreatedBy = e.CreatedBy.UserName
+                            })
+                .ToListAsync();
+
+            return new EmployeeDetails
+            {
+                EmployeeTransactions = thisMonthTransactions,   
+                Borrow = thisMonthTransactions.Where(et=>et.Type == EmployeeTransactionType.Borrow).Sum(et=> et.Amount),
+                Absence = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Absence).Sum(et => et.Amount),
+                Bonus = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Bonus).Sum(et => et.Amount),
+                Penalty = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Penalty).Sum(et => et.Amount),
+                AbsenceDays = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Absence).Select(et=>et.Days).Sum(),
+            }; 
         }
     }
 

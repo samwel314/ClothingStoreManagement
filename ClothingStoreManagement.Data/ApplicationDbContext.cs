@@ -25,6 +25,7 @@ namespace ClothingStoreManagement.Data
         public DbSet<ShiftTransaction> ShiftTransactions { get; set; }
         public DbSet<MainTreasuryTransaction> TreasuryTransactions { get; set; }    
         public DbSet<Employee> Employees { get; set; }  
+        public DbSet<EmployeeTransaction> EmployeeTransactions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -157,7 +158,10 @@ namespace ClothingStoreManagement.Data
             {
                 entity.Property(e => e.BaseSalary).HasConversion<double>();
             });
-
+            modelBuilder.Entity<EmployeeTransaction>(entity =>
+            {
+                entity.Property(e => e.Amount).HasConversion<double>();
+            });
             modelBuilder.Entity<Shift>(entity =>
             {
                 entity.Property(e => e.TotalSalesCash).HasConversion<double>();

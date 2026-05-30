@@ -4,8 +4,9 @@
     {
         Penalty = 1,      
         Absence = 2,       
-        Bonus = 3,      
-        Overtime = 4,
-        SalaryPayment = 5 
+        Bonus = 3,
+        Borrow = 4,
+        Overtime = 5,
+        SalaryPayment = 6 
     }
 }

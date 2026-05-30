@@ -3,10 +3,10 @@ using ClothingStoreManagement.Domain.Entities;
 
 namespace ClothingStoreManagement.Data.Repository.implementation
 {
-    public class ShiftTransactionRepository : BaseRepository<ShiftTransaction>, IShiftTransactionRepository
+    public class EmployeeTransactionRepository : BaseRepository<EmployeeTransaction>, IEmployeeTransactionRepository
     {
         private readonly ApplicationDbContext _db;
-        public ShiftTransactionRepository(ApplicationDbContext db) : base(db)
+        public EmployeeTransactionRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
         }

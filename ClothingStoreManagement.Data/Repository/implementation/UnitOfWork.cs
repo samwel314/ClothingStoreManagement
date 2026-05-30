@@ -21,15 +21,14 @@
             InvoicePayments = new InvoicePaymentRepository(_db);
             TreasuryTransactions =  new MainTreasuryTransactionRepository(_db);
             Employees = new EmployeeRepository(_db);    
+            EmployeeTransaction = new EmployeeTransactionRepository(_db);   
         }
 
         public IColorRepository Colors { get; private set; }
         public IProductRepository Products { get; private set; }
         public ISizeRepository Sizes { get; private set; }
         public ICategoryRepository Categories { get; private set; }
-
         public IProductProductVariantRepository ProductVariants { get; private set; }
-
         public IInvoiceRepository Invoices { get; private set; }
         public IStockMovementRepository Movements { get; private set; }
         public IUserRepository Users { get; private set; }
@@ -37,8 +36,10 @@
         public IPaymentSourceRepository PaymentSources { get; private set; }
         public IShiftTransactionRepository ShiftTransactions { get; private set;     }
         public IInvoicePaymentRepository InvoicePayments     { get; private set; }
-       public IMainTreasuryTransactionRepository TreasuryTransactions { get; private set; }
+        public IMainTreasuryTransactionRepository TreasuryTransactions { get; private set; }
         public IEmployeeRepository Employees { get; private set; }
+        public IEmployeeTransactionRepository EmployeeTransaction { get; private set; }
+
         public async Task Save()
         {
             await _db.SaveChangesAsync();
