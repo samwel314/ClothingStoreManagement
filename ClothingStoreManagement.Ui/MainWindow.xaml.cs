@@ -42,6 +42,8 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<ShiftService, ShiftService>();
             serviceCollection.AddScoped<PaymentSourceService, PaymentSourceService>();
             serviceCollection.AddScoped<MainTreasuryService, MainTreasuryService>();
+            serviceCollection.AddScoped<EmployeeService, EmployeeService>();
+
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

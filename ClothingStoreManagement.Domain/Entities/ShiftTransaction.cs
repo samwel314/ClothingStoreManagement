@@ -25,5 +25,6 @@ namespace ClothingStoreManagement.Domain.Entities
             Type = type;
             Description = description;
         }
+
     }
 }

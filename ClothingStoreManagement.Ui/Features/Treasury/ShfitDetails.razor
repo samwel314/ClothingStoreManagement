@@ -137,6 +137,7 @@
                         TransactionType.Sale => "badge-sale",
                         TransactionType.Expense => "badge-expense",
                         TransactionType.Return => "badge-return",
+                                        TransactionType.Borrow => "badge-bro",
                         _ => "badge-adj"
                     };
                     var typeName = item.Type switch
@@ -145,6 +146,7 @@
                         TransactionType.Sale => "بيع كاش",
                         TransactionType.Expense => "مصروف",
                         TransactionType.Return => "مرتجع",
+                        TransactionType.Borrow => "سلفة",
                         _ => "تسوية"
                     };
                     <span class="@badgeClass px-3 py-2 rounded-pill">
@@ -223,6 +225,13 @@
     .badge-adj {
         background-color: #fff9db !important;
         color: #856404 !important;
+        border: 1px solid #ffeeba !important;
+        display: inline-block;
+    }
+
+    .badge-bro {
+        background-color: #fff9db !important;
+        color: black !important;
         border: 1px solid #ffeeba !important;
         display: inline-block;
     }

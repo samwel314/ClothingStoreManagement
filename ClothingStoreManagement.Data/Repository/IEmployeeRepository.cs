@@ -2,7 +2,7 @@
 
 namespace ClothingStoreManagement.Data.Repository
 {
-    public interface IShiftTransactionRepository : IBaseRepository<ShiftTransaction>
+    public interface IEmployeeRepository : IBaseRepository<Employee>
     {
 
     }

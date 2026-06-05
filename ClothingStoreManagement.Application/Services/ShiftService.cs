@@ -76,7 +76,7 @@ namespace ClothingStoreManagement.Application.Services
             var allPaymentsSummary = cashPayments.Concat(nonCashPayments).ToList(); 
             var expand = await _db.ShiftTransactions.GetAll()
                 .Where(st => st.ShiftId == shift.Id && (st.Type == TransactionType.Return
-                || st.Type == TransactionType.Expense)).SumAsync(st => st.Amount);
+                || st.Type == TransactionType.Expense || st.Type == TransactionType.Borrow)).SumAsync(st => st.Amount);
 
             var adjustments = await _db.ShiftTransactions.GetAll()
                 .Where(st => st.ShiftId == shift.Id && st.Type == TransactionType.Adjustment).SumAsync(st => st.Amount);
@@ -106,7 +106,7 @@ namespace ClothingStoreManagement.Application.Services
             .ToListAsync();
             var expand = await _db.ShiftTransactions.GetAll()
                 .Where(st => st.ShiftId == shiftId && (st.Type == TransactionType.Return
-                || st.Type == TransactionType.Expense)).SumAsync(st => st.Amount);
+                || st.Type == TransactionType.Expense || st.Type == TransactionType.Borrow)).SumAsync(st => st.Amount);
 
             var adjustments = await _db.ShiftTransactions.GetAll()
                 .Where(st => st.ShiftId == shiftId && st.Type == TransactionType.Adjustment).SumAsync(st => st.Amount);
@@ -119,10 +119,23 @@ namespace ClothingStoreManagement.Application.Services
         {
             var shift = await _db.Shifts.FirstOrDefaultAsync(s => s.Id == shiftId);
             if (shift == null)
-                return Result<string>.Failure("هذه الوردية غير موجودة " , ErrorType.notFound); 
-                await   _db.ShiftTransactions.CreateAsync
-                (new ShiftTransaction(_appState.CurrentUser!.Id,
-               shiftId, dto.Amount, dto.Type, dto.Description));
+                return Result<string>.Failure("هذه الوردية غير موجودة " , ErrorType.notFound);
+            var transacion = new ShiftTransaction(_appState.CurrentUser!.Id,
+           shiftId, dto.Amount, dto.Type, dto.Description); 
+            if (dto.EmployeeId != null  && dto.EmployeeId != 0)
+            {
+                var transaction = new EmployeeTransaction
+                {
+                    EmployeeId = dto.EmployeeId.Value,
+                    Amount = dto.Amount,
+                    Type = EmployeeTransactionType.Borrow,
+                    Notes = dto.Description,
+                    CreatedById = _appState.CurrentUser!.Id,
+                };
+                await _db.EmployeeTransaction.CreateAsync(transaction);
+            }
+              await   _db.ShiftTransactions.CreateAsync
+                (transacion);
             await _db.Save(); 
 
             return Result<string>.Success(); 
@@ -165,6 +178,7 @@ namespace ClothingStoreManagement.Application.Services
 
             var totalReturns = Math.Abs(transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Return)?.Total ?? 0);
             var totalExpenses = Math.Abs(transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Expense)?.Total ?? 0);
+            totalExpenses += Math.Abs(transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Borrow)?.Total ?? 0);
             var adjustments = transactionsSummary.FirstOrDefault(t => t.Type == TransactionType.Adjustment)?.Total ?? 0; ;
 
             shift.CloseShift(actualCash, cashSales, nonCashSales, totalReturns, totalExpenses, adjustments, _appState.CurrentUser.Id);
@@ -205,7 +219,8 @@ namespace ClothingStoreManagement.Application.Services
                 TotalAdjustments = shift.TotalAdjustments , 
                 TotalReturnsCash = shift.TotalReturns , 
             };
-            var transactions = await _db.ShiftTransactions.GetAll().Where(st => st.ShiftId == shiftId).OrderByDescending(st => st.CreatedAt).Select(st => new TransactionListDTO
+            var transactions = await _db.ShiftTransactions.GetAll()
+                .Where(st => st.ShiftId == shiftId).OrderByDescending(st => st.CreatedAt).Select(st => new TransactionListDTO
             {
                 Amount = st.Amount,
                 Description = st.Description,

@@ -3,6 +3,7 @@ using System;
 using ClothingStoreManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClothingStoreManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260530200645_addEmployeeTransacion")]
+    partial class addEmployeeTransacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.4");
@@ -39,7 +42,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Color", b =>
@@ -60,7 +63,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors", (string)null);
+                    b.ToTable("Colors");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Employee", b =>
@@ -92,7 +95,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.EmployeeTransaction", b =>
@@ -129,7 +132,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeTransactions", (string)null);
+                    b.ToTable("EmployeeTransactions");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Invoice", b =>
@@ -178,7 +181,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.InvoiceItem", b =>
@@ -212,7 +215,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("InvoiceItems", (string)null);
+                    b.ToTable("InvoiceItems");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.InvoicePayment", b =>
@@ -242,7 +245,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("PaymentSourceId");
 
-                    b.ToTable("InvoicePayments", (string)null);
+                    b.ToTable("InvoicePayments");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.MainTreasuryTransaction", b =>
@@ -271,7 +274,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("TreasuryTransactions", (string)null);
+                    b.ToTable("TreasuryTransactions");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.PaymentSource", b =>
@@ -292,7 +295,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentSources", (string)null);
+                    b.ToTable("PaymentSources");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Product", b =>
@@ -330,7 +333,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("SKU")
                         .IsUnique();
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ProductVariant", b =>
@@ -376,7 +379,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("VariantSKU")
                         .IsUnique();
 
-                    b.ToTable("ProductVariants", null, t =>
+                    b.ToTable("ProductVariants", t =>
                         {
                             t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
 
@@ -438,7 +441,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Shifts", (string)null);
+                    b.ToTable("Shifts");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ShiftTransaction", b =>
@@ -477,7 +480,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShiftTransactions", (string)null);
+                    b.ToTable("ShiftTransactions");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Size", b =>
@@ -498,7 +501,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Sizes", (string)null);
+                    b.ToTable("Sizes");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.StockMovement", b =>
@@ -535,7 +538,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("Movements", (string)null);
+                    b.ToTable("Movements");
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.User", b =>
@@ -563,7 +566,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new

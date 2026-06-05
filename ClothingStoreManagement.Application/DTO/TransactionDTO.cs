@@ -5,6 +5,8 @@ namespace ClothingStoreManagement.Application.DTO
 {
     public class TransactionDTO
     {
+        [Required (ErrorMessage = "اختار الموظف ")]
+        public int ? EmployeeId { get; set; }   
         [Range (1 , (double) decimal.MaxValue)]
         public decimal Amount { get; set; }
         [Required (ErrorMessage = "ادخل سبب العملية ")]

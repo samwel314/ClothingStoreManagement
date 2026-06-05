@@ -1,4 +1,6 @@
-﻿namespace ClothingStoreManagement.Domain.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ClothingStoreManagement.Domain.Entities
 {
     public class Invoice
     {
@@ -27,6 +29,10 @@
             LastUpdatedAt = DateTime.Now;
         }
         public IEnumerable<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+        public int? EmployeeId { get; private set; }
+        [ForeignKey("EmployeeId")]
+        public Employee? Employee { get; set; }
+        public void AddToEmploy(int employeeId) => EmployeeId = employeeId;
 
     }
 }
