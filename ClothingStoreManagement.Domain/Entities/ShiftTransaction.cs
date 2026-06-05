@@ -12,9 +12,6 @@ namespace ClothingStoreManagement.Domain.Entities
         public TransactionType Type { get; private set; }
         public string Description { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; } = DateTime.Now;
-        public int? EmployeeId { get; private set; }
-        [ForeignKey("EmployeeId")]
-        public Employee ? Employee { get;  set; }  
         public int UserId { get; private set; }
         [ForeignKey("UserId")]
         public User User { get; set; } = null!;
@@ -28,7 +25,6 @@ namespace ClothingStoreManagement.Domain.Entities
             Type = type;
             Description = description;
         }
-        public void AddToEmploy(int employeeId) => EmployeeId   = employeeId;   
 
     }
 }

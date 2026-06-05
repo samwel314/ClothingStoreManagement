@@ -1,6 +1,6 @@
 ﻿@page "/employees/manage/{Id:int}"
 @inject EmployeeService EmployeeService
-
+@inject AppState AppState   
 <div class="container-fluid py-4" dir="rtl">
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -77,55 +77,52 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">نوع العملية</label>
-                        <select class="form-select">
-                            <option value="penalty">⚠️ جزاء مالي (خصم نقدي مباشر)</option>
-                            <option value="absence">❌ تسجيل أيام غياب</option>
-                            <option value="bonus">⭐ تسجيل مكافأة / حافز</option>
+                        <select class="form-select" @bind="newTransaction.Type">
+                            <option value="@EmployeeTransactionType.Penalty">⚠️ جزاء مالي (خصم نقدي مباشر)</option>
+                            <option value="@EmployeeTransactionType.Absence">❌ تسجيل أيام غياب</option>
+                            <option value="@EmployeeTransactionType.Bonus">⭐ تسجيل مكافأة / حافز</option>
+                            <option value="@EmployeeTransactionType.Borrow">💵 سلفة من الدرج</option>
                         </select>
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-muted">عدد الأيام</label>
-                            <input type="number" class="form-control" placeholder="0" min="1" />
+                            <input type="number" class="form-control" placeholder="0" min="1"
+                                   @bind="newTransaction.DaysCount"
+                                   disabled="@(newTransaction.Type != EmployeeTransactionType.Absence)" />
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-muted">المبلغ (ج.م)</label>
-                            <input type="number" class="form-control" placeholder="0.00" min="0" />
+                            <input type="number" class="form-control" disabled="@(newTransaction.Type == EmployeeTransactionType.Absence)" placeholder="0.00" min="0" @bind="newTransaction.Amount" />
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">السبب / البيان</label>
-                        <input type="text" class="form-control" placeholder="اكتب تفاصيل الحركة هنا..." />
+                        <input type="text" class="form-control" placeholder="اكتب تفاصيل الحركة هنا..." @bind="newTransaction.Notes" />
                     </div>
-                    <button class="btn btn-danger w-100 fw-bold py-2">
+                    <button class="btn btn-danger w-100 fw-bold py-2" @onclick="HandleSaveTransaction">
                         <i class="bi bi-check-lg me-1"></i> تنفيذ وحفظ الإجراء
                     </button>
                 </div>
             </div>
         </div>
 
-
-
-
-            <div class="col-md-7">
-    @if (viewMonthSalary)    
+        <div class="col-md-7">
+            @if (viewMonthSalary)
             {
                 <div class="card shadow-sm border-0 rounded-3 h-100 bg-success bg-opacity-10 border border-success border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
                     <div class="text-success fw-bold fs-5 mb-2">
                         <i class="bi bi-cash-coin me-1"></i> صافي المرتب المستحق للصرف حالياً بعد المقاصة:
                     </div>
-                    <div class="display-4 fw-bold text-success mb-4">5,743.40 <span class="fs-3">ج.م</span></div>
+                    <div class="display-4 fw-bold text-success mb-4"> @( employee.BaseSalary + employeeDetails?.TotalSalary ?? 0) <span class="fs-3">ج.م</span></div>
 
                     <button class="btn btn-success btn-lg py-3 fw-bold rounded-3 shadow w-100">
                         <i class="bi bi-currency-exchange me-1"></i> تأكيد صرف مرتب الموظف نقداً وخصمه من الدرج
                     </button>
                 </div>
-
-    
-    }
-    else
-        
-    {
+            }
+            else
+            {
                 <div class="card shadow-sm border-0 rounded-3 h-100 bg-secondary bg-opacity-10 border border-secondary border-opacity-25 d-flex flex-column justify-content-center p-4 text-center">
                     <div class="text-secondary fw-bold fs-4 mb-2">
                         <i class="bi bi-check-circle-fill text-success me-1"></i> تم تقفيل وصرف راتب هذا الشهر
@@ -135,17 +132,9 @@
                         <i class="bi bi-lock-fill me-1"></i> مغلق - تم الصرف مسبقاً
                     </button>
                 </div>
-
-                
-    
             }
-            
-</div>  
-
-
-</div>
-
-    <div class="card shadow-sm border-0 rounded-3">
+        </div>
+    </div>    <div class="card shadow-sm border-0 rounded-3">
         <div class="card-header bg-secondary text-white fw-bold py-3">
             <i class="bi bi-clock-history me-1"></i> سجل الحركات التفصيلي للموظف خلال الشهر
         </div>
@@ -167,7 +156,7 @@
                             @foreach (var transaction in employeeDetails.EmployeeTransactions)
                             {
                                 <tr>
-                                    <td class="text-muted">@transaction.CreatedAt.ToString("yyyy/MM/dd hh:mm ت")</td>
+                                    <td class="text-muted">@transaction.CreatedAt.ToString("yyyy/MM/dd hh:mm ")</td>
 
                                     <td>
                                         @if (transaction.Type == EmployeeTransactionType.Penalty)
@@ -186,10 +175,7 @@
                                         {
                                             <span class="badge px-3 py-2 rounded-pill" style="background-color: #fdf5e6; color: #8b4513; border: 1px solid #f5deb3;">💵 سلفة من الدرج</span>
                                         }
-                                        else if (transaction.Type == EmployeeTransactionType.Overtime)
-                                        {
-                                            <span class="badge px-3 py-2 rounded-pill" style="background-color: #e6f7ff; color: #055160; border: 1px solid #bff0ff;">⏱️ وقت إضافي</span>
-                                        }
+                       
                                         else if (transaction.Type == EmployeeTransactionType.SalaryPayment)
                                         {
                                             <span class="badge px-3 py-2 rounded-pill" style="background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7;">✅ صرف راتب</span>
@@ -197,7 +183,7 @@
                                     </td>
 
                                     <td class="fw-bold">
-                                        @if (transaction.Type == EmployeeTransactionType.Bonus || transaction.Type == EmployeeTransactionType.Overtime)
+                                        @if (transaction.Type == EmployeeTransactionType.Bonus )
                                         {
                                             <span class="text-success">+ @transaction.Amount.ToString("N2") ج.م</span>
                                         }
@@ -207,7 +193,7 @@
                                         }
                                         else
                                         {
-                                            <span class="text-danger">- @transaction.Amount.ToString("N2") ج.م</span>
+                                            <span class="text-danger"> @transaction.Amount.ToString("N2") ج.م</span>
                                         }
                                     </td>
 
@@ -242,6 +228,7 @@
     public DateTime monthData = DateTime.Now ; 
     private EmployeeDetails? employeeDetails ; 
     private bool viewMonthSalary  = true ; 
+    private EmployeeTransaction newTransaction = new EmployeeTransaction() { Type = EmployeeTransactionType.Penalty  };
     protected override async Task OnInitializedAsync()
     {
         await LoadBasicData() ; 
@@ -288,6 +275,41 @@
     {
         await LoadCardsTabelsData();
 
+    }
+    private async Task HandleSaveTransaction()
+    {
+        if (newTransaction.Type == EmployeeTransactionType.Absence && newTransaction.DaysCount <= 0)
+        {
+            await ShowError("يرجى إدخال عدد أيام الغياب بشكل صحيح.");
+            return;
+        }
+        if ( newTransaction.Amount <= 0 && newTransaction.Type != EmployeeTransactionType.Absence)
+        {
+            await ShowError("يرجى إدخال المبلغ بشكل صحيح.");
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(newTransaction.Notes))
+        {
+            await ShowError("يرجى كتابة البيان أو السبب لتسجيل الحركة.");
+            return;
+        }
+        newTransaction.EmployeeId = Id; 
+        newTransaction.CreatedById = AppState.CurrentUser!.Id ; 
+        if (newTransaction.Type == EmployeeTransactionType.Absence)
+        {
+            newTransaction.Amount = Math.Round((employee!.BaseSalary / 30.0m) * newTransaction.DaysCount!.Value, 2);
+        }
+        if (newTransaction.Type != EmployeeTransactionType.Bonus )
+        {
+            newTransaction.Amount = -newTransaction.Amount;
+        }
+        await EmployeeService.AddEmployeeTransactionAsync(newTransaction);
+        await LoadCardsTabelsData();
+        newTransaction = new()
+        {
+            Type = EmployeeTransactionType.Penalty ,
+        } ; 
+  
     }
 }
  

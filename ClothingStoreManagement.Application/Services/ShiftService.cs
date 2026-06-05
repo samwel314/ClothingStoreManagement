@@ -124,7 +124,15 @@ namespace ClothingStoreManagement.Application.Services
            shiftId, dto.Amount, dto.Type, dto.Description); 
             if (dto.EmployeeId != null  && dto.EmployeeId != 0)
             {
-                transacion.AddToEmploy(dto.EmployeeId.Value); 
+                var transaction = new EmployeeTransaction
+                {
+                    EmployeeId = dto.EmployeeId.Value,
+                    Amount = dto.Amount,
+                    Type = EmployeeTransactionType.Borrow,
+                    Notes = dto.Description,
+                    CreatedById = _appState.CurrentUser!.Id,
+                };
+                await _db.EmployeeTransaction.CreateAsync(transaction);
             }
               await   _db.ShiftTransactions.CreateAsync
                 (transacion);

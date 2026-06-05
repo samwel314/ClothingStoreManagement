@@ -97,6 +97,21 @@ namespace ClothingStoreManagement.Application.Services
                 return Result<EmployeeDto>.Failure("هذا الموظف غير موجود ", ErrorType.notFound);
             return Result<EmployeeDto>.Success(employee);
         }
+        public async Task AddEmployeeTransactionAsync(EmployeeTransaction dto)
+        {
+            var transaction = new EmployeeTransaction
+            {
+                EmployeeId = dto.EmployeeId,
+                Amount = dto.Amount,
+                Type = dto.Type,
+                Notes = dto.Notes,
+                DaysCount = dto.DaysCount,
+                CreatedById = dto.CreatedById,
+            };
+            await _db.EmployeeTransaction.CreateAsync(transaction);
+            await _db.Save();
+            _db.Clear();    
+        }   
         public async Task <EmployeeDetails> EmployeeDetailsAsync (int id , DateTime date)
         {
             DateTime startOfMonth = new DateTime(date.Year, date.Month, 1);
@@ -122,7 +137,7 @@ namespace ClothingStoreManagement.Application.Services
                 EmployeeTransactions = thisMonthTransactions,   
                 Borrow = thisMonthTransactions.Where(et=>et.Type == EmployeeTransactionType.Borrow).Sum(et=> et.Amount),
                 Absence = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Absence).Sum(et => et.Amount),
-                Bonus = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Bonus).Sum(et => et.Amount),
+                Bonus = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Bonus ).Sum(et => et.Amount),
                 Penalty = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Penalty).Sum(et => et.Amount),
                 AbsenceDays = thisMonthTransactions.Where(et => et.Type == EmployeeTransactionType.Absence).Select(et=>et.Days).Sum(),
             }; 

@@ -39,7 +39,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Color", b =>
@@ -60,7 +60,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors");
+                    b.ToTable("Colors", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Employee", b =>
@@ -92,7 +92,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.EmployeeTransaction", b =>
@@ -129,7 +129,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeTransactions");
+                    b.ToTable("EmployeeTransactions", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Invoice", b =>
@@ -178,7 +178,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.InvoiceItem", b =>
@@ -212,7 +212,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("InvoiceItems");
+                    b.ToTable("InvoiceItems", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.InvoicePayment", b =>
@@ -242,7 +242,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("PaymentSourceId");
 
-                    b.ToTable("InvoicePayments");
+                    b.ToTable("InvoicePayments", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.MainTreasuryTransaction", b =>
@@ -271,7 +271,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("TreasuryTransactions");
+                    b.ToTable("TreasuryTransactions", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.PaymentSource", b =>
@@ -292,7 +292,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentSources");
+                    b.ToTable("PaymentSources", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Product", b =>
@@ -330,7 +330,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("SKU")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ProductVariant", b =>
@@ -376,7 +376,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("VariantSKU")
                         .IsUnique();
 
-                    b.ToTable("ProductVariants", t =>
+                    b.ToTable("ProductVariants", null, t =>
                         {
                             t.HasCheckConstraint("CK_Product_PurchasePrice_GreaterThanZero", "[PurchasePrice] > 0 ");
 
@@ -438,7 +438,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Shifts");
+                    b.ToTable("Shifts", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.ShiftTransaction", b =>
@@ -477,7 +477,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShiftTransactions");
+                    b.ToTable("ShiftTransactions", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.Size", b =>
@@ -498,7 +498,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Sizes");
+                    b.ToTable("Sizes", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.StockMovement", b =>
@@ -535,7 +535,7 @@ namespace ClothingStoreManagement.Data.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("Movements");
+                    b.ToTable("Movements", (string)null);
                 });
 
             modelBuilder.Entity("ClothingStoreManagement.Domain.Entities.User", b =>
@@ -563,7 +563,7 @@ namespace ClothingStoreManagement.Data.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
