@@ -10,6 +10,7 @@ namespace ClothingStoreManagement.Domain.Entities
         OwnerWithdrawal = 4,
         CapitalInjection = 5,
         ManualAdjustment = 6 ,
-        CasherSupport  = 7
+        CasherSupport  = 7 ,
+        SalaryPayment = 8
     }
 }
