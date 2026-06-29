@@ -50,16 +50,18 @@ namespace ClothingStoreManagement.Application.Services
 
             var cashPayments = await _db.InvoicePayments.GetAll()
          .Where(p => p.Invoice.ShiftId == shift.Id &&
-                     p.PaymentSource.IsCashSource &&
-                     p.Invoice.Status == InvoiceStatus.completed)
-         .GroupBy(p => p.PaymentSource.Name)
+                     p.PaymentSource.IsCashSource) // review 
+         .GroupBy(p => p.PaymentSource.Name  )
          .Select(g => new PaymentTypeSummary
          {
              Name = g.Key,
              IsCashSource = true,
-             TotalAmount = g.Sum(p => p.Amount)
+             TotalAmount = g.Sum(p =>  p.Amount) , 
+           //  IsCompleted = 
          })
          .ToListAsync();
+
+            // -***-*-***************************************
 
             var nonCashPayments = await _db.InvoicePayments.GetAll()
                 .Where(p => p.Invoice.ShiftId == shift.Id &&
@@ -95,7 +97,7 @@ namespace ClothingStoreManagement.Application.Services
         {
             var initial = _db.Shifts.GetAll().Where(s => s.Id == shiftId).Select(s => s.InitialCash).FirstOrDefault(); 
             var payments = await _db.InvoicePayments.GetAll()
-            .Where(p => p.Invoice.ShiftId == shiftId && p.Invoice.Status == InvoiceStatus.completed)
+            .Where(p => p.Invoice.ShiftId == shiftId/* && p.Invoice.Status == InvoiceStatus.completed*/)
             .GroupBy(p => new { p.PaymentSource.Name, p.PaymentSource.IsCashSource })
             .Select(g => new PaymentTypeSummary
             {
@@ -121,7 +123,7 @@ namespace ClothingStoreManagement.Application.Services
             if (shift == null)
                 return Result<string>.Failure("هذه الوردية غير موجودة " , ErrorType.notFound);
             var transacion = new ShiftTransaction(_appState.CurrentUser!.Id,
-           shiftId, dto.Amount, dto.Type, dto.Description); 
+           shiftId, dto.Amount, dto.Type, dto.Description);
             if (dto.EmployeeId != null  && dto.EmployeeId != 0)
             {
                 var transaction = new EmployeeTransaction
@@ -145,7 +147,8 @@ namespace ClothingStoreManagement.Application.Services
             var shift = await _db.Shifts.FirstOrDefaultAsync(s => s.Id == shiftId);
             if (shift == null)
                 return Result < IEnumerable<TransactionListDTO>>.Failure("هذه الوردية غير موجودة ", ErrorType.notFound);
-            var transactions = await _db.ShiftTransactions.GetAll().Where(st => st.ShiftId == shiftId).OrderByDescending(st=> st.CreatedAt).Select(st =>  new TransactionListDTO
+            var transactions = await _db.ShiftTransactions.GetAll().Where(st => st.ShiftId == shiftId)
+                .OrderByDescending(st=> st.CreatedAt).Select(st =>  new TransactionListDTO
             {
                 Amount = st.Amount ,
                 Description = st.Description    , 
@@ -162,7 +165,7 @@ namespace ClothingStoreManagement.Application.Services
             if (shift == null || shift.IsActive == false)
                 return Result<string>.Failure("هذه الوردية غير موجودة او غير صالحة  ", ErrorType.notFound);
             var cashSales = await _db.InvoicePayments.GetAll()
-                        .Where(p => p.Invoice.ShiftId == shift.Id && p.PaymentSource.IsCashSource && p.Invoice.Status == InvoiceStatus.completed).SumAsync(p => p.Amount); 
+                        .Where(p => p.Invoice.ShiftId == shift.Id && p.PaymentSource.IsCashSource/* && p.Invoice.Status == InvoiceStatus.completed*/).SumAsync(p => p.Amount); 
     
             var nonCashSales = await _db.InvoicePayments.GetAll()
                         .Where(p => p.Invoice.ShiftId == shift.Id && !p.PaymentSource.IsCashSource ).SumAsync(p => p.Amount);

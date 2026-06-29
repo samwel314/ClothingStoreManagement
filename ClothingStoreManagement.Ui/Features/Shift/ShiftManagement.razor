@@ -162,7 +162,9 @@ else
 
                                 <InputText @bind-Value="expenseModel.Description" class="form-control w-50 shadow-none" placeholder="البيان..." />
                                 <ValidationMessage For="@(() => expenseModel.Description)" class="text-danger small" />
-
+                                @{
+                                    expenseModel.EmployeeId = 1 ; 
+                                }
                             </div>
 
                             @if (expenseModel.Amount > currentShift.ExpectedCash)
@@ -192,7 +194,9 @@ else
                                 </InputSelect>
                                 <InputNumber @bind-Value="adjModel.Amount" class="form-control border-warning border-opacity-50 shadow-none" placeholder="المبلغ" />
                                 <ValidationMessage For="@(() => adjModel.Amount)" class="text-danger small" />
-
+                                @{
+                                    adjModel.EmployeeId = 1;
+                                }
                             </div>
                             <InputText @bind-Value="adjModel.Description" class="form-control form-control-sm bg-light border-0 mb-3 shadow-none" placeholder="ملاحظات التسوية..." />
                             <ValidationMessage For="@(() => adjModel.Description)" class="text-danger small" />
@@ -561,6 +565,7 @@ else
 
         expenseModel.Type = TransactionType.Expense;
         expenseModel.Amount = expenseModel.Amount * -1;
+        expenseModel.EmployeeId =0; 
         var result = await shiftService.AddTransaction(currentShift!.Id, expenseModel);
         if (result.IsSuccess)
         {
@@ -588,7 +593,7 @@ else
             adjModel.Amount = -Math.Abs(adjModel.Amount);
         else
             adjModel.Amount = Math.Abs(adjModel.Amount);
-
+        adjModel.EmployeeId = 0;
         adjModel.Type = TransactionType.Adjustment;
         var result = await shiftService.AddTransaction(currentShift!.Id, adjModel);
         if (result.IsSuccess)
