@@ -4,6 +4,9 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<NuGetAudit>false</NuGetAudit>
+		<NoWarn>NU1903</NoWarn>
+
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
@@ -16,7 +19,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\ClothingStoreManagement.Domain\ClothingStoreManagement.Domain.csproj" />
