@@ -1,32 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-	  <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
-	  <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-	  <RootNamespace>ClothingStoreManagement.Ui</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\app.ico" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<NuGetAudit>false</NuGetAudit>
+		<NoWarn>NU1903</NoWarn>
 
-  <ItemGroup>
-	  <PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>ClothingStoreManagement.Ui</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Assets\app.ico" />
+	</ItemGroup>
 
-	  <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.51" />
-	  <PackageReference Include="AutoMapper" Version="16.1.1" />
+	<ItemGroup>
+		<PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />
 
-  </ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="10.0.51" />
+		<PackageReference Include="AutoMapper" Version="16.1.1" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
 
-  <ItemGroup>
-    <Content Update="wwwroot\css\bootstrap.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\js\bootstrap.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="wwwroot\css\bootstrap.css">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\js\bootstrap.js">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
 			<PrivateAssets>all</PrivateAssets>
@@ -39,12 +43,12 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\ClothingStoreManagement.Application\ClothingStoreManagement.Application.csproj" />
-	  <ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
+		<ProjectReference Include="..\ClothingStoreManagement.Application\ClothingStoreManagement.Application.csproj" />
+		<ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Resource Include="Assets\app.ico">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </Resource>
+		<Resource Include="Assets\app.ico">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
 	</ItemGroup>
 </Project>

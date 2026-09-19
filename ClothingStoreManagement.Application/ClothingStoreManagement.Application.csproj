@@ -1,22 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
-    <ProjectReference Include="..\ClothingStoreManagement.Domain\ClothingStoreManagement.Domain.csproj" />
-	  <PackageReference Include="AutoMapper" Version="16.1.1" />
-	  <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
-	  <PackageReference Include="FluentValidation" Version="12.1.1" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
+		<ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
+		<ProjectReference Include="..\ClothingStoreManagement.Domain\ClothingStoreManagement.Domain.csproj" />
+		<PackageReference Include="AutoMapper" Version="16.1.1" />
+		<PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+		<PackageReference Include="FluentValidation" Version="12.1.1" />
 
-  </ItemGroup>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Mapping\" />
+	</ItemGroup>
 
 </Project>
