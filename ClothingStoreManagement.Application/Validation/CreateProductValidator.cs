@@ -14,9 +14,12 @@ namespace ClothingStoreManagement.Application.Validation
 
             // قواعد فحص الكود (SKU)
             RuleFor(x => x.SKU)
-                .NotEmpty().WithMessage("كود المنتج (SKU) مطلوب")
-                .Length(4, 100).WithMessage("كود المنتج يجب أن يكون بين 4 و 100 حرف");
-
+    .NotEmpty()
+    .WithMessage("كود المنتج (SKU) مطلوب")
+    .Length(2, 8)
+    .WithMessage("كود المنتج يجب أن يكون بين 2 و 8 حروف أو أرقام")
+    .Matches("^[A-Za-z0-9]+$")
+    .WithMessage("كود المنتج يجب أن يحتوي على حروف وأرقام فقط");
             // قواعد فحص القسم
             RuleFor(x => x.CategoryId)
                 .GreaterThan(0).WithMessage("يجب اختيار القسم بشكل صحيح");

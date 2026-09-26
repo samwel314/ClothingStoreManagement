@@ -43,12 +43,12 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<Result<InvoiceItemDetailsDto>> GetVariant(string sku)
         {
-            var variantDto = _db.ProductVariants.GetAll().Where(pv => pv.VariantSKU == sku.Trim() && pv.StockQuantity > 0)
+            var variantDto = _db.ProductVariants.GetAll().Where(pv => pv.VariantSKU == sku.Trim() && pv.StockQuantity > 0 && pv.Product.IsActive)
                 .Select(pv => new InvoiceItemDetailsDto
                 {
                     Id = pv.Id,
                     ProductName = pv.Product.Name,
-                    Color = pv.Color.Code,
+                    Color = pv.Color.HexCode,
                     Size = pv.Size.Code,
                     SKU = pv.VariantSKU,
                     Price = pv.SellingPrice,

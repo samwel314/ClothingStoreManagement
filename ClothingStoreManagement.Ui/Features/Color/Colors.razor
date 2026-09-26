@@ -77,45 +77,93 @@
 
 @if (isModalOpen)
 {
-    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5); z-index: 1050;" tabindex="-1">
+    <div class="modal fade show d-block"
+         style="background: rgba(0,0,0,0.5); z-index: 1050;"
+         tabindex="-1">
+
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 text-end" dir="rtl">
+
                 <EditForm Model="colorModel" OnValidSubmit="HandleSaveColor">
                     <DataAnnotationsValidator />
-                    
+
                     <div class="modal-header border-0 pb-0">
                         <h5 class="fw-bold text-primary">
                             <i class="bi bi-palette-fill ms-2"></i>
                             @(isEditMode ? "تعديل لون" : "إضافة لون جديد")
                         </h5>
-                        <button type="button" class="btn-close ms-0 me-auto" @onclick="CloseModal"></button>
+
+                        <button type="button"
+                                class="btn-close ms-0 me-auto"
+                                @onclick="CloseModal">
+                        </button>
                     </div>
 
                     <div class="modal-body py-4">
-          
+
+                        <!-- Name -->
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">اسم اللون</label>
-                            <InputText @bind-Value="colorModel.Name" class="form-control form-control-lg bg-light border-0" placeholder="مثلاً: أحمر ملكي" />
-                            <ValidationMessage For="@(() => colorModel.Name)" class="text-danger small mt-1" />
+                            <label class="form-label small fw-bold text-muted">
+                                اسم اللون
+                            </label>
+
+                            <InputText @bind-Value="colorModel.Name"
+                                       class="form-control form-control-lg bg-light border-0"
+                                       placeholder="مثلاً: أسود" />
+
+                            <ValidationMessage For="@(() => colorModel.Name)"
+                                               class="text-danger small mt-1" />
                         </div>
 
+                        <!-- Code -->
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">كود اللون (Hex)</label>
-                            <div class="d-flex gap-2">
-                                <InputText @bind-Value="colorModel.Code" class="form-control form-control-lg bg-light border-0" placeholder="#FF0000" />
-                                <input type="color" class="form-control form-control-color border-0 p-1 bg-light"
-                                       style="width: 60px; height: 48px;"
-                                       @onchange="(e) => colorModel.Code = e!.Value.ToString()!"
-                                       value="@colorModel.Code" />
-                            </div>
-                            <ValidationMessage For="@(() => colorModel.Code)" class="text-danger small mt-1" />
+                            <label class="form-label small fw-bold text-muted">
+                                كود اللون
+                            </label>
+
+                            <InputText @bind-Value="colorModel.Code"
+                                       class="form-control form-control-lg bg-light border-0"
+                                       placeholder="مثلاً: BLK" />
+
+                            <ValidationMessage For="@(() => colorModel.Code)"
+                                               class="text-danger small mt-1" />
                         </div>
+
+                        <!-- HexCode -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">
+                                لون المعاينة
+                            </label>
+
+                            <div class="d-flex gap-2">
+
+                                <InputText @bind-Value="colorModel.HexCode"
+                                           class="form-control form-control-lg bg-light border-0"
+                                           placeholder="#FF0000" />
+
+                                <input type="color"
+                                       class="form-control form-control-color border-0 p-1 bg-light"
+                                       style="width: 60px; height: 48px;"
+                                       value="@colorModel.HexCode"
+                                       @onchange="OnHexCodeChanged" />
+
+                            </div>
+
+                            <ValidationMessage For="@(() => colorModel.HexCode)"
+                                               class="text-danger small mt-1" />
+                        </div>
+
                     </div>
 
                     <div class="modal-footer border-0 pt-0">
-                        <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold shadow-sm">حفظ البيانات</button>
+                        <button type="submit"
+                                class="btn btn-primary px-5 rounded-3 fw-bold shadow-sm">
+                            حفظ البيانات
+                        </button>
                     </div>
+
                 </EditForm>
+
             </div>
         </div>
     </div>
@@ -144,7 +192,10 @@
             errorMessage = "فشل تحميل الألوان. حاول مرة أخرى لاحقاً.";
         }
     }
-
+    private void OnHexCodeChanged(ChangeEventArgs e)
+    {
+        colorModel.HexCode = e.Value?.ToString() ?? "#000000";
+    }
     private async Task OpenAddModal()
     {
         colorModel = new();
@@ -154,11 +205,17 @@
 
     private void Edit(ColorListDTO color)
     {
-        colorModel = new CreateUpdateColorDto { Id = color.Id, Name = color.Name, Code = color.Code };
+        colorModel = new CreateUpdateColorDto
+        {
+            Id = color.Id,
+            Name = color.Name,
+            Code = color.Code,
+            HexCode = color.HexCode
+        };
+
         isEditMode = true;
         isModalOpen = true;
     }
-
     private void CloseModal()
     {
         colorModel = new(); 

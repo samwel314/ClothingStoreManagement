@@ -64,10 +64,15 @@
                                     <button class="btn btn-outline-primary btn-sm border-0" @onclick="() => OpenEditModal(source)">
                                         <i class="bi bi-pencil-square fs-5"></i>
                                     </button>
+                                    @if (!source.IsCashSource)
+                                    {
+                                        
                                     <button class="btn btn-sm @(source.IsActive ? "btn-outline-danger" : "btn-outline-success") border-0"
                                             @onclick="() => ToggleStatus(source.Id)">
                                         <i class="bi @(source.IsActive ? "bi-slash-circle" : "bi-check-circle") fs-5"></i>
                                     </button>
+                                    }
+
                                 </div>
                             </td>
                         </tr>

@@ -3,248 +3,612 @@
 @inject AppState AppState
 @inject NavigationManager Nav
 @inject ShiftService ShiftService
-<div class="login-screen">
-    @* كارت الدخول *@
-    <div class="login-card">
-        <div class="login-header">
-            <div class="logo-circle">
-                <i class="bi bi-person-fill-lock"></i>
+
+<div class="login-page">
+
+    <div class="login-container">
+
+        <!-- Brand -->
+        <div class="brand-section">
+
+            <div class="brand-icon">
+                <i class="bi bi-shop-window"></i>
             </div>
-            <h3 class="fw-bold m-0 text-dark">نظام الملابس <span class="text-primary">@DateTime.Now.Year</span></h3>
-            <p class="text-muted small mt-1">تسجيل دخول المستخدمين للنظام</p>
+
+            <div class="brand-name">
+                Clothing<span>POS</span>
+            </div>
+
+            <div class="brand-subtitle">
+                نظام إدارة المبيعات والمخزون
+            </div>
+
         </div>
 
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
+        <!-- Login Card -->
+        <div class="login-card">
 
-            <div class="mb-3 text-end">
-                <div class="custom-input">
-                    <i class="bi bi-person"></i>
-                    <InputText @bind-Value="loginModel.UserName" placeholder="اسم المستخدم" autocomplete="on" />
+            <div class="login-title">
+                <h4>تسجيل الدخول</h4>
+                <p>أدخل بيانات حسابك للمتابعة</p>
+            </div>
+
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+
+                <DataAnnotationsValidator />
+
+                <!-- Username -->
+                <div class="form-group">
+
+                    <label>
+                        اسم المستخدم
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-person"></i>
+
+                        <InputText @bind-Value="loginModel.UserName"
+                                   placeholder="أدخل اسم المستخدم"
+                                   autocomplete="username" />
+
+                    </div>
+
+                    <ValidationMessage For="@(() => loginModel.UserName)"
+                                       class="validation-message" />
+
                 </div>
-                <ValidationMessage For="@(() => loginModel.UserName)" class="text-danger x-small mt-1 d-block mr-2" />
-            </div>
 
-            <div class="mb-4 text-end">
-                <div class="custom-input">
-                    <i class="bi bi-key"></i>
-                    <InputText type="password" @bind-Value="loginModel.Password" placeholder="كلمة المرور" />
+                <!-- Password -->
+                <div class="form-group">
+
+                    <label>
+                        كلمة المرور
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-lock"></i>
+
+                        <InputText type="password"
+                                   @bind-Value="loginModel.Password"
+                                   placeholder="أدخل كلمة المرور"
+                                   autocomplete="current-password" />
+
+                    </div>
+
+                    <ValidationMessage For="@(() => loginModel.Password)"
+                                       class="validation-message" />
+
                 </div>
-                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger x-small mt-1 d-block mr-2" />
-            </div>
 
-            <button type="submit" class="login-btn" disabled="@isProcessing">
-                @if (isProcessing)
+                <!-- Error -->
+                @if (!string.IsNullOrEmpty(error))
                 {
-                    <span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>
-                }
-                else
-                {
-                    <span>دخول للنظام</span>
-                }
-            </button>
-        </EditForm>
+                    <div class="error-message">
 
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <div class="error-msg animated shake">
-                <i class="bi bi-exclamation-triangle-fill ml-1"></i> @error
-            </div>
-        }
+                        <i class="bi bi-exclamation-circle-fill"></i>
 
-        <div class="brand-footer">
-            <div class="divider"></div>
-            <span class="dev-name">Developed By: <b>Eng. Samuel Marzouk</b></span>
-            <a href="https://wa.me/201005415303" target="_blank" class="dev-phone">
-                01005415303 <i class="bi bi-whatsapp"></i>
-            </a>
+                        <span>@error</span>
+
+                    </div>
+                }
+
+                <!-- Login -->
+                <button type="submit"
+                        class="login-button"
+                        disabled="@isProcessing">
+
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true">
+                        </span>
+
+                        <span>جاري تسجيل الدخول...</span>
+                    }
+                    else
+                    {
+                        <span>تسجيل الدخول</span>
+
+                        <i class="bi bi-arrow-left"></i>
+                    }
+
+                </button>
+
+            </EditForm>
+
         </div>
+
+        <!-- Footer -->
+        <div class="login-footer">
+
+            <div>
+                Clothing POS
+                <span>•</span>
+                @DateTime.Now.Year
+            </div>
+
+            <div class="developer">
+                Developed by
+                <strong>Eng. Samuel Marzouk</strong>
+
+                <a href="https://wa.me/201005415303"
+                   target="_blank"
+                   title="WhatsApp">
+
+                    <i class="bi bi-whatsapp"></i>
+
+                </a>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
 <style>
-    .login-screen {
+
+    /* =========================
+       Page
+    ========================= */
+
+    .login-page {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        /* خلفية ناعمة مودرن مريحة للعين */
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        inset: 0;
+
+        background:
+            radial-gradient(
+                circle at 10% 10%,
+                rgba(13, 110, 253, 0.08),
+                transparent 30%
+            ),
+            radial-gradient(
+                circle at 90% 90%,
+                rgba(13, 110, 253, 0.06),
+                transparent 30%
+            ),
+            #f5f7fb;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
-        overflow: hidden;
+
         direction: rtl;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        font-family:
+            "Segoe UI",
+            Tahoma,
+            Geneva,
+            Verdana,
+            sans-serif;
+
+        overflow-y: auto;
+        padding: 30px 20px;
     }
 
-    .login-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        width: 400px;
-        padding: 40px 35px;
-        border-radius: 24px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        transition: transform 0.3s ease;
-    }
 
-        .login-card:hover {
-            transform: translateY(-5px);
-        }
+    /* =========================
+       Container
+    ========================= */
 
-    .logo-circle {
-        width: 75px;
-        height: 75px;
-        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-        color: #0284c7;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        margin: 0 auto 20px;
-        box-shadow: 0 8px 16px rgba(2, 132, 199, 0.1);
-    }
-
-    .custom-input {
-        display: flex;
-        align-items: center;
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 12px 15px;
-        border: 1.5px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-
-        /* تأثير التركيز عند الكتابة لراحة يد الكاشير */
-        .custom-input:focus-within {
-            background: #ffffff;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        }
-
-        .custom-input i {
-            color: #64748b;
-            margin-left: 12px;
-            font-size: 18px;
-            transition: color 0.3s ease;
-        }
-
-        .custom-input:focus-within i {
-            color: #3b82f6;
-        }
-
-        .custom-input input {
-            border: none;
-            background: transparent;
-            width: 100%;
-            outline: none;
-            font-size: 15px;
-            color: #1e293b;
-        }
-
-    .login-btn {
+    .login-container {
         width: 100%;
-        padding: 14px;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-        font-weight: 600;
-        font-size: 16px;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
+        max-width: 400px;
 
-        .login-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
-        }
-
-        .login-btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-    .brand-footer {
-        margin-top: 35px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
-    }
-
-    .divider {
-        height: 1px;
-        background: linear-gradient(to left, transparent, #e2e8f0, transparent);
-        width: 100%;
-        margin-bottom: 12px;
-    }
-
-    .dev-name {
-        font-size: 13px;
-        color: #64748b;
-    }
-
-    .dev-phone {
-        font-size: 13px;
-        color: #16a34a;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 5px;
-        transition: color 0.2s;
     }
 
-        .dev-phone:hover {
-            color: #15803d;
-        }
 
-    .error-msg {
-        background: #fef2f2;
-        color: #dc2626;
-        padding: 10px 15px;
-        border-radius: 10px;
-        margin-top: 18px;
-        font-size: 13px;
-        border: 1px solid #fca5a5;
+    /* =========================
+       Brand
+    ========================= */
+
+    .brand-section {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+    .brand-icon {
+
+        width: 58px;
+        height: 58px;
+
+        margin: 0 auto 12px;
+
+        border-radius: 14px;
+
+        background: #0d6efd;
+
+        color: white;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+
+        font-size: 25px;
+
+        box-shadow:
+            0 8px 20px rgba(13, 110, 253, 0.22);
     }
 
-    .x-small {
+    .brand-name {
+
+        font-size: 24px;
+        font-weight: 700;
+
+        color: #172033;
+
+        letter-spacing: -0.5px;
+    }
+
+    .brand-name span {
+        color: #0d6efd;
+    }
+
+    .brand-subtitle {
+
+        margin-top: 4px;
+
+        color: #7b8494;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================
+       Card
+    ========================= */
+
+    .login-card {
+
+        width: 100%;
+
+        background: #ffffff;
+
+        border: 1px solid #e8ebf0;
+
+        border-radius: 16px;
+
+        padding: 30px;
+
+        box-shadow:
+            0 12px 35px rgba(31, 41, 55, 0.07);
+    }
+
+
+    /* =========================
+       Title
+    ========================= */
+
+    .login-title {
+        margin-bottom: 26px;
+    }
+
+    .login-title h4 {
+
+        margin: 0;
+
+        color: #172033;
+
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .login-title p {
+
+        margin: 6px 0 0;
+
+        color: #8a93a2;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================
+       Form
+    ========================= */
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+
+        display: block;
+
+        margin-bottom: 7px;
+
+        color: #374151;
+
+        font-size: 13px;
+        font-weight: 600;
+
+        text-align: right;
+    }
+
+
+    /* =========================
+       Input
+    ========================= */
+
+    .input-wrapper {
+
+        height: 46px;
+
+        display: flex;
+        align-items: center;
+
+        background: #ffffff;
+
+        border: 1px solid #dfe3e8;
+
+        border-radius: 9px;
+
+        padding: 0 13px;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .input-wrapper i {
+
+        color: #9aa3b2;
+
+        font-size: 17px;
+
+        margin-left: 10px;
+
+        transition: color 0.2s ease;
+    }
+
+    .input-wrapper input {
+
+        width: 100%;
+
+        height: 100%;
+
+        border: none;
+
+        outline: none;
+
+        background: transparent;
+
+        color: #1f2937;
+
+        font-size: 14px;
+
+        text-align: right;
+    }
+
+    .input-wrapper input::placeholder {
+        color: #a8afbb;
+    }
+
+    .input-wrapper:focus-within {
+
+        border-color: #0d6efd;
+
+        box-shadow:
+            0 0 0 3px rgba(13, 110, 253, 0.10);
+    }
+
+    .input-wrapper:focus-within i {
+        color: #0d6efd;
+    }
+
+
+    /* =========================
+       Validation
+    ========================= */
+
+    .validation-message {
+
+        display: block;
+
+        margin-top: 5px;
+
+        padding-right: 3px;
+
+        color: #dc3545;
+
         font-size: 12px;
-        font-weight: 500;
-        padding-right: 5px;
     }
 
-    .ml-1 {
-        margin-left: 5px;
+
+    /* =========================
+       Error
+    ========================= */
+
+    .error-message {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        margin: 5px 0 18px;
+
+        padding: 10px 12px;
+
+        border-radius: 8px;
+
+        background: #fff5f5;
+
+        border: 1px solid #ffd6d6;
+
+        color: #c62828;
+
+        font-size: 13px;
+
+        text-align: right;
     }
 
-    .ml-2 {
-        margin-left: 8px;
+    .error-message i {
+        font-size: 15px;
+        flex-shrink: 0;
     }
+
+
+    /* =========================
+       Login Button
+    ========================= */
+
+    .login-button {
+
+        width: 100%;
+
+        height: 46px;
+
+        border: none;
+
+        border-radius: 9px;
+
+        background: #0d6efd;
+
+        color: #ffffff;
+
+        font-size: 14px;
+
+        font-weight: 600;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 9px;
+
+        cursor: pointer;
+
+        transition:
+            background 0.2s ease,
+            box-shadow 0.2s ease,
+            transform 0.15s ease;
+    }
+
+    .login-button:hover:not(:disabled) {
+
+        background: #0b5ed7;
+
+        box-shadow:
+            0 5px 14px rgba(13, 110, 253, 0.22);
+
+        transform: translateY(-1px);
+    }
+
+    .login-button:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .login-button:disabled {
+
+        background: #9aa4b2;
+
+        cursor: not-allowed;
+
+        box-shadow: none;
+    }
+
+
+    /* =========================
+       Footer
+    ========================= */
+
+    .login-footer {
+
+        width: 100%;
+
+        margin-top: 20px;
+
+        text-align: center;
+
+        color: #9aa3b2;
+
+        font-size: 11px;
+
+        line-height: 1.8;
+    }
+
+    .login-footer span {
+        margin: 0 4px;
+    }
+
+    .developer {
+        margin-top: 2px;
+    }
+
+    .developer strong {
+        color: #667085;
+        font-weight: 600;
+    }
+
+    .developer a {
+
+        color: #22a447;
+
+        text-decoration: none;
+
+        margin-right: 5px;
+
+        font-size: 13px;
+
+        transition: color 0.2s ease;
+    }
+
+    .developer a:hover {
+        color: #168638;
+    }
+
+
+    /* =========================
+       Mobile
+    ========================= */
+
+    @@media (max-width: 480px) {
+
+        .login-page {
+            padding: 20px 15px;
+        }
+
+        .login-card {
+            padding: 25px 20px;
+            border-radius: 14px;
+        }
+
+        .brand-icon {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+        }
+
+        .brand-name {
+            font-size: 22px;
+        }
+
+    }
+
 </style>
 
 @code {
+
     private LoginRequestDto loginModel = new();
+
     private string? error;
+
     private bool isProcessing = false;
+
 
     private async Task HandleLogin()
     {
-       isProcessing = true;
+        isProcessing = true;
         error = null;
 
         var result = await UserService.LoginAsync(loginModel);
@@ -252,16 +616,17 @@
         if (result.IsSuccess)
         {
             AppState.Login(result.Data!);
-            // *-*- *-* 
-            var shiftResult = await ShiftService.GetOpenShiftAsync(); 
+
+            var shiftResult = await ShiftService.GetOpenShiftAsync();
+
             if (shiftResult.IsSuccess)
             {
-                  Nav.NavigateTo("/shift-decision");
+                Nav.NavigateTo("/shift-decision");
             }
             else
-            {                                
+            {
                 Nav.NavigateTo("/open-shift");
-            }          
+            }
         }
         else
         {
@@ -270,4 +635,5 @@
 
         isProcessing = false;
     }
+
 }

@@ -5,15 +5,24 @@ namespace ClothingStoreManagement.Application.DTO
     public class CreateUpdateColorDto
     {
         public int? Id { get; set; } // for update, null for create
-        [MaxLength(50, ErrorMessage = "اقصي عدد حروف هو 50 حرف ")]
-        [Required(ErrorMessage = "ادخل اسم اللون ")]
+
+        [Required(ErrorMessage = "ادخل اسم اللون")]
+        [MaxLength(50, ErrorMessage = "أقصى عدد حروف هو 50 حرف")]
         public string Name { get; set; } = null!;
-        [MaxLength(9, ErrorMessage = "أقصى عدد حروف لكود اللون هو 9 أحرف (بما في ذلك #)")]
-        [MinLength(4, ErrorMessage = "أقل عدد حروف هو 4 (مثل #FFF)")]
+
         [Required(ErrorMessage = "ادخل كود اللون")]
-        [RegularExpression("^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
-        ErrorMessage = "صيغة كود اللون غير صحيحة (يجب أن يبدأ بـ #)")]
-        public string Code { get; set; } = "#000000"; // قيمة افتراضية سوداء    }
+        [MaxLength(10, ErrorMessage = "أقصى عدد حروف لكود اللون هو 10 أحرف")]
+        [MinLength(2, ErrorMessage = "أقل عدد حروف لكود اللون هو حرفين")]
+        [RegularExpression(
+            "^[A-Za-z0-9]+$",
+            ErrorMessage = "كود اللون يجب أن يحتوي على حروف وأرقام فقط")]
+        public string Code { get; set; } = null!;
+
+        [Required(ErrorMessage = "ادخل قيمة اللون")]
+        [RegularExpression(
+            "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+            ErrorMessage = "صيغة قيمة اللون غير صحيحة (مثل #FFF أو #000000)")]
+        public string HexCode { get; set; } = "#000000";
     }
     public class ColorListDTO
     {
@@ -21,6 +30,7 @@ namespace ClothingStoreManagement.Application.DTO
         public string Name { get; set; } = null!;
         public string Code { get; set; } = null!;
 
+        public string HexCode { get; set; } = null!;
 
     }
 }

@@ -19,13 +19,35 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<Result<ColorListDTO>> CreateColorAsync(CreateUpdateColorDto model)
         {
-            var exist = await _db.Colors.ExistsAsync((c) => c.Name == model.Name.Trim());
-            if (exist)
-                return Result<ColorListDTO>.Failure("هذا اللون موجود بالفعل ", ErrorType.conflict);
-            var color = new Color(model.Name, model.Code);
+            var name = model.Name.Trim();
+            var code = model.Code.Trim().ToUpper();
+
+            var nameExists = await _db.Colors.ExistsAsync(
+                c => c.Name == name);
+
+            if (nameExists)
+                return Result<ColorListDTO>.Failure(
+                    "هذا اللون موجود بالفعل",
+                    ErrorType.conflict);
+
+            var codeExists = await _db.Colors.ExistsAsync(
+                c => c.Code == code);
+
+            if (codeExists)
+                return Result<ColorListDTO>.Failure(
+                    "كود اللون مستخدم بالفعل",
+                    ErrorType.conflict);
+
+            var color = new Color(
+                name,
+                code,
+                model.HexCode);
+
             await _db.Colors.CreateAsync(color);
             await _db.Save();
-            return Result<ColorListDTO>.Success(_mapper.Map<ColorListDTO>(color));
+
+            return Result<ColorListDTO>.Success(
+                _mapper.Map<ColorListDTO>(color));
         }
         public async Task<Result<ColorListDTO>> GetByIdAsync(int id)
         {
@@ -46,20 +68,64 @@ namespace ClothingStoreManagement.Application.Services
             var Colors = await ColorsDtoQuery.ToListAsync();
             return Result<IEnumerable<ColorListDTO>>.Success(Colors);
         }
-        public async Task<Result<string>> UpdateColorAsync(int id, CreateUpdateColorDto model)
+        public async Task<Result<string>> UpdateColorAsync(
+        int id,
+        CreateUpdateColorDto model)
         {
-            var color = await _db.Colors.FirstOrDefaultAsync((c) => c.Id == id, true);
+            var color = await _db.Colors
+                .FirstOrDefaultAsync(c => c.Id == id, true);
+
             if (color == null)
-                return Result<string>.Failure("هذا اللون غير موجود", ErrorType.notFound);
-            if (!color.Name.Equals(model.Name.Trim()) || !color.Code.Equals(model.Code.Trim()))  //**---
+                return Result<string>.Failure(
+                    "هذا اللون غير موجود",
+                    ErrorType.notFound);
+
+            var name = model.Name.Trim();
+            var code = model.Code.Trim().ToUpper();
+            var hexCode = model.HexCode.Trim().ToUpper();
+
+            var nameChanged = !color.Name.Equals(
+                name,
+                StringComparison.OrdinalIgnoreCase);
+
+            var codeChanged = !color.Code.Equals(
+                code,
+                StringComparison.OrdinalIgnoreCase);
+
+            var hexCodeChanged = !color.HexCode.Equals(
+                hexCode,
+                StringComparison.OrdinalIgnoreCase);
+
+            if (!nameChanged && !codeChanged && !hexCodeChanged)
+                return Result<string>.Success("لم يتم إجراء أي تغييرات");
+
+            if (nameChanged)
             {
-                var exist = await _db.Colors.ExistsAsync((c) => c.Name == model.Name.Trim() && c.Id != id);
-                if (exist)
-                    return Result<string>.Failure("هذا اللون موجود بالفعل", ErrorType.conflict);
-                color.Update(model.Name, model.Code);
-                await _db.Save();
+                var nameExists = await _db.Colors.ExistsAsync(
+                    c => c.Name == name && c.Id != id);
+
+                if (nameExists)
+                    return Result<string>.Failure(
+                        "هذا اللون موجود بالفعل",
+                        ErrorType.conflict);
             }
-            return Result<string>.Success($"تم تعديل اللون بنجاح ");
+
+            if (codeChanged)
+            {
+                var codeExists = await _db.Colors.ExistsAsync(
+                    c => c.Code == code && c.Id != id);
+
+                if (codeExists)
+                    return Result<string>.Failure(
+                        "كود اللون مستخدم بالفعل",
+                        ErrorType.conflict);
+            }
+
+            color.Update(name, code, hexCode);
+
+            await _db.Save();
+
+            return Result<string>.Success("تم تعديل اللون بنجاح");
         }
     }
 }

@@ -89,7 +89,7 @@ namespace ClothingStoreManagement.Application.Services
                 baseQuery = baseQuery.Where(p => p.IsActive == active);
             if (searchTerm != null)
                 baseQuery = baseQuery.Where(p => p.Name.Contains(searchTerm)
-                          || p.SKU.Contains(searchTerm));
+                          || p.SKU.Contains(searchTerm) || p.Variants.Any(v=> v.VariantSKU.Contains(searchTerm.ToUpper()    )));
             var count = await baseQuery.CountAsync();
             var pagination = new Pagination<ProductListDto>(count, pageSize, page);
 
@@ -106,7 +106,7 @@ namespace ClothingStoreManagement.Application.Services
                     Variants = p.Variants.Select(v => new ProductVariantListDto
                     {
                         Id = v.Id,
-                        Color = v.Color.Code,
+                        Color = v.Color.HexCode,
                         Size = v.Size.Code,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
@@ -158,6 +158,7 @@ namespace ClothingStoreManagement.Application.Services
                         ColorId = v.Color.Id,
                         Size = v.Size.Code,
                         SizeId = v.Size.Id,
+                        HexCode = v.Color.HexCode,
                         Purchase = v.PurchasePrice,
                         StockQuantity = v.StockQuantity,
                         Price = v.SellingPrice,
@@ -191,7 +192,7 @@ namespace ClothingStoreManagement.Application.Services
                     Total = g.Sum(x => x.Quantity * ( (x.SellingPrice * (1 - x.Discount / 100)) - x.PurchasePrice)),
                     Id = g.Key , 
                     Size = g.First().ProductVariant.Size.Code,
-                    Code = g.First().ProductVariant.Color.Code
+                    Code = g.First().ProductVariant.Color.HexCode
 
                 }).OrderByDescending(x => x.Total).FirstOrDefaultAsync()!;
 

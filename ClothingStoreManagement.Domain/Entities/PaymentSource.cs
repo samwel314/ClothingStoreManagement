@@ -2,10 +2,10 @@
 {
     public class PaymentSource
     {
-        public int Id { get; private set; }
+        public int Id { get; init; }
         public string Name { get; private set; } = null!;
         public bool IsActive { get; private set; }
-        public bool IsCashSource { get; private set; } = false!;    
+        public bool IsCashSource { get; init ; } = false!;    
         private PaymentSource() { }
         public PaymentSource(string name)
         {

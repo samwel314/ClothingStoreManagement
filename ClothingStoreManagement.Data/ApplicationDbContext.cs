@@ -119,14 +119,20 @@ namespace ClothingStoreManagement.Data
             /// -***-* Shift 
             modelBuilder.Entity<Shift>()
     .HasIndex(s => s.EndTime)
-    .HasFilter("[EndTime] IS NULL"); 
+    .HasFilter("[EndTime] IS NULL");
 
-            modelBuilder.Entity<User>().HasData ( new User ("Samuel" ,
-               "$2a$11$evS/J.Lp6vL8vL8vL8vL8ueXGvS/J.Lp6vL8vL8vL8vL8ueXG", UserRole.Admin)
+            modelBuilder.Entity<User>().HasData(new User("Samuel",
+      "$2a$11$0.EXpw9/TA95xTDBf5rqWOa7eg2cqZC8ENIXtGqGRgAFG15UbGlJa", UserRole.Admin)
             {
-                    Id = 1  
+                Id = 1
             });
-   
+            modelBuilder.Entity<PaymentSource>().HasData(new PaymentSource("كاش (نقدي)")
+            {
+                Id = 1,
+                IsCashSource = true,
+            });
+
+
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var properties = entityType.GetProperties()

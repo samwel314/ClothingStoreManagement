@@ -200,7 +200,7 @@
             var amounts = salesData.Select(x => x.TotalAmount).ToArray();
 
             // استدعاء JavaScript لرسم الشارت بالبيانات الحقيقية
-            await JS.InvokeVoidAsync("renderSalesChart", labels, amounts);
+           // await JS.InvokeVoidAsync("renderSalesChart", labels, amounts);
         }
     }
 
