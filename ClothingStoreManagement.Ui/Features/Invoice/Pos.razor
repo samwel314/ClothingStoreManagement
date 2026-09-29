@@ -1,6 +1,5 @@
 ﻿@page "/pos/{invoiceId:int}"
 @page "/pos"
-@using ClothingStoreManagement.Ui.Features.Payment
 @inject InvoiceService invoiceService
 @inject AppState appState
 @inject NavigationManager nav
@@ -71,7 +70,12 @@ else
                             <button @onclick="ApplySearch" class="btn btn-primary border-0 px-4">
                                 <i class="bi bi-search"> بحث </i>
                             </button>
-                            <input @bind:event="oninput" @bind="sku" @bind:after="ApplySearch" type="text" class="form-control border-0 shadow-none text-end"
+                            <input @ref="skuInput"
+                                   @bind="sku"
+                                   @bind:event="oninput"
+                                   @onkeydown="HandleSkuKeyDown"
+                                   type="text"
+                                   class="form-control border-0 shadow-none text-end"
                                    placeholder="امسح الباركود أو ابحث عن الموديل (SKU)...">
                         </div>
                     </div>
@@ -124,7 +128,9 @@ else
                                             </div>
                                         </td>
   
-                                        <td class="fw-bold text-primary text-center">@item.Total ج.م</td>
+                                        <td class="fw-bold @(item.Total < item.OriginalPrice ? "text-danger" : "text-primary") text-center">
+                                            @item.Total ج.م
+                                        </td>                                 
                                         <td class="text-center">
                                             <button @onclick="() => RemoveItem(item)" class="btn btn-sm btn-outline-danger border-0 rounded-circle">
                                                 <i class="bi bi-x-lg"></i>
@@ -206,6 +212,7 @@ else
 }
 @code
 {
+    private ElementReference skuInput;
     [Parameter]
     public int invoiceId { get; set; } 
     private InvoiceDTO ? currentInvoice = new()
@@ -219,6 +226,21 @@ else
     bool isPrintingMode = false;
     bool paymentsModel = false ; 
     IEnumerable <PaymentPartDto> payments ; 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await skuInput.FocusAsync();
+        }
+    }
+    private async Task HandleSkuKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplySearch();
+            await skuInput.FocusAsync();
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         if (appState.CurrentShift == null)
@@ -308,6 +330,7 @@ else
                 await ShowError(result.ErrorMessage);
             }
             sku = "";
+            await skuInput.FocusAsync();
         }
 
     }

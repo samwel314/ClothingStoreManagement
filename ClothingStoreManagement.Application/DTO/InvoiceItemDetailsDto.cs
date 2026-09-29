@@ -7,6 +7,7 @@
         public string SKU { get; set; } = null!;
         public string Color { get; set; } = null!;
         public string Size { get; set; } = null!;
+        public decimal OriginalPrice { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; } = 1;
         public int AvailableQuantity { get; set; }

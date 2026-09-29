@@ -50,6 +50,7 @@ namespace ClothingStoreManagement.Application.Services
                     ProductName = pv.Product.Name,
                     Color = pv.Color.HexCode,
                     Size = pv.Size.Code,
+                    OriginalPrice = pv.PurchasePrice , 
                     SKU = pv.VariantSKU,
                     Price = pv.SellingPrice,
                     AvailableQuantity = pv.StockQuantity
