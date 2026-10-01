@@ -3,6 +3,7 @@
 @inject NavigationManager navigationManager
 @inject ShiftService shiftService       
 @inject AppState appState   
+@inject IReceiptPrinterService ReceiptPrinterService
 @if (confirmingReturn)
 {
     <div class="modal fade show" id="returnModal" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5);">
@@ -122,12 +123,13 @@
 
                 <div class="modal-footer bg-light">
                     <button class="btn btn-secondary" @onclick="CloseModal">إغلاق</button>
-                    @if (selectedInvoice.Status == InvoiceStatus.completed)
-                    {
-                        <button class="btn btn-primary">
-                        <i class="bi bi-printer"></i> طباعة الفاتورة
-                    </button>
-                    }
+                @if (selectedInvoice.Status == InvoiceStatus.completed)
+    {
+        <button class="btn btn-primary" @onclick="PrintInvoice">
+            <i class="bi bi-printer"></i>
+            طباعة الفاتورة
+        </button>
+    }
         
                 </div>
             </div>
@@ -362,7 +364,19 @@
     }
     private InvoiceDTO? selectedInvoice;
     private bool isModalVisible = false;
+    private async Task PrintInvoice()
+{
+    if (selectedInvoice == null)
+        return;
 
+    var result = await ReceiptPrinterService.PrintAsync(selectedInvoice);
+
+    if (!result)
+    {
+        await ShowError("حدث خطأ أثناء طباعة الفاتورة");
+    }
+    isModalVisible = false ; 
+}
     // دالة فتح الـ Modal وجلب البيانات
     private async Task OpenDetailsModal(int id)
     {

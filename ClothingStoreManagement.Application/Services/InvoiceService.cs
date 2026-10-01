@@ -313,13 +313,13 @@ namespace ClothingStoreManagement.Application.Services
                     ii.ProductVariant.Product.Name,
                     ProductId = ii.ProductVariant.Product.Id,
                     SizeCode = ii.ProductVariant.Size.Code, // ضيف المقاس واللون في الجروب عشان تعرف تختارهم
-                    ColorCode = ii.ProductVariant.Color.Code
+                    ColorCode = ii.ProductVariant.Color.HexCode
                 }).Select ( g => new TopProductDTO
                 {
                     ProductName = g.Key.Name,
                     Id = g.Key.ProductId,
                     SizeName = g.First().ProductVariant.Size.Code,            
-                    ColorHex = g.First().ProductVariant.Color.Code,   
+                    ColorHex = g.First().ProductVariant.Color.HexCode,   
                     TotalQuantity = g.Sum(x => x.Quantity),
                     InvoicesCount = g.Count()
                 }).OrderByDescending(tp => tp.TotalQuantity).Take(2).ToListAsync();   

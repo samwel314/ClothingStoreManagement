@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<NuGetAudit>false</NuGetAudit>
 		<NoWarn>NU1903</NoWarn>
+		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
