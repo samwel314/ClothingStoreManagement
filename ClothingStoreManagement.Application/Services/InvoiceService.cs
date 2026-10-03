@@ -48,7 +48,7 @@ namespace ClothingStoreManagement.Application.Services
                 {
                     Id = pv.Id,
                     ProductName = pv.Product.Name,
-                    Color = pv.Color.HexCode,
+                    Color = pv.Color.Code,
                     Size = pv.Size.Code,
                     OriginalPrice = pv.PurchasePrice , 
                     SKU = pv.VariantSKU,

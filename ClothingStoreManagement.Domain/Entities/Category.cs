@@ -2,10 +2,10 @@
 {
     public class Category
     {
-        public int Id { get; private set; }
+        public int Id { get; init ; }
         public string Name { get; private set; } = null!;
         public bool IsActive { get; private set; } = true;
-        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        public DateTime CreatedAt { get; init ; } = DateTime.Now;
         public DateTime? UpdatedAt { get; private set; }
         private Category() { } // EF Core يحتاجه
         public Category(string name)

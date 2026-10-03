@@ -5,6 +5,8 @@ using ClothingStoreManagement.Data.Repository;
 using ClothingStoreManagement.Data.Repository.implementation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
+using System.IO;
 using System.Windows;
 
 namespace ClothingStoreManagement.Ui
@@ -21,12 +23,19 @@ namespace ClothingStoreManagement.Ui
             //  Icon = new BitmapImage(new Uri("Assets/app.ico", UriKind.Relative));
             Title = $"🧥 Clothing Store System | Developed by Eng. Samuel Marzouk © {DateTime.Now.Year}"; var serviceCollection = new ServiceCollection();
             serviceCollection.AddWpfBlazorWebView();
-            var dbPath = System.IO.Path.Combine(AppContext.BaseDirectory, "app.db");
+            var dataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                         "ClothingStoreManagement",
+                         "Data");
+
+            Directory.CreateDirectory(dataDirectory);
+
+            var dbPath = Path.Combine(dataDirectory, "ClothingStoreManagement.db");
 
             serviceCollection.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlite($"Data Source={dbPath}");
-            });
+            }); 
             serviceCollection.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MappingProfile>();
@@ -54,5 +63,38 @@ namespace ClothingStoreManagement.Ui
 
             Resources.Add("services", serviceProvider);
         }
+        private static string GetSettingsDirectory()
+        {
+            var settingsDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ClothingStoreManagement",
+                "Settings");
+
+            Directory.CreateDirectory(settingsDirectory);
+
+            return settingsDirectory;
+        }
+        private static string? SelectBackupFolder()
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = "Select Backup Folder",
+                Multiselect = false
+            };
+
+            return dialog.ShowDialog() == true
+                ? dialog.FolderName
+                : null;
+        }
+        private static string GetSettingsPath()
+        {
+            return Path.Combine(
+                GetSettingsDirectory(),
+                "settings.json");
+        }
+    }
+    public sealed class AppSettings
+    {
+        public string? BackupFolder { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Ui;
+using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Drawing.Text;
+using QRCoder;
 
 namespace ClothingStoreManagement.Application.Services
 {
@@ -22,8 +24,6 @@ namespace ClothingStoreManagement.Application.Services
                     PrinterSettings = printerSettings
                 };
 
-                // 80mm Standard Thermal Paper
-                printDocument.DefaultPageSettings.PaperSize = new PaperSize("Receipt 80mm", 280, 1200);
                 printDocument.DefaultPageSettings.Margins = new Margins(0, 0, 0, 0);
 
                 printDocument.PrintPage += (_, e) =>
@@ -40,70 +40,72 @@ namespace ClothingStoreManagement.Application.Services
             }
         }
 
-        private static void DrawReceipt(Graphics graphics, InvoiceDTO invoice)
+        private static float DrawReceipt(Graphics graphics, InvoiceDTO invoice)
         {
             graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
-            // بداية نقطة رسم الفريم العلوية
             float frameStartY = 3;
-
             const float startX = 5;
             const float printableWidth = 270;
-            float y = 10;
+            float y = 8; // تقليل البداية من 10 إلى 8
 
             // الخطوط
-            using var titleFont = new Font("Segoe UI", 12, FontStyle.Bold);
-            using var headerFont = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-            using var boldFont = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-            using var normalFont = new Font("Segoe UI", 8.5f, FontStyle.Regular);
-            using var smallFont = new Font("Segoe UI", 7.5f, FontStyle.Regular);
-            using var miniFont = new Font("Segoe UI", 6.5f, FontStyle.Regular);
-            using var grandTotalFont = new Font("Segoe UI", 11f, FontStyle.Bold);
+            using var titleFont = new Font("Segoe UI", 11, FontStyle.Bold);
+            using var headerFont = new Font("Segoe UI", 8f, FontStyle.Regular);
+            using var boldFont = new Font("Segoe UI", 8f, FontStyle.Bold);
+            using var normalFont = new Font("Segoe UI", 8f, FontStyle.Regular);
+            using var smallFont = new Font("Segoe UI", 7f, FontStyle.Regular);
+            using var miniFont = new Font("Segoe UI", 6f, FontStyle.Regular);
+            using var grandTotalFont = new Font("Segoe UI", 10f, FontStyle.Bold);
 
-            // تنسيقات محاذاة قياسية ثابتة وبسيطة (بدون Flags معقدة)
-            using var formatCenter = new StringFormat { Alignment = StringAlignment.Center };
-            using var formatRight = new StringFormat { Alignment = StringAlignment.Far };  // يمين
-            using var formatLeft = new StringFormat { Alignment = StringAlignment.Near };  // يسار
+            using var formatCenter = new StringFormat { Alignment = StringAlignment.Center, FormatFlags = StringFormatFlags.DirectionRightToLeft };
+            using var formatRight = new StringFormat { Alignment = StringAlignment.Near, FormatFlags = StringFormatFlags.DirectionRightToLeft };
+            using var formatLeft = new StringFormat { Alignment = StringAlignment.Far, FormatFlags = StringFormatFlags.DirectionRightToLeft };
 
             // =========================
             // Header
             // =========================
             graphics.DrawString(ClientBaseData.Name ?? "متجر الملابس", titleFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 22), formatCenter);
-            y += 22;
+            y += 20;
 
-            graphics.DrawString($"العنوان: {ClientBaseData.Address}", headerFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
-            y += 15;
+            if (!string.IsNullOrWhiteSpace(ClientBaseData.Address))
+            {
+                graphics.DrawString($"العنوان: {ClientBaseData.Address}", headerFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
+                y += 14;
+            }
 
-            graphics.DrawString($"تليفون المحل: {ClientBaseData.Phone}", headerFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
-            y += 18;
+            if (!string.IsNullOrWhiteSpace(ClientBaseData.Phone))
+            {
+                graphics.DrawString($"تليفون: {ClientBaseData.Phone}", headerFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
+                y += 14;
+            }
 
             DrawLine(graphics, startX, ref y, printableWidth);
 
             // =========================
             // Invoice Meta
             // =========================
-            graphics.DrawString($" {invoice.SerialNumber} : رقم ", boldFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 18), formatCenter);
-            y += 17;
+            graphics.DrawString($"رقم الفاتورة: {invoice.SerialNumber}", boldFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
+            y += 15;
 
-            graphics.DrawString($"التاريخ: {invoice.LastUpdate:HH:mm dd/MM/yyyy}", boldFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 18), formatCenter);
-            y += 20;
+            graphics.DrawString($"التاريخ: {invoice.LastUpdate:dd/MM/yyyy HH:mm}", boldFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
+            y += 16;
 
             DrawLine(graphics, startX, ref y, printableWidth);
 
             // =========================
             // Items Table Header
             // =========================
-            // توزيع المساحة من الشمال لليمن: [إجمالي: 80px] [كمية: 50px] [الصنف: 140px]
-            float colLeftX = startX;              // تبدأ من 5
-            float colCenterX = startX + 80;       // تبدأ من 85
-            float colRightX = startX + 130;       // تبدأ من 135
+            float colLeftX = startX;
+            float colCenterX = startX + 80;
+            float colRightX = startX + 130;
             float colRightWidth = 140;
 
-            graphics.DrawString(" الصنف ", boldFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 18), formatRight);
-            graphics.DrawString("كمية", boldFont, Brushes.Black, new RectangleF(colCenterX, y, 50, 18), formatCenter);
-            graphics.DrawString("إجمالي", boldFont, Brushes.Black, new RectangleF(colLeftX, y, 80, 18), formatLeft);
+            graphics.DrawString("الصنف", boldFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 16), formatRight);
+            graphics.DrawString("الكمية", boldFont, Brushes.Black, new RectangleF(colCenterX, y, 50, 16), formatCenter);
+            graphics.DrawString("الإجمالي", boldFont, Brushes.Black, new RectangleF(colLeftX, y, 80, 16), formatLeft);
 
-            y += 18;
+            y += 15;
             DrawLine(graphics, startX, ref y, printableWidth);
 
             // =========================
@@ -113,27 +115,26 @@ namespace ClothingStoreManagement.Application.Services
             {
                 float rowStartY = y;
 
-                // اسم المنتج (يمين)
-                graphics.DrawString(item.ProductName, boldFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 18), formatRight);
-                y += 15;
+                SizeF nameSize = graphics.MeasureString(item.ProductName, boldFont, (int)colRightWidth);
+                float nameHeight = Math.Max(15, nameSize.Height);
 
-                // المقاس واللون (يمين)
-                graphics.DrawString($" {item.Size} | {item.Color} ", smallFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 15), formatRight);
-                y += 14;
+                graphics.DrawString(item.ProductName, boldFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, nameHeight), formatRight);
+                y += nameHeight;
+
+                string details = $"{item.Size} | {item.Color}";
+                graphics.DrawString(details, smallFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 13), formatRight);
+                y += 12;
 
                 if (item.Discount > 0)
                 {
-                    graphics.DrawString($" خصم {item.Discount}% ", smallFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 15), formatRight);
-                    y += 14;
+                    graphics.DrawString($"خصم {item.Discount}%", smallFont, Brushes.Black, new RectangleF(colRightX, y, colRightWidth, 13), formatRight);
+                    y += 12;
                 }
 
-                // الكمية (وسط)
-                graphics.DrawString(item.Quantity.ToString(), normalFont, Brushes.Black, new RectangleF(colCenterX, rowStartY, 50, 18), formatCenter);
+                graphics.DrawString(item.Quantity.ToString(), normalFont, Brushes.Black, new RectangleF(colCenterX, rowStartY, 50, 16), formatCenter);
+                graphics.DrawString(item.Total.ToString("N2"), normalFont, Brushes.Black, new RectangleF(colLeftX, rowStartY, 80, 16), formatLeft);
 
-                // الإجمالي (يسار)
-                graphics.DrawString(item.Total.ToString("N2"), normalFont, Brushes.Black, new RectangleF(colLeftX, rowStartY, 80, 18), formatLeft);
-
-                y += 4;
+                y += 2;
             }
 
             DrawLine(graphics, startX, ref y, printableWidth);
@@ -141,60 +142,80 @@ namespace ClothingStoreManagement.Application.Services
             // =========================
             // Summary Section
             // =========================
-            // الإجمالي: النص لليمين والمبلغ لليسار
-            DrawSummaryRow(graphics, " : الإجمالي ", invoice.TotalAmount.ToString("N2"), normalFont, startX, printableWidth, ref y, formatRight, formatLeft);
+            DrawSummaryRow(graphics, "الإجمالي:", invoice.TotalAmount.ToString("N2"), normalFont, startX, printableWidth, ref y, formatRight, formatLeft);
 
             if (invoice.TotalAmount > invoice.TotalAmountWithDiscount)
             {
                 var discountAmount = invoice.TotalAmount - invoice.TotalAmountWithDiscount;
-                DrawSummaryRow(graphics, " : إجمالي الخصومات ", $"-{discountAmount:N2}", normalFont, startX, printableWidth, ref y, formatRight, formatLeft);
+                DrawSummaryRow(graphics, "إجمالي الخصم:", $"-{discountAmount:N2}", normalFont, startX, printableWidth, ref y, formatRight, formatLeft);
             }
 
             DrawLine(graphics, startX, ref y, printableWidth);
 
             // الصافي النهائي
-            DrawSummaryRow(graphics, " : الصافي النهائي ", invoice.TotalAmountWithDiscount.ToString("N2"), grandTotalFont, startX, printableWidth, ref y, formatRight, formatLeft);
+            DrawSummaryRow(graphics, "الصافي النهائي:", invoice.TotalAmountWithDiscount.ToString("N2"), grandTotalFont, startX, printableWidth, ref y, formatRight, formatLeft);
 
             DrawLine(graphics, startX, ref y, printableWidth);
 
             // =========================
-            // Footer
+            // Footer & Compressed QR Code
             // =========================
-            y += 4;
-            graphics.DrawString("شكراً لزيارتكم", normalFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 18), formatCenter);
-            y += 18;
+            y += 2;
+            graphics.DrawString("شكراً لزيارتكم - الاسترجاع خلال 14 يوم", smallFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 14), formatCenter);
+            y += 14;
 
-            graphics.DrawString("الاسترجاع خلال 14 يوم", smallFont, Brushes.Black, new RectangleF(startX, y, printableWidth, 16), formatCenter);
-            y += 18;
+            // --- رسم QR Code المدمج (تصغير الحجم من 75 إلى 48) ---
+            string facebookUrl = ClientBaseData.FacebookUrl;
+            if (!string.IsNullOrWhiteSpace(facebookUrl))
+            {
+                DrawQRCode(graphics, facebookUrl, startX, printableWidth, ref y, qrSize: 48);
+            }
 
-            graphics.DrawString("Smart POS | Eng. Samuel Marzouk - 01005415303", miniFont, Brushes.Gray, new RectangleF(startX, y, printableWidth, 14), formatCenter);
-            y += 16;
+            graphics.DrawString("Smart POS | Eng. Samuel Marzouk - 01005415303", miniFont, Brushes.Gray, new RectangleF(startX, y, printableWidth, 12), formatCenter);
+            y += 13;
 
             // =========================
             // رسم الفريم الخارجي
             // =========================
             using var framePen = new Pen(Color.Black, 1.2f);
             graphics.DrawRectangle(framePen, startX - 2, frameStartY, printableWidth + 4, y - frameStartY);
+
+            return y;
+        }
+
+        private static void DrawQRCode(Graphics graphics, string text, float startX, float totalWidth, ref float y, int qrSize = 48)
+        {
+            try
+            {
+                using var qrGenerator = new QRCodeGenerator();
+                using var qrData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.M);
+                using var qrCode = new QRCode(qrData);
+                using Bitmap qrImage = qrCode.GetGraphic(4);
+
+                float qrX = startX + (totalWidth - qrSize) / 2;
+
+                graphics.DrawImage(qrImage, qrX, y, qrSize, qrSize);
+                y += qrSize + 4; // تقليل المسافة التحتية من 6 إلى 4
+            }
+            catch
+            {
+                // تجاوز الخطأ لضمان استمرار الطباعة
+            }
         }
 
         private static void DrawSummaryRow(Graphics graphics, string label, string value, Font font, float x, float totalWidth, ref float y, StringFormat formatRight, StringFormat formatLeft)
         {
             float halfWidth = totalWidth / 2;
-
-            // النص ناحية اليمين (النص يوضع في الجزء الأيمن)
-            graphics.DrawString(label, font, Brushes.Black, new RectangleF(x + halfWidth, y, halfWidth, 20), formatRight);
-
-            // المبلغ ناحية اليسار (المبلغ يوضع في الجزء الأيسر)
-            graphics.DrawString(value, font, Brushes.Black, new RectangleF(x, y, halfWidth, 20), formatLeft);
-
-            y += 20;
+            graphics.DrawString(label, font, Brushes.Black, new RectangleF(x + halfWidth, y, halfWidth, 16), formatRight);
+            graphics.DrawString(value, font, Brushes.Black, new RectangleF(x, y, halfWidth, 16), formatLeft);
+            y += 16; // تقليل ارتفاع السطر من 20 إلى 16
         }
 
         private static void DrawLine(Graphics graphics, float x, ref float y, float width)
         {
-            y += 2;
+            y += 1;
             graphics.DrawLine(Pens.Black, x, y, x + width, y);
-            y += 6;
+            y += 4; // تقليل الهامش حول الخط الفاصل
         }
     }
 }

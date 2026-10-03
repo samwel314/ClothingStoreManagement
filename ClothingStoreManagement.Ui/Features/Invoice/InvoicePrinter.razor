@@ -14,17 +14,23 @@
         <div class="ticket">
 
             <div class="header">
-                <h2 class="store-name">متجر الملابس</h2>
+                <h2 class="store-name">@ClientBaseData.Name</h2>
 
                 <div class="store-info">
-                    <p>العنوان: أسيوط - شارع الجمهورية</p>
-                    <p>تليفون المحل: 01000000000</p>
+                    @if (!string.IsNullOrWhiteSpace(ClientBaseData.Address))
+                    {
+                        <p>@ClientBaseData.Address</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(ClientBaseData.Phone))
+                    {
+                        <p>تليفون المحل: @ClientBaseData.Phone</p>
+                    }
                 </div>
 
                 <div class="divider"></div>
 
                 <div class="invoice-meta">
-                    <p>رقم: @InvoiceModel.SerialNumber</p>
+                    <p>رقم الفاتورة: @InvoiceModel.SerialNumber</p>
                     <p>التاريخ: @InvoiceModel.LastUpdate.ToString("dd/MM/yyyy HH:mm")</p>
                 </div>
             </div>
@@ -91,10 +97,10 @@
 
                         <span>
                             -@(
-                                (InvoiceModel.TotalAmount -
-                                InvoiceModel.TotalAmountWithDiscount)
-                                .ToString("N2")
-                            )
+                            (InvoiceModel.TotalAmount -
+                            InvoiceModel.TotalAmountWithDiscount)
+                            .ToString("N2")
+                                                    )
                         </span>
                     </div>
                 }
@@ -113,7 +119,13 @@
 
             <div class="footer">
                 <p>شكراً لزيارتكم</p>
-                <p>الاسترجاع خلال 14 يوم</p>
+                <p>الاسترجاع والاستبدال خلال 14 يوم</p>
+
+                <!-- قسم الـ QR Code الخاص بصفحة الفيسبوك -->
+                <div class="qr-section">
+                    <p class="qr-label">تابعنا على صفحتنا</p>
+                    <img src="@QrCodeImageData" alt="Facebook QR Code" class="qr-code-img" />
+                </div>
 
                 <p class="brand-mini">
                     Smart POS | Eng. Samuel Marzouk - 01005415303
@@ -130,6 +142,12 @@
     public InvoiceDTO InvoiceModel { get; set; } = default!;
 
     private bool _printStarted;
+    private string QrCodeImageData = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GenerateFacebookQrCode(ClientBaseData.FacebookUrl);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -143,12 +161,28 @@
 
     private async Task HandlePrint()
     {
-        var success =
-            await ReceiptPrinterService.PrintAsync(InvoiceModel);
+        var success = await ReceiptPrinterService.PrintAsync(InvoiceModel);
 
         if (success)
         {
             Nav.NavigateTo("/pos");
+        }
+    }
+
+    private void GenerateFacebookQrCode(string url)
+    {
+        try
+        {
+            using var qrGenerator = new QRCoder.QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(url, QRCoder.QRCodeGenerator.ECCLevel.M);
+            using var qrCode = new QRCoder.PngByteQRCode(qrData);
+
+            byte[] qrCodeBytes = qrCode.GetGraphic(5);
+            QrCodeImageData = $"data:image/png;base64,{Convert.ToBase64String(qrCodeBytes)}";
+        }
+        catch
+        {
+            QrCodeImageData = string.Empty;
         }
     }
 }
@@ -167,7 +201,6 @@
         direction: rtl;
         color: #000;
         line-height: 1.3;
-
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -188,18 +221,18 @@
         margin-top: 1mm;
     }
 
-    .store-info p {
-        margin: 0;
-    }
+        .store-info p {
+            margin: 0;
+        }
 
     .invoice-meta {
         font-size: 10px;
         font-weight: 600;
     }
 
-    .invoice-meta p {
-        margin: 0;
-    }
+        .invoice-meta p {
+            margin: 0;
+        }
 
     .divider {
         border-top: 1px solid #000;
@@ -212,17 +245,17 @@
         font-size: 10px;
     }
 
-    .items-table th {
-        border-bottom: 1px solid #000;
-        padding: 1mm 0;
-        font-weight: 700;
-        text-align: right;
-    }
+        .items-table th {
+            border-bottom: 1px solid #000;
+            padding: 1mm 0;
+            font-weight: 700;
+            text-align: right;
+        }
 
-    .items-table td {
-        padding: 1mm 0;
-        vertical-align: top;
-    }
+        .items-table td {
+            padding: 1mm 0;
+            vertical-align: top;
+        }
 
     .item-name {
         font-weight: 700;
@@ -266,8 +299,27 @@
         margin-top: 3mm;
     }
 
-    .footer p {
-        margin: 1mm 0;
+        .footer p {
+            margin: 1mm 0;
+        }
+
+    /* تنسيق قسم الـ QR Code */
+    .qr-section {
+        margin: 2mm 0;
+        text-align: center;
+    }
+
+    .qr-label {
+        font-size: 9px;
+        font-weight: 600;
+        margin-bottom: 1mm !important;
+    }
+
+    .qr-code-img {
+        width: 75px;
+        height: 75px;
+        display: block;
+        margin: 0 auto;
     }
 
     .brand-mini {
@@ -290,9 +342,9 @@
             padding: 0 !important;
         }
 
-        body * {
-            visibility: hidden;
-        }
+            body * {
+                visibility: hidden;
+            }
 
         .ticket,
         .ticket * {
@@ -335,5 +387,4 @@
             page-break-inside: avoid;
         }
     }
-
 </style>

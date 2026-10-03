@@ -7,7 +7,8 @@ namespace ClothingStoreManagement.Ui
     public static class ClientBaseData
     {
         public static string Name { get; set; } = "Hashtka";
-        public static string Address { get; set; } = "أسيوط - شارع الجمهورية";
-        public static string Phone { get; set; } = "01000000000";
+        public static string Address { get; set; } = "اسيوط يسري راغب برج الزهور هشتكه محل ";
+        public static string Phone { get; set; } = "01280855819";
+        public static string FacebookUrl { get; set; } = "https://www.facebook.com/share/1Ew8SLMC7K/";
     }
 }

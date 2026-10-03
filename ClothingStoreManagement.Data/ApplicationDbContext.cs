@@ -132,7 +132,53 @@ namespace ClothingStoreManagement.Data
                 IsCashSource = true,
             });
 
+            modelBuilder.Entity<Category>().HasData(
+                new
+                {
+                    Id = 1,
+                    Name = "حريمي",
+                    IsActive = true,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = (DateTime?)null
+                }
+            ); 
+            modelBuilder.Entity<Color>().HasData(
+    new { Id = 1, Name = "أسود", Code = "BLK", HexCode = "#000000" },
+    new { Id = 2, Name = "أبيض", Code = "WHT", HexCode = "#FFFFFF" },
+    new { Id = 3, Name = "رمادي", Code = "GRY", HexCode = "#808080" },
+    new { Id = 4, Name = "كحلي", Code = "NVY", HexCode = "#000080" },
+    new { Id = 5, Name = "بيج", Code = "BGE", HexCode = "#F5F5DC" },
+    new { Id = 6, Name = "بني", Code = "BRN", HexCode = "#A52A2A" },
 
+    new { Id = 7, Name = "أحمر", Code = "RED", HexCode = "#FF0000" },
+    new { Id = 8, Name = "أزرق", Code = "BLU", HexCode = "#0000FF" },
+    new { Id = 9, Name = "أخضر", Code = "GRN", HexCode = "#008000" },
+    new { Id = 10, Name = "أصفر", Code = "YLW", HexCode = "#FFFF00" },
+    new { Id = 11, Name = "زيتي", Code = "OLV", HexCode = "#808000" },
+    new { Id = 12, Name = "نبيتي", Code = "MRN", HexCode = "#800000" },
+    new { Id = 13, Name = "وردي / بينك", Code = "PNK", HexCode = "#FFC0CB" },
+    new { Id = 14, Name = "سماني / أوف وايت", Code = "OWH", HexCode = "#FAFAFA" }
+);
+            modelBuilder.Entity<Size>().HasData(
+    // مقاسات الأحرف Standard (S - M - L - XL...)
+    new { Id = 1, Name = "Small", Code = "S" },
+    new { Id = 2, Name = "Medium", Code = "M" },
+    new { Id = 3, Name = "Large", Code = "L" },
+    new { Id = 4, Name = "X-Large", Code = "XL" },
+    new { Id = 5, Name = "2X-Large", Code = "2XL" },
+    new { Id = 6, Name = "3X-Large", Code = "3XL" },
+
+    // مقاسات البنطلونات والأحذية والأحجام الرقمية
+    new { Id = 7, Name = "28", Code = "28" },
+    new { Id = 8, Name = "30", Code = "30" },
+    new { Id = 9, Name = "32", Code = "32" },
+    new { Id = 10, Name = "34", Code = "34" },
+    new { Id = 11, Name = "36", Code = "36" },
+    new { Id = 12, Name = "38", Code = "38" },
+    new { Id = 13, Name = "40", Code = "40" },
+    new { Id = 14, Name = "42", Code = "42" },
+    new { Id = 15, Name = "44", Code = "44" }
+);
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var properties = entityType.GetProperties()
