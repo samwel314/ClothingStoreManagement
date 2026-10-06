@@ -4,6 +4,8 @@
 @inject CategoryService categoryService
 @inject ColorService colorService 
 @inject SizeService sizeService 
+@inject IBarcodeService BarcodeService
+@inject IWindowsBarcodePrinterService BarcodePrinterService
 @if (showMovements)
 {
     <div class="position-fixed top-0 start-0 w-100 h-100" 
@@ -440,6 +442,11 @@
 </div>
  <div class="row g-4">
         <div class="col-lg-8">
+            <button class="btn btn-dark"
+        @onclick="OpenBarcodePrintModal">
+    <i class="mdi mdi-barcode"></i>
+    طباعة الباركود
+</button>
             <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-layers-half me-2"></i> إدارة التنوعات (المخزون والأسعار)</h5>
@@ -581,7 +588,85 @@ else
     </div>
 </div>
 }
+@if (showBarcodePrintModal)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.5);">
 
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        طباعة الباركود
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="() => showBarcodePrintModal = false">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Printer
+                        </label>
+
+                        <select class="form-select"
+                                @bind="selectedPrinter">
+
+                            <option value="">
+                                Select Printer
+                            </option>
+
+                            @foreach (var printer in installedPrinters)
+                            {
+                                <option value="@printer">
+                                    @printer
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(barcodePrintError))
+                    {
+                        <div class="alert alert-danger">
+                            @barcodePrintError
+                        </div>
+                    }
+
+                    <div class="alert alert-info mb-0">
+                        سيتم طباعة باركود لكل Variant لها SKU.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            @onclick="() => showBarcodePrintModal = false">
+                        إلغاء
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-dark"
+                            disabled="@string.IsNullOrWhiteSpace(selectedPrinter)"
+                            @onclick="PrintBarcodes">
+                        <i class="mdi mdi-printer"></i>
+                        طباعة
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
 <style>
     .rounded-4 { border-radius: 1.25rem !important; }
     .bg-success-subtle { background-color: #ecfdf5; }
@@ -670,6 +755,86 @@ else
     private CreateProductVariantDto variantModel = new () ; 
     private ProductVariantListDto selectedVariant ; 
     private IEnumerable<VariantMovementsDTO> MovementList = new List<VariantMovementsDTO>() ;
+
+    // 
+    private bool showBarcodePrintModal;
+    private string? selectedPrinter;
+    private List<string> installedPrinters = [];
+    private string? barcodePrintError;
+
+
+    private void OpenBarcodePrintModal()
+{
+    barcodePrintError = null;
+
+    installedPrinters =
+        BarcodePrinterService
+            .GetInstalledPrinters()
+            .ToList();
+
+    selectedPrinter =
+        installedPrinters.FirstOrDefault();
+
+    showBarcodePrintModal = true;
+}
+
+private BarcodePrintRequestDto BuildBarcodePrintRequest()
+{
+    var request = new BarcodePrintRequestDto();
+
+    foreach (var variant in product.Variants)
+    {
+        if (string.IsNullOrWhiteSpace(variant.Sku))
+            continue;
+
+        request.Labels.Add(new BarcodeLabelDto
+        {
+            ProductName = product.Name,
+            Sku = variant.Sku,
+            Color = variant.Color,
+            Size = variant.Size,
+            BarcodeImage =
+                BarcodeService.GenerateCode128(variant.Sku)
+        });
+    }
+
+    return request;
+}
+
+private void PrintBarcodes()
+{
+    barcodePrintError = null;
+
+    if (string.IsNullOrWhiteSpace(selectedPrinter))
+    {
+        barcodePrintError = "Please select a printer.";
+        return;
+    }
+
+    try
+    {
+        var request = BuildBarcodePrintRequest();
+
+        if (request.Labels.Count == 0)
+        {
+            barcodePrintError = "No variants with SKU found.";
+            return;
+        }
+
+        BarcodePrinterService.Print(
+            request,
+            selectedPrinter);
+
+        showBarcodePrintModal = false;
+    }
+    catch (Exception ex)
+    {
+        barcodePrintError = ex.Message;
+    }
+}
+    //
+
+
     protected async override Task OnInitializedAsync()
     {
         var CategoriesResult = await categoryService.GetCategoriesLookUpAsync();

@@ -53,6 +53,8 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<MainTreasuryService, MainTreasuryService>();
             serviceCollection.AddScoped<EmployeeService, EmployeeService>();
             serviceCollection.AddSingleton<IReceiptPrinterService, WindowsReceiptPrinterService>();
+            serviceCollection.AddScoped<IBarcodeService, BarcodeService>();
+            serviceCollection.AddScoped<IWindowsBarcodePrinterService, WindowsBarcodePrinterService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = serviceProvider.CreateScope())

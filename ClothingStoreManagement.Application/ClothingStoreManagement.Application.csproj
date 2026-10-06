@@ -13,6 +13,8 @@
 		</PackageReference>
 		<PackageReference Include="QRCoder" Version="1.8.0" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.12" />
+		<PackageReference Include="ZXing.Net" Version="0.16.11" />
+		<PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.16" />
 		<ProjectReference Include="..\ClothingStoreManagement.Data\ClothingStoreManagement.Data.csproj" />
 		<ProjectReference Include="..\ClothingStoreManagement.Domain\ClothingStoreManagement.Domain.csproj" />
 		<PackageReference Include="AutoMapper" Version="16.1.1" />
