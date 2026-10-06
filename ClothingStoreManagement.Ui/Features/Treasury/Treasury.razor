@@ -16,7 +16,7 @@
                         <option value="">-- اختر نوع الحركة --</option>
                         @foreach (var type in Enum.GetValues<TreasuryTransactionType>())
                         {
-                            @if (type != TreasuryTransactionType.ShiftTransfer)
+                            @if (type != TreasuryTransactionType.ShiftTransfer && type != TreasuryTransactionType.SalaryPayment)
                             {
                                 <option value="@type">@GetTranslationToArabic(type)</option>
                             }
@@ -56,15 +56,25 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    @if (transactionModel.Amount > CashBalance)
-                    {
-                        <button disabled type="submit" class="btn btn-success px-4">تأكيد العملية</button>
-                        <span class="text-danger"> المبلغ المطلوب اكبر من المخزون </span>
-                    }
-                    else
-                    {
-                        <button type="submit" class="btn btn-success px-4">تأكيد العملية</button>
-                    }
+                   @if (transactionModel.Amount > CashBalance
+    && transactionModel.Type != TreasuryTransactionType.CapitalInjection
+    && !(transactionModel.Type == TreasuryTransactionType.ManualAdjustment
+         && !transactionModel.IsNegativeAdjustment))
+{
+    <button disabled type="submit" class="btn btn-success px-4">
+        تأكيد العملية
+    </button>
+
+    <span class="text-danger">
+        المبلغ المطلوب أكبر من رصيد الخزنة
+    </span>
+}
+else
+{
+    <button type="submit" class="btn btn-success px-4">
+        تأكيد العملية
+    </button>
+}
                     <button type="button" class="btn btn-secondary px-4" @onclick="Cancel">إلغاء</button>
                 </div>
             </EditForm>
@@ -485,7 +495,7 @@
             TreasuryTransactionType.OwnerWithdrawal => "مسحوبات المالك",
             TreasuryTransactionType.CapitalInjection => "إيداع رأسمال",
             TreasuryTransactionType.ManualAdjustment => "تسوية رصيد",
-            TreasuryTransactionType.CasherSupport => "دعم خزنة" ,
+            TreasuryTransactionType.CasherSupport => "دعم كاشير" ,
             TreasuryTransactionType.SalaryPayment => "دفع راتب",
 
             _ => type.ToString()

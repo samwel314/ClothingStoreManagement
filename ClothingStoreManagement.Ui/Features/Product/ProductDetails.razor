@@ -440,17 +440,23 @@
         </div>
     </div>
 </div>
+
  <div class="row g-4">
         <div class="col-lg-8">
-            <button class="btn btn-dark"
-        @onclick="OpenBarcodePrintModal">
-    <i class="mdi mdi-barcode"></i>
-    طباعة الباركود
-</button>
+
             <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-layers-half me-2"></i> إدارة التنوعات (المخزون والأسعار)</h5>
-                    <button @onclick="()=> AddVariant()" class="btn btn-sm btn-outline-primary rounded-pill px-3">+ إضافة تنوع جديد</button>
+      <button @onclick="OpenBarcodePrintModal"
+        class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+    <i class="mdi mdi-barcode"></i>
+    طباعة الباركود
+</button>
+
+<button @onclick="() => AddVariant()"
+        class="btn btn-sm btn-outline-primary rounded-pill px-3">
+    + إضافة تنوع جديد
+</button>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 text-end">
@@ -599,7 +605,7 @@ else
 
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        طباعة الباركود
+                        طباعة الباركود 
                     </h5>
 
                     <button type="button"
@@ -640,7 +646,7 @@ else
                     }
 
                     <div class="alert alert-info mb-0">
-                        سيتم طباعة باركود لكل Variant لها SKU.
+                        سيتم طباعة باركود لكل التنوعات المتاحة لها .
                     </div>
 
                 </div>
