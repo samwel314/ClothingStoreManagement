@@ -598,16 +598,60 @@
 </style>
 
 @code {
-
     private LoginRequestDto loginModel = new();
-
     private string? error;
-
     private bool isProcessing = false;
 
+    // -------------------------------------------------------------
+    // كود مطابقة الجهاز (Hardcoded Device ID الخاصة بالعميل)
+    // -------------------------------------------------------------
+    private const string ALLOWED_HARDWARE_ID = "BFEBFBFF000706E5"; // الرقم الخاص بجهاز العميل المصرح له
+    ////-*-* de <summary>
+    /// BFEBFBFF000406E3
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        // 1. التحقق الفوري فور فتح صفحة تسجيل الدخول
+        if (!ValidateDeviceGuard())
+        {
+            error = "عفواً، هذه النسخة غير مرخصة للعمل على هذا الجهاز!";
+        }
+    }
+
+    private bool ValidateDeviceGuard()
+    {
+        string currentDeviceId = GetCurrentHardwareId();
+        return string.Equals(currentDeviceId, ALLOWED_HARDWARE_ID, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetCurrentHardwareId()
+    {
+        try
+        {
+            string cpuId = "";
+            using var searcher = new System.Management.ManagementObjectSearcher("SELECT ProcessorId FROM Win32_Processor");
+            foreach (var item in searcher.Get())
+            {
+                cpuId = item["ProcessorId"]?.ToString() ?? "";
+                break;
+            }
+            return string.IsNullOrWhiteSpace(cpuId) ? "UNKNOWN_DEVICE" : cpuId.Trim();
+        }
+        catch
+        {
+            return "UNKNOWN_DEVICE";
+        }
+    }
 
     private async Task HandleLogin()
     {
+        // 2. فحص أمان إضافي عند الضغط على زر تسجيل الدخول
+        if (!ValidateDeviceGuard())
+        {
+            error = "عفواً، تم منع تسجيل الدخول: الجهاز غير مرخص!";
+            return;
+        }
+
         isProcessing = true;
         error = null;
 
@@ -635,5 +679,4 @@
 
         isProcessing = false;
     }
-
 }

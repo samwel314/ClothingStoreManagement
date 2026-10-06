@@ -26,17 +26,19 @@ namespace ClothingStoreManagement.Application.Services
             if (!categoryExist)
                 return Result<string>.Failure("هذه الفئة غير موجودة", ErrorType.notFound);
 
-            var sameNameExist = await _db.Products.ExistsAsync((p) => p.Name == dto.Name.Trim() && p.CategoryId == dto.CategoryId);
+            dto.Name = dto.Name.Trim().ToUpper();
+            var sameNameExist = await _db.Products.ExistsAsync((p) => p.Name == dto.Name && p.CategoryId == dto.CategoryId);
             if (sameNameExist)
                 return Result<string>.Failure("هذا الاسم موجود بالفعل في هذه الفئة", ErrorType.conflict);
 
-            var sameSDKExist = await _db.Products.ExistsAsync((p) => p.SKU == dto.SKU.Trim());
+            dto.SKU = dto.SKU.Trim().ToUpper();
+            var sameSDKExist = await _db.Products.ExistsAsync((p) => p.SKU == dto.SKU);
             if (sameSDKExist)
                 return Result<string>.Failure("هذا الباركود موجود بالفعل ", ErrorType.conflict);
 
             var Product = new Product(
-                dto.Name!.Trim(),
-                dto.SKU!.Trim(),
+                dto.Name,
+                dto.SKU,
                 dto.CategoryId);
 
             var colors = await _db.Colors.GetAll().AsNoTracking().ToDictionaryAsync(c => c.Id, c => c);

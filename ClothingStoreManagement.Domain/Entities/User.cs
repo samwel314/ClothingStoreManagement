@@ -2,6 +2,7 @@
 {
     public class User
     {
+      
         public User(string userName, string passwordHash, UserRole role)
         {
             UserName = userName;

@@ -121,7 +121,7 @@ namespace ClothingStoreManagement.Data
     .HasIndex(s => s.EndTime)
     .HasFilter("[EndTime] IS NULL");
 
-            modelBuilder.Entity<User>().HasData(new User("Samuel",
+            modelBuilder.Entity<User>().HasData(new User("samuel",
       "$2a$11$0.EXpw9/TA95xTDBf5rqWOa7eg2cqZC8ENIXtGqGRgAFG15UbGlJa", UserRole.Admin)
             {
                 Id = 1

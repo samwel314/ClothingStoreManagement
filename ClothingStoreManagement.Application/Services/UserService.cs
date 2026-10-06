@@ -21,8 +21,8 @@ namespace ClothingStoreManagement.Application.Services
         }
         public async Task<Result<string>> Register(CreateUserDto dto)
         {
-            dto.UserName = dto.UserName.Trim();
-            var userExist = await _db.Users.ExistsAsync(u => u.UserName == dto.UserName.Trim().ToLower());
+            dto.UserName = dto.UserName.Trim().ToLower();
+            var userExist = await _db.Users.ExistsAsync(u => u.UserName == dto.UserName);
             if (userExist)
                 return Result<string>.Failure("اسم المستخدم موجود بالفعل", ErrorType.conflict);
             var user = new User(dto.UserName, BCrypt.Net.BCrypt.HashPassword(dto.Password), dto.Role);
@@ -86,6 +86,7 @@ namespace ClothingStoreManagement.Application.Services
             }   
 
             await _db.Save();
+            _db.Clear(); 
             return Result<string>.Success("تم تحديث بيانات المستخدم بنجاح");
         }
         public async Task<Result<UserSessionDto>> LoginAsync(LoginRequestDto loginDto)
@@ -93,7 +94,7 @@ namespace ClothingStoreManagement.Application.Services
             try
             {
                 var user = await _db.Users
-                    .FirstOrDefaultAsync(u => u.UserName == loginDto.UserName);
+                    .FirstOrDefaultAsync(u => u.UserName == loginDto.UserName.Trim().ToLower());
 
                 if (user == null)
                     return Result<UserSessionDto>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة" , ErrorType.notFound);
