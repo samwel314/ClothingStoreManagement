@@ -54,6 +54,7 @@ namespace ClothingStoreManagement.Ui
             serviceCollection.AddScoped<EmployeeService, EmployeeService>();
             serviceCollection.AddSingleton<IReceiptPrinterService, WindowsReceiptPrinterService>();
             serviceCollection.AddScoped<IBarcodeService, BarcodeService>();
+            serviceCollection.AddScoped<SupplierService, SupplierService>();
             serviceCollection.AddScoped<IWindowsBarcodePrinterService, WindowsBarcodePrinterService>();
             //-*****************************************
             var serviceProvider = serviceCollection.BuildServiceProvider();

@@ -26,6 +26,9 @@ namespace ClothingStoreManagement.Data
         public DbSet<MainTreasuryTransaction> TreasuryTransactions { get; set; }    
         public DbSet<Employee> Employees { get; set; }  
         public DbSet<EmployeeTransaction> EmployeeTransactions { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+
+        public DbSet<SupplierPurchase> SupplierPurchases { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -210,10 +213,27 @@ namespace ClothingStoreManagement.Data
             {
                 entity.Property(e => e.BaseSalary).HasConversion<double>();
             });
+            modelBuilder.Entity<SupplierPurchase>(entity =>
+            {
+                entity.Property(e => e.TotalAmount).HasConversion<double>();
+                entity.Property(e => e.PaidAmount).HasConversion<double>();
+
+            });
             modelBuilder.Entity<EmployeeTransaction>(entity =>
             {
                 entity.Property(e => e.Amount).HasConversion<double>();
             });
+            modelBuilder.Entity<SupplierPurchase>()
+    .HasOne(x => x.Supplier)
+    .WithMany(x => x.Purchases)
+    .HasForeignKey(x => x.SupplierId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MainTreasuryTransaction>()
+                .HasOne(x => x.Supplier)
+                .WithMany()
+                .HasForeignKey(x => x.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Shift>(entity =>
             {
                 entity.Property(e => e.TotalSalesCash).HasConversion<double>();

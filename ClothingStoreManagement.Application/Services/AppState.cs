@@ -1,6 +1,5 @@
 ﻿using ClothingStoreManagement.Application.DTO;
 using ClothingStoreManagement.Data.Repository;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClothingStoreManagement.Application.Services
 {

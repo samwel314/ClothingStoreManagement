@@ -1,0 +1,1347 @@
+﻿@page "/suppliers"
+
+@using ClothingStoreManagement.Application.DTO
+@using ClothingStoreManagement.Application.Services
+
+@inject SupplierService SupplierService
+
+<PageTitle>الموردين</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">الموردين</h4>
+            <p class="text-muted mb-0">
+                إدارة الموردين ومتابعة حساباتهم
+            </p>
+        </div>
+
+        <button class="btn btn-primary rounded-pill px-4"
+                @onclick="OpenAddSupplierModal">
+            <i class="mdi mdi-plus ms-1"></i>
+            إضافة مورد
+        </button>
+    </div>
+
+    <!-- Suppliers -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            }
+            else if (suppliers.Count == 0)
+            {
+                <div class="text-center py-5">
+
+                    <i class="mdi mdi-truck-outline fs-1 text-muted"></i>
+
+                    <h5 class="mt-3">
+                        لا يوجد موردين
+                    </h5>
+
+                    <p class="text-muted">
+                        قم بإضافة أول مورد للمحل
+                    </p>
+
+                    <button class="btn btn-primary rounded-pill px-4"
+                            @onclick="OpenAddSupplierModal">
+                        <i class="mdi mdi-plus ms-1"></i>
+                        إضافة مورد
+                    </button>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4">المورد</th>
+                                <th>الهاتف</th>
+                                <th>إجمالي المشتريات</th>
+                                <th>المدفوع</th>
+                                <th>المتبقي</th>
+                                <th>الحالة</th>
+                                <th class="text-end px-4">
+                                    الإجراءات
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var supplier in suppliers)
+                            {
+                                <tr>
+
+                                    <td class="px-4">
+                                        <div class="fw-semibold">
+                                            @supplier.Name
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(supplier.Address))
+                                        {
+                                            <small class="text-muted">
+                                                @supplier.Address
+                                            </small>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @(supplier.Phone ?? "-")
+                                    </td>
+
+                                    <td class="fw-semibold">
+                                        @supplier.TotalPurchases.ToString("N0") ج.م
+                                    </td>
+
+                                    <td class="text-success fw-semibold">
+                                        @supplier.TotalPaid.ToString("N0") ج.م
+                                    </td>
+
+                                    <td>
+                                        @if (supplier.Remaining > 0)
+                                        {
+                                            <span class="text-danger fw-bold">
+                                                @supplier.Remaining.ToString("N0") ج.م
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success fw-bold">
+                                                0 ج.م
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (supplier.IsActive)
+                                        {
+                                            <span class="badge bg-success-subtle text-success">
+                                                نشط
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary">
+                                                غير نشط
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-end px-4">
+
+                                        <div class="d-flex justify-content-end gap-2">
+
+                                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                    @onclick="() => OpenSupplierDetails(supplier)">
+                                                <i class="mdi mdi-account-details-outline ms-1"></i>
+                                                الحساب
+                                            </button>
+
+                                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                                    @onclick="() => OpenEditSupplierModal(supplier)">
+                                                <i class="mdi mdi-pencil-outline ms-1"></i>
+                                                تعديل
+                                            </button>
+
+                                            <button class="btn btn-sm rounded-pill px-3
+                                                    @(supplier.IsActive
+                                                        ? "btn-outline-warning"
+                                                        : "btn-outline-success")"
+                                                    @onclick="() => ToggleSupplierStatus(supplier.Id)">
+
+                                                <i class="mdi @(supplier.IsActive
+                                                    ? "mdi-account-off-outline"
+                                                    : "mdi-account-check-outline") ms-1"></i>
+
+                                                @(supplier.IsActive ? "تعطيل" : "تفعيل")
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Add / Edit Supplier Modal -->
+@if (showSupplierModal)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.55);">
+
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header px-4 py-3">
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">
+                            @(isEditMode ? "تعديل المورد" : "إضافة مورد")
+                        </h5>
+
+                        <small class="text-muted">
+                            @(isEditMode
+                                ? "تعديل بيانات المورد"
+                                : "إضافة مورد جديد للمحل")
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="CloseSupplierModal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body px-4 py-4">
+
+                    @if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3">
+                            <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                            <span>@errorMessage</span>
+                        </div>
+                    }
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                اسم المورد
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="mdi mdi-account-outline"></i>
+                                </span>
+
+                                <input class="form-control border-start-0"
+                                       placeholder="مثال: شركة الأمل"
+                                       @bind="supplierModel.Name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                رقم الهاتف
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="mdi mdi-phone-outline"></i>
+                                </span>
+
+                                <input class="form-control border-start-0"
+                                       type="tel"
+                                       placeholder="01xxxxxxxxx"
+                                       @bind="supplierModel.Phone" />
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                رقم إضافي
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="mdi mdi-phone-plus-outline"></i>
+                                </span>
+
+                                <input class="form-control border-start-0"
+                                       type="tel"
+                                       placeholder="رقم إضافي"
+                                       @bind="supplierModel.AdditionalPhone" />
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <label class="form-label fw-semibold">
+                                العنوان
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="mdi mdi-map-marker-outline"></i>
+                                </span>
+
+                                <input class="form-control border-start-0"
+                                       placeholder="عنوان المورد"
+                                       @bind="supplierModel.Address" />
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <label class="form-label fw-semibold">
+                                ملاحظات
+                            </label>
+
+                            <textarea class="form-control"
+                                      rows="3"
+                                      placeholder="أي ملاحظات إضافية عن المورد..."
+                                      @bind="supplierModel.Notes">
+                            </textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer px-4 py-3">
+
+                    <button class="btn btn-light rounded-pill px-4"
+                            @onclick="CloseSupplierModal">
+                        إلغاء
+                    </button>
+
+                    <button class="btn btn-primary rounded-pill px-4"
+                            disabled="@isSaving"
+                            @onclick="SaveSupplier">
+
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        else
+                        {
+                            <i class="mdi @(isEditMode
+                                ? "mdi-content-save-outline"
+                                : "mdi-plus") ms-1"></i>
+                        }
+
+                        @(isEditMode ? "حفظ التعديلات" : "إضافة المورد")
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- Supplier Details Modal -->
+@if (showDetails && selectedSupplier is not null)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.55);">
+
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header px-4 py-3">
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">
+                            @selectedSupplier.Name
+                        </h5>
+
+                        <div class="text-muted small">
+                            <i class="mdi mdi-phone-outline ms-1"></i>
+                            @(selectedSupplier.Phone ?? "لا يوجد رقم هاتف")
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="CloseSupplierDetails">
+                    </button>
+
+                </div>
+
+                <div class="modal-body px-4 py-4">
+
+                    <!-- Summary -->
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light rounded-4 h-100">
+                                <div class="card-body p-4">
+
+                                    <div class="d-flex align-items-center justify-content-between">
+
+                                        <div>
+                                            <div class="text-muted small mb-1">
+                                                إجمالي المشتريات
+                                            </div>
+
+                                            <div class="fs-4 fw-bold">
+                                                @selectedSupplier.TotalPurchases.ToString("N0")
+                                                ج.م
+                                            </div>
+                                        </div>
+
+                                        <div class="fs-3 text-primary">
+                                            <i class="mdi mdi-cart-outline"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-success-subtle rounded-4 h-100">
+                                <div class="card-body p-4">
+
+                                    <div class="d-flex align-items-center justify-content-between">
+
+                                        <div>
+                                            <div class="text-muted small mb-1">
+                                                إجمالي المدفوع
+                                            </div>
+
+                                            <div class="fs-4 fw-bold text-success">
+                                                @selectedSupplier.TotalPaid.ToString("N0")
+                                                ج.م
+                                            </div>
+                                        </div>
+
+                                        <div class="fs-3 text-success">
+                                            <i class="mdi mdi-cash-check"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-danger-subtle rounded-4 h-100">
+                                <div class="card-body p-4">
+
+                                    <div class="d-flex align-items-center justify-content-between">
+
+                                        <div>
+                                            <div class="text-muted small mb-1">
+                                                المتبقي
+                                            </div>
+
+                                            <div class="fs-4 fw-bold text-danger">
+                                                @selectedSupplier.Remaining.ToString("N0")
+                                                ج.م
+                                            </div>
+                                        </div>
+
+                                        <div class="fs-3 text-danger">
+                                            <i class="mdi mdi-cash-minus"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <h6 class="fw-bold mb-0">
+                            سجل عمليات الشراء
+                        </h6>
+
+                        <div class="d-flex gap-2">
+
+                            <button class="btn btn-outline-success rounded-pill px-3"
+                                    disabled="@(selectedSupplier.Remaining <= 0)"
+                                    @onclick="OpenPaymentModal">
+
+                                <i class="mdi mdi-cash-minus ms-1"></i>
+                                سداد للمورد
+
+                            </button>
+
+                            <button class="btn btn-primary rounded-pill px-3"
+                                    @onclick="OpenPurchaseModal">
+
+                                <i class="mdi mdi-plus ms-1"></i>
+                                تسجيل عملية شراء
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Purchases -->
+                    @if (isPurchasesLoading)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+                    }
+                    else if (purchases.Count == 0)
+                    {
+                        <div class="text-center text-muted py-5 border rounded-4">
+
+                            <i class="mdi mdi-receipt-text-outline fs-1"></i>
+
+                            <div class="mt-2">
+                                لا توجد عمليات شراء لهذا المورد
+                            </div>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive border rounded-4">
+
+                            <table class="table table-hover align-middle mb-0">
+
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-3">التاريخ</th>
+                                        <th>قيمة الشراء</th>
+                                        <th>المدفوع</th>
+                                        <th>الباقي</th>
+                                        <th>ملاحظات</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var purchase in purchases)
+                                    {
+                                        <tr>
+
+                                            <td class="px-3">
+                                                @purchase.CreatedAt.ToString("dd/MM/yyyy hh:mm tt")
+                                            </td>
+
+                                            <td class="fw-semibold">
+                                                @purchase.TotalAmount.ToString("N0")
+                                                ج.م
+                                            </td>
+
+                                            <td class="text-success fw-semibold">
+                                                @purchase.PaidAmount.ToString("N0")
+                                                ج.م
+                                            </td>
+
+                                            <td>
+                                                @if (purchase.RemainingAmount > 0)
+                                                {
+                                                    <span class="text-danger fw-bold">
+                                                        @purchase.RemainingAmount.ToString("N0")
+                                                        ج.م
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-success fw-bold">
+                                                        0 ج.م
+                                                    </span>
+                                                }
+                                            </td>
+
+                                            <td>
+                                                @(string.IsNullOrWhiteSpace(purchase.Notes)
+                                                    ? "-"
+                                                    : purchase.Notes)
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- Add Purchase Modal -->
+@if (showPurchaseModal && selectedSupplier is not null)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.65);">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header px-4 py-3">
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">
+                            تسجيل عملية شراء
+                        </h5>
+
+                        <small class="text-muted">
+                            @selectedSupplier.Name
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="ClosePurchaseModal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body px-4 py-4">
+
+                    @if (!string.IsNullOrWhiteSpace(purchaseError))
+                    {
+                        <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3">
+                            <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                            <span>@purchaseError</span>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            إجمالي الشراء
+                        </label>
+
+                        <div class="input-group input-group-lg">
+
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="mdi mdi-cart-outline"></i>
+                            </span>
+
+                            <input type="number"
+                                   min="0"
+                                   step="0.01"
+                                   class="form-control border-start-0"
+                                   placeholder="0.00"
+                                   @bind="purchaseModel.TotalAmount"
+                                   @bind:event="oninput" />
+
+                            <span class="input-group-text bg-light">
+                                ج.م
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            المدفوع وقت الشراء
+                        </label>
+
+                        <div class="input-group input-group-lg">
+
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="mdi mdi-cash-check"></i>
+                            </span>
+
+                            <input type="number"
+                                   min="0"
+                                   step="0.01"
+                                   class="form-control border-start-0"
+                                   placeholder="0.00"
+                                   @bind="purchaseModel.PaidAmount"
+                                   @bind:event="oninput" />
+
+                            <span class="input-group-text bg-light">
+                                ج.م
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="p-3 rounded-4 bg-danger-subtle mb-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <span class="text-muted">
+                                المتبقي
+                            </span>
+
+                            <span class="fs-5 fw-bold text-danger">
+                                @PurchaseRemaining.ToString("N2") ج.م
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <label class="form-label fw-semibold">
+                            ملاحظات
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  placeholder="أي ملاحظات عن عملية الشراء..."
+                                  @bind="purchaseModel.Notes">
+                        </textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer px-4 py-3">
+
+                    <button class="btn btn-light rounded-pill px-4"
+                            @onclick="ClosePurchaseModal">
+                        إلغاء
+                    </button>
+
+                    <button class="btn btn-primary rounded-pill px-4 "
+                            disabled="@isSavingPurchase"
+                            @onclick="SavePurchase">
+
+                        @if (isSavingPurchase)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        else
+                        {
+                            <i class="mdi mdi-content-save-outline ms-1"></i>
+                        }
+
+                        حفظ العملية
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+<!-- Supplier Payment Modal -->
+@if (showPaymentModal && selectedSupplier is not null)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         style="background-color: rgba(0,0,0,.65);">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header px-4 py-3">
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">
+                            سداد للمورد
+                        </h5>
+
+                        <small class="text-muted">
+                            @selectedSupplier.Name
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="ClosePaymentModal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body px-4 py-4">
+
+                    @if (!string.IsNullOrWhiteSpace(paymentError))
+                    {
+                        <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3">
+                            <i class="mdi mdi-alert-circle-outline fs-5"></i>
+                            <span>@paymentError</span>
+                        </div>
+                    }
+
+                    <div class="p-3 rounded-4 bg-light mb-4">
+
+                        <div class="text-muted small mb-1">
+                            المبلغ المستحق على المورد
+                        </div>
+
+                        <div class="fs-4 fw-bold text-danger">
+                            @selectedSupplier.Remaining.ToString("N2") ج.م
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            مبلغ السداد
+                        </label>
+
+                        <div class="input-group input-group-lg">
+
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="mdi mdi-cash-minus"></i>
+                            </span>
+
+                            <input type="number"
+                                   min="0"
+                                   max="@selectedSupplier.Remaining"
+                                   step="0.01"
+                                   class="form-control border-start-0"
+                                   placeholder="0.00"
+                                   @bind="paymentModel.Amount"
+                                   @bind:event="oninput" />
+
+                            <span class="input-group-text bg-light">
+                                ج.م
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="p-3 rounded-4
+                                @(PaymentRemaining > 0
+                                    ? "bg-warning-subtle"
+                                    : "bg-success-subtle") mb-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <span class="text-muted">
+                                المتبقي بعد السداد
+                            </span>
+
+                            <span class="fs-5 fw-bold
+                                         @(PaymentRemaining > 0
+                                             ? "text-warning-emphasis"
+                                             : "text-success")">
+
+                                @Math.Max(PaymentRemaining, 0).ToString("N2")
+                                ج.م
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <label class="form-label fw-semibold">
+                            ملاحظات
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  placeholder="مثال: سداد جزء من الحساب..."
+                                  @bind="paymentModel.Notes">
+                        </textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer px-4 py-3">
+
+                    <button class="btn btn-light rounded-pill px-4"
+                            @onclick="ClosePaymentModal">
+                        إلغاء
+                    </button>
+
+                    <button class="btn btn-success rounded-pill px-4"
+                            disabled="@isSavingPayment"
+                            @onclick="SavePayment">
+
+                        @if (isSavingPayment)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        else
+                        {
+                            <i class="mdi mdi-cash-check ms-1"></i>
+                        }
+
+                        تسجيل السداد
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+@code {
+
+    private List<SupplierDto> suppliers = [];
+
+    private SupplierDto? selectedSupplier;
+
+    private List<SupplierPurchaseDto> purchases = [];
+
+    private CreateSupplierDto supplierModel = new();
+
+    private CreateSupplierPurchaseDto purchaseModel = new();
+
+    private CreateSupplierPaymentDto paymentModel = new();
+
+
+    private int editingSupplierId;
+
+
+    private bool isLoading;
+    private bool isSaving;
+
+    private bool showSupplierModal;
+    private bool showDetails;
+    private bool showPurchaseModal;
+    private bool showPaymentModal;
+
+    private bool isEditMode;
+
+    private bool isPurchasesLoading;
+    private bool isSavingPurchase;
+    private bool isSavingPayment;
+
+
+    private string? errorMessage;
+    private string? purchaseError;
+    private string? paymentError;
+
+
+    private decimal PurchaseRemaining =>
+        purchaseModel.TotalAmount - purchaseModel.PaidAmount;
+
+    private decimal PaymentRemaining =>
+        selectedSupplier is null
+            ? 0
+            : selectedSupplier.Remaining - paymentModel.Amount;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSuppliers();
+    }
+
+
+    private async Task LoadSuppliers()
+    {
+        isLoading = true;
+
+        try
+        {
+            suppliers = (await SupplierService
+                .GetAllSuppliersAsync())
+                .ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    // =========================
+    // Supplier
+    // =========================
+
+    private void OpenAddSupplierModal()
+    {
+        isEditMode = false;
+
+        editingSupplierId = 0;
+
+        supplierModel = new CreateSupplierDto();
+
+        errorMessage = null;
+
+        showSupplierModal = true;
+    }
+
+
+    private void OpenEditSupplierModal(SupplierDto supplier)
+    {
+        isEditMode = true;
+
+        editingSupplierId = supplier.Id;
+
+        supplierModel = new CreateSupplierDto
+        {
+            Name = supplier.Name,
+            Phone = supplier.Phone,
+            AdditionalPhone = supplier.AdditionalPhone,
+            Address = supplier.Address,
+            Notes = supplier.Notes
+        };
+
+        errorMessage = null;
+
+        showSupplierModal = true;
+    }
+
+
+    private void CloseSupplierModal()
+    {
+        showSupplierModal = false;
+
+        errorMessage = null;
+    }
+
+
+    private async Task SaveSupplier()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(supplierModel.Name))
+        {
+            errorMessage = "اسم المورد مطلوب";
+            return;
+        }
+
+        isSaving = true;
+
+        try
+        {
+            if (isEditMode)
+            {
+                var result = await SupplierService
+                    .UpdateSupplierAsync(
+                        new UpdateSupplierDto
+                        {
+                            Id = editingSupplierId,
+                            Name = supplierModel.Name,
+                            Phone = supplierModel.Phone,
+                            AdditionalPhone = supplierModel.AdditionalPhone,
+                            Address = supplierModel.Address,
+                            Notes = supplierModel.Notes
+                        });
+
+                if (!result.IsSuccess)
+                {
+                    errorMessage = result.ErrorMessage;
+                    return;
+                }
+            }
+            else
+            {
+                var result = await SupplierService
+                    .CreateSupplierAsync(supplierModel);
+
+                if (!result.IsSuccess)
+                {
+                    errorMessage = result.ErrorMessage;
+                    return;
+                }
+            }
+
+            CloseSupplierModal();
+
+            await LoadSuppliers();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+
+    private async Task ToggleSupplierStatus(int id)
+    {
+        var result = await SupplierService
+            .ToggleStatusAsync(id);
+
+        if (!result.IsSuccess)
+        {
+            errorMessage = result.ErrorMessage;
+            return;
+        }
+
+        await LoadSuppliers();
+
+        if (selectedSupplier?.Id == id)
+        {
+            var updatedSupplier =
+                await SupplierService.GetSupplierAsync(id);
+
+            if (updatedSupplier.IsSuccess)
+                selectedSupplier = updatedSupplier.Data;
+        }
+    }
+
+
+    // =========================
+    // Supplier Details
+    // =========================
+
+    private async Task OpenSupplierDetails(SupplierDto supplier)
+    {
+        selectedSupplier = supplier;
+
+        showDetails = true;
+
+        await LoadPurchases();
+    }
+
+
+    private async Task LoadPurchases()
+    {
+        if (selectedSupplier is null)
+            return;
+
+        isPurchasesLoading = true;
+
+        try
+        {
+            purchases = (await SupplierService
+                .GetSupplierPurchasesAsync(selectedSupplier.Id))
+                .ToList();
+        }
+        finally
+        {
+            isPurchasesLoading = false;
+        }
+    }
+
+
+    private void CloseSupplierDetails()
+    {
+        showDetails = false;
+
+        selectedSupplier = null;
+
+        purchases.Clear();
+    }
+
+
+    // =========================
+    // Purchase
+    // =========================
+
+    private void OpenPurchaseModal()
+    {
+        if (selectedSupplier is null)
+            return;
+
+        purchaseModel = new CreateSupplierPurchaseDto
+        {
+            SupplierId = selectedSupplier.Id
+        };
+
+        purchaseError = null;
+
+        showPurchaseModal = true;
+    }
+
+
+    private void ClosePurchaseModal()
+    {
+        showPurchaseModal = false;
+
+        purchaseError = null;
+    }
+
+
+    private async Task SavePurchase()
+    {
+        purchaseError = null;
+
+        if (selectedSupplier is null)
+            return;
+
+        if (purchaseModel.TotalAmount <= 0)
+        {
+            purchaseError =
+                "إجمالي الشراء يجب أن يكون أكبر من صفر";
+
+            return;
+        }
+
+        if (purchaseModel.PaidAmount < 0)
+        {
+            purchaseError =
+                "المدفوع لا يمكن أن يكون سالبًا";
+
+            return;
+        }
+
+        if (purchaseModel.PaidAmount > purchaseModel.TotalAmount)
+        {
+            purchaseError =
+                "المبلغ المدفوع لا يمكن أن يكون أكبر من قيمة الشراء";
+
+            return;
+        }
+
+        isSavingPurchase = true;
+
+        try
+        {
+            purchaseModel.SupplierId = selectedSupplier.Id;
+
+            var result = await SupplierService
+                .CreatePurchaseAsync(purchaseModel);
+
+            if (!result.IsSuccess)
+            {
+                purchaseError = result.ErrorMessage;
+                return;
+            }
+
+            ClosePurchaseModal();
+
+            await LoadSuppliers();
+
+            var updatedSupplier =
+                await SupplierService
+                    .GetSupplierAsync(selectedSupplier.Id);
+
+            if (updatedSupplier.IsSuccess)
+                selectedSupplier = updatedSupplier.Data;
+
+            await LoadPurchases();
+        }
+        finally
+        {
+            isSavingPurchase = false;
+        }
+    }
+
+
+    // =========================
+    // Supplier Payment
+    // =========================
+
+    private void OpenPaymentModal()
+    {
+        if (selectedSupplier is null)
+            return;
+
+        paymentModel = new CreateSupplierPaymentDto
+        {
+            SupplierId = selectedSupplier.Id
+        };
+
+        paymentError = null;
+
+        showPaymentModal = true;
+    }
+
+
+    private void ClosePaymentModal()
+    {
+        showPaymentModal = false;
+
+        paymentError = null;
+    }
+
+
+    private async Task SavePayment()
+    {
+        paymentError = null;
+
+        if (selectedSupplier is null)
+            return;
+
+        if (paymentModel.Amount <= 0)
+        {
+            paymentError =
+                "مبلغ السداد يجب أن يكون أكبر من صفر";
+
+            return;
+        }
+
+        if (paymentModel.Amount > selectedSupplier.Remaining)
+        {
+            paymentError =
+                "مبلغ السداد لا يمكن أن يكون أكبر من المبلغ المستحق";
+
+            return;
+        }
+
+        isSavingPayment = true;
+
+        try
+        {
+            paymentModel.SupplierId = selectedSupplier.Id;
+
+            var result = await SupplierService
+                .CreateSupplierPaymentAsync(paymentModel);
+
+            if (!result.IsSuccess)
+            {
+                paymentError = result.ErrorMessage;
+                return;
+            }
+
+            ClosePaymentModal();
+
+            await LoadSuppliers();
+
+            var updatedSupplier =
+                await SupplierService
+                    .GetSupplierAsync(selectedSupplier.Id);
+
+            if (updatedSupplier.IsSuccess)
+                selectedSupplier = updatedSupplier.Data;
+
+            await LoadPurchases();
+        }
+        finally
+        {
+            isSavingPayment = false;
+        }
+    }
+}
+

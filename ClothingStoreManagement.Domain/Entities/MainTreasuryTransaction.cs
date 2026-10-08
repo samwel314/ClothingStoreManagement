@@ -17,5 +17,8 @@
         public int? ShiftId { get; private set; }
         public Shift Shift { get; private set; } = null!; 
         public DateTime CreatedAt { get;   private  set; }
+        public int? SupplierId { get; set; }
+
+        public Supplier? Supplier { get; set; }
     }
 }
