@@ -9,5 +9,9 @@ namespace ClothingStoreManagement.Application.Services
         void Print(
             BarcodePrintRequestDto request,
             string printerName);
+        void PrintVariant(
+    BarcodeLabelDto label,
+    int quantity,
+    string printerName);
     }
 }

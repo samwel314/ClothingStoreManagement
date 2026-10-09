@@ -104,7 +104,7 @@ else
                                             <div class="d-flex align-items-center gap-2 justify-content-end">
                                                 <span class="badge bg-light text-muted border fw-normal small">SKU: @item.SKU</span>
                                                 <span class="badge bg-light text-dark border d-flex align-items-center gap-1 small">
-                                                    <span style="width: 10px; height: 10px; background-color: @item.Color; border-radius: 50%; display: inline-block;"></span>
+                                                    <span style="width: 10px; height: 10px; background-color: @item.HexCode; border-radius: 50%; display: inline-block;"></span>
                                                 </span>
                                                 <span class="badge bg-light text-dark border small">@item.Size</span>
                                             </div>
@@ -127,10 +127,9 @@ else
                                                 <span class="input-group-text border-0 bg-warning bg-opacity-10 text-warning fw-bold">%</span>
                                             </div>
                                         </td>
-  
-                                        <td class="fw-bold @(item.Total < item.OriginalPrice ? "text-danger" : "text-primary") text-center">
-                                            @item.Total ج.م
-                                        </td>                                 
+  <td class="fw-bold @(item.IsLosing ? "text-danger" : "text-primary") text-center">
+    @item.Total ج.م
+</td>                             
                                         <td class="text-center">
                                             <button @onclick="() => RemoveItem(item)" class="btn btn-sm btn-outline-danger border-0 rounded-circle">
                                                 <i class="bi bi-x-lg"></i>

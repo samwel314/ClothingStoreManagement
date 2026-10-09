@@ -11,8 +11,8 @@ namespace ClothingStoreManagement.Application.DTO
         public string Name { get; set; } = null!;
 
         [Required(ErrorMessage = "ادخل كود اللون")]
-        [MaxLength(10, ErrorMessage = "أقصى عدد حروف لكود اللون هو 10 أحرف")]
-        [MinLength(2, ErrorMessage = "أقل عدد حروف لكود اللون هو حرفين")]
+        [MaxLength(3, ErrorMessage = "أقصى عدد حروف لكود اللون هو 3 أحرف")]
+        [MinLength(1, ErrorMessage = "أقل عدد حروف لكود اللون هو حرف")]
         [RegularExpression(
             "^[A-Za-z0-9]+$",
             ErrorMessage = "كود اللون يجب أن يحتوي على حروف وأرقام فقط")]

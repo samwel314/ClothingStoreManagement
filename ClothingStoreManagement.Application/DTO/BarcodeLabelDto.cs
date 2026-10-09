@@ -6,6 +6,8 @@
         public string Sku { get; set; } = string.Empty;
         public string? Color { get; set; }
         public string? Size { get; set; }
+        public decimal Price { get; set; }
+
         public byte[] BarcodeImage { get; set; } = [];
     }
 }

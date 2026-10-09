@@ -5,7 +5,8 @@
         public Guid Id { get; set; }
         public string ProductName { get; set; } = null!;
         public string SKU { get; set; } = null!;
-        public string Color { get; set; } = null!;
+        public string Color { get; set; } = null!; 
+        public string HexCode { get; set; } = null!;    
         public string Size { get; set; } = null!;
         public decimal OriginalPrice { get; set; }
         public decimal Price { get; set; }
@@ -22,7 +23,16 @@
                 else _discount = value;
             }
         }
-        public decimal Total => (Price * Quantity) * (1 - Discount / 100);
-      
+        public decimal DiscountedUnitPrice =>
+            Price * (1 - Discount / 100m);
+
+        public decimal Total =>
+            DiscountedUnitPrice * Quantity;
+
+        public decimal TotalPurchaseCost =>
+            OriginalPrice * Quantity;
+
+        public bool IsLosing =>
+            Total < TotalPurchaseCost;
     }
 }

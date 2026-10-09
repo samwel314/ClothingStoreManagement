@@ -507,8 +507,11 @@
     <button @onclick="()=> UpdateVariant(v)" class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm" title="تعديل">
         <i class="bi bi-pencil-square"></i>
     </button>
-
-@*     <button @onclick="() => DeleteVariant(v)" class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
+                                                <button @onclick="() => OpenVariantPrint(v)"
+                                                        class="btn btn-sm btn-light rounded-circle text-primary border shadow-sm"
+                                                        title="طباعة الباركود">
+                                                    <i class="bi bi-printer"></i>
+                                                </button>@*     <button @onclick="() => DeleteVariant(v)" class="btn btn-sm btn-light rounded-circle text-danger border shadow-sm" title="حذف">
         <i class="bi bi-trash3"></i>
     </button> *@
 </div>
@@ -594,6 +597,7 @@ else
     </div>
 </div>
 }
+
 @if (showBarcodePrintModal)
 {
     <div class="modal fade show d-block"
@@ -667,6 +671,95 @@ else
                         طباعة
                     </button>
 
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (variantToPrint is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+
+    <div class="modal d-block" tabindex="-1" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        طباعة باركود التنوع
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="CloseVariantPrint">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">SKU</label>
+                        <input class="form-control"
+                               value="@variantToPrint.Sku"
+                               readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الطابعة</label>
+
+                        <select class="form-select"
+                                @bind="selectedPrinter">
+                            <option value="">اختر الطابعة</option>
+
+                            @foreach (var printer in installedPrinters)
+                            {
+                                <option value="@printer">@printer</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">عدد الاستيكرات</label>
+
+                        <input type="number"
+                               class="form-control"
+                               min="1"
+                               max="500"
+                               @bind="variantPrintQuantity"
+                               @bind:event="oninput" />
+
+                        <small class="text-muted">
+                            يمكنك طباعة من 1 إلى 500 استيكر.
+                        </small>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(barcodePrintError))
+                    {
+                        <div class="alert alert-danger mb-0">
+                            @barcodePrintError
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-light border"
+                            @onclick="CloseVariantPrint">
+                        إلغاء
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            disabled="@(string.IsNullOrWhiteSpace(selectedPrinter)
+                                                                || variantPrintQuantity < 1
+                                                                || variantPrintQuantity > 500)"
+                            @onclick="PrintSelectedVariant">
+                        <i class="bi bi-printer me-1"></i>
+                        طباعة (@variantPrintQuantity)
+                    </button>
                 </div>
 
             </div>
@@ -762,13 +855,88 @@ else
     private ProductVariantListDto selectedVariant ; 
     private IEnumerable<VariantMovementsDTO> MovementList = new List<VariantMovementsDTO>() ;
 
+
+    //--**
+    private ProductVariantListDto? variantToPrint;
+    private int variantPrintQuantity = 1;
+
     // 
     private bool showBarcodePrintModal;
     private string? selectedPrinter;
     private List<string> installedPrinters = [];
     private string? barcodePrintError;
 
+    private void OpenVariantPrint(ProductVariantListDto variant)
+    {
+        barcodePrintError = null;
 
+        installedPrinters = BarcodePrinterService
+            .GetInstalledPrinters()
+            .ToList();
+
+        selectedPrinter = installedPrinters.FirstOrDefault();
+
+        variantToPrint = variant;
+        variantPrintQuantity = 1;
+    }
+
+    private void CloseVariantPrint()
+    {
+        variantToPrint = null;
+        variantPrintQuantity = 1;
+        barcodePrintError = null;
+    }
+
+    private void PrintSelectedVariant()
+    {
+        barcodePrintError = null;
+
+        if (variantToPrint is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(selectedPrinter))
+        {
+            barcodePrintError = "Please select a printer.";
+            return;
+        }
+
+        if (variantPrintQuantity is < 1 or > 500)
+        {
+            barcodePrintError = "عدد الاستيكرات يجب أن يكون من 1 إلى 500.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(variantToPrint.Sku))
+        {
+            barcodePrintError = "SKU غير موجود لهذا التنوع.";
+            return;
+        }
+
+        try
+        {
+            var label = new BarcodeLabelDto
+            {
+                ProductName = product.Name,
+                Sku = variantToPrint.Sku,
+                Color = variantToPrint.Color,
+                Size = variantToPrint.Size,
+                Price = variantToPrint.Price,
+                BarcodeImage = BarcodeService.GenerateCode128(
+          variantToPrint.Sku)
+            };
+
+            BarcodePrinterService.PrintVariant(
+                label,
+                variantPrintQuantity,
+                selectedPrinter);
+
+            CloseVariantPrint();
+        }
+        catch (Exception ex)
+        {
+            barcodePrintError = ex.Message;
+        }
+    }
     private void OpenBarcodePrintModal()
 {
     barcodePrintError = null;
@@ -798,6 +966,7 @@ private BarcodePrintRequestDto BuildBarcodePrintRequest()
             ProductName = product.Name,
             Sku = variant.Sku,
             Color = variant.Color,
+            Price = variant.Price,  
             Size = variant.Size,
             BarcodeImage =
                 BarcodeService.GenerateCode128(variant.Sku)

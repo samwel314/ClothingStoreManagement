@@ -8,9 +8,13 @@ namespace ClothingStoreManagement.Application.DTO
         [MaxLength(50, ErrorMessage = "أقصى عدد حروف هو 50 حرف")]
         [Required(ErrorMessage = "ادخل اسم المقاس")]
         public string Name { get; set; } = null!; // مثال: Large
-
-        [MaxLength(10, ErrorMessage = "أقصى عدد حروف لكود المقاس هو 10 أحرف")]
+        [MaxLength(3, ErrorMessage = "أقصى عدد حروف لكود المقاس هو 3 أحرف")]
+        [MinLength(1, ErrorMessage = "أقل عدد حروف لكود المقاس هو حرف")]
+        [RegularExpression(
+    "^[A-Za-z0-9]+$",
+    ErrorMessage = "كود المقاس يجب أن يحتوي على حروف وأرقام فقط")]
         [Required(ErrorMessage = "ادخل كود المقاس")]
+
         public string Code { get; set; } = null!; // مثال: L
     }
 

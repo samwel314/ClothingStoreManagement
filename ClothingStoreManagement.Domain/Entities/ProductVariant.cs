@@ -11,7 +11,7 @@
             ValidateSellingPrice(sellingPrice);
             ValidatePurchasePrice(purchasePrice);
             ProductId = parentId;
-            VariantSKU = parentSKU + "-" + sizeCode + "-" + colorCode;
+            VariantSKU = parentSKU + sizeCode + colorCode;
             SizeId = sizeId;
             ColorId = colorId;
             StockQuantity = stockQuantity;
@@ -70,7 +70,7 @@
         }
         public void UpdateVariant(int sizeId, string sizeCode, int colorId, string colorCode, string parentSKU)
         {
-            VariantSKU = $"{parentSKU}-{sizeCode}-{colorCode}";
+            VariantSKU = $"{parentSKU}{sizeCode}{colorCode}";
             SizeId = sizeId;
             ColorId = colorId;
         }

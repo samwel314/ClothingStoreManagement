@@ -1,14 +1,17 @@
-﻿using ClothingStoreManagement.Application.DTO;
+﻿
+using ClothingStoreManagement.Application.DTO;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.Drawing.Text;
 
 namespace ClothingStoreManagement.Application.Services
 {
     public class WindowsBarcodePrinterService : IWindowsBarcodePrinterService
     {
-        // XP-246B Specs: Max width 48mm
-        private const float LabelWidthMm = 48f;
-        private const float LabelHeightMm = 30f;
+        // Physical sticker size: 40 x 25 mm
+        private const float LabelWidthMm = 40f;
+        private const float LabelHeightMm = 25f;
 
         public IReadOnlyList<string> GetInstalledPrinters()
         {
@@ -18,57 +21,117 @@ namespace ClothingStoreManagement.Application.Services
                 .OrderBy(x => x)
                 .ToList();
         }
+        public void PrintVariant(
+    BarcodeLabelDto label,
+    int quantity,
+    string printerName)
+        {
+            ArgumentNullException.ThrowIfNull(label);
 
+            if (quantity is < 1 or > 500)
+                throw new ArgumentOutOfRangeException(
+                    nameof(quantity),
+                    "عدد الاستيكرات يجب أن يكون من 1 إلى 500.");
+
+            var request = new BarcodePrintRequestDto();
+
+            for (var i = 0; i < quantity; i++)
+            {
+                request.Labels.Add(label);
+            }
+
+            Print(request, printerName);
+        }
         public void Print(
             BarcodePrintRequestDto request,
             string printerName)
         {
             if (request.Labels == null || request.Labels.Count == 0)
-                throw new InvalidOperationException("No barcode labels to print.");
+                throw new InvalidOperationException(
+                    "No barcode labels to print.");
 
             if (string.IsNullOrWhiteSpace(printerName))
-                throw new ArgumentException("Printer name is required.", nameof(printerName));
+                throw new ArgumentException(
+                    "Printer name is required.",
+                    nameof(printerName));
 
             using var document = new PrintDocument();
 
             document.PrinterSettings.PrinterName = printerName;
 
             if (!document.PrinterSettings.IsValid)
-                throw new InvalidOperationException($"Printer '{printerName}' is not available.");
+            {
+                throw new InvalidOperationException(
+                    $"Printer '{printerName}' is not available.");
+            }
 
-            // 1. تحديد مقاس الورقة بوضوح بالطول والعرض بالـ Hundredths of an Inch
-            var widthInHundredths = MmToHundredthsOfInch(LabelWidthMm);
-            var heightInHundredths = MmToHundredthsOfInch(LabelHeightMm);
+            var widthInHundredths =
+                MmToHundredthsOfInch(LabelWidthMm);
 
-            var customPaperSize = new PaperSize("CustomBarcodeLabel", widthInHundredths, heightInHundredths);
+            var heightInHundredths =
+                MmToHundredthsOfInch(LabelHeightMm);
 
-            document.DefaultPageSettings.PaperSize = customPaperSize;
-            document.DefaultPageSettings.Margins = new Margins(0, 0, 0, 0);
+            var customPaperSize = new PaperSize(
+                "BarcodeLabel40x25",
+                widthInHundredths,
+                heightInHundredths);
+
+            document.DefaultPageSettings.PaperSize =
+                customPaperSize;
+
+            document.DefaultPageSettings.Margins =
+                new Margins(0, 0, 0, 0);
+
+            document.OriginAtMargins = false;
 
             var labelIndex = 0;
 
             document.PrintPage += (_, e) =>
             {
-                // إيقاف التنعيم (AntiAlias) لجعل الباركوود والنصوص حادة وواضحة للمستشعر الضوئي
-                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
-                e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                ConfigureGraphics(e.Graphics);
 
-                var bounds = new Rectangle(0, 0, widthInHundredths, heightInHundredths);
+                var bounds = new Rectangle(
+                    0,
+                    0,
+                    widthInHundredths,
+                    heightInHundredths);
 
-                DrawLabel(e.Graphics, request.Labels[labelIndex], bounds);
+                DrawLabel(
+                    e.Graphics,
+                    request.Labels[labelIndex],
+                    bounds);
 
                 labelIndex++;
 
-                // الشرط ده هو اللي بيخلي PrintDocument يكرر حدث PrintPage لكل عنصر في الـ List
-                e.HasMorePages = labelIndex < request.Labels.Count;
+                e.HasMorePages =
+                    labelIndex < request.Labels.Count;
             };
 
             document.Print();
         }
 
+        private static void ConfigureGraphics(Graphics graphics)
+        {
+            graphics.TextRenderingHint =
+                TextRenderingHint.SingleBitPerPixelGridFit;
+
+            graphics.SmoothingMode =
+                SmoothingMode.None;
+
+            graphics.PixelOffsetMode =
+                PixelOffsetMode.Half;
+
+            graphics.InterpolationMode =
+                InterpolationMode.NearestNeighbor;
+
+            graphics.CompositingMode =
+                CompositingMode.SourceCopy;
+        }
+
         private static int MmToHundredthsOfInch(float mm)
         {
-            return (int)Math.Round(mm / 25.4f * 100f);
+            return (int)Math.Round(
+                mm / 25.4f * 100f);
         }
 
         private static void DrawLabel(
@@ -76,68 +139,140 @@ namespace ClothingStoreManagement.Application.Services
             BarcodeLabelDto label,
             Rectangle bounds)
         {
-            const int padding = 3;
+            var y = 1;
 
-            using var titleFont = new Font("Arial", 7, FontStyle.Bold);
-            using var detailsFont = new Font("Arial", 6, FontStyle.Regular);
-            using var skuFont = new Font("Arial", 6, FontStyle.Bold);
+            var centerX = bounds.Width / 2;
 
-            var centerX = bounds.Left + bounds.Width / 2;
-            var y = bounds.Top + padding;
+            using var titleFont = new Font(
+                "Arial",
+                6.5f,
+                FontStyle.Bold,
+                GraphicsUnit.Point);
 
-            // 1. اسم المنتج
-            DrawCenteredText(graphics, label.ProductName, titleFont, centerX, ref y, bounds.Right - padding);
+            using var detailsFont = new Font(
+                "Arial",
+                5.5f,
+                FontStyle.Regular,
+                GraphicsUnit.Point);
 
-            // 2. التفاصيل (اللون / المقاس)
-            var details = $"{label.Color ?? ""} {label.Size ?? ""}".Trim();
+            using var skuFont = new Font(
+                "Arial",
+                6f,
+                FontStyle.Bold,
+                GraphicsUnit.Point);
+
+            using var priceFont = new Font(
+                "Arial",
+                6f,
+                FontStyle.Bold,
+                GraphicsUnit.Point);
+
+            // 1. Product name
+            DrawCenteredText(
+                graphics,
+                label.ProductName,
+                titleFont,
+                centerX,
+                ref y);
+
+            // 2. Color + Size
+            var details =
+                $"{label.Color ?? ""} {label.Size ?? ""}"
+                    .Trim()
+                    .ToUpperInvariant();
+
             if (!string.IsNullOrWhiteSpace(details))
             {
-                DrawCenteredText(graphics, details, detailsFont, centerX, ref y, bounds.Right - padding);
+                DrawCenteredText(
+                    graphics,
+                    details,
+                    detailsFont,
+                    centerX,
+                    ref y);
             }
 
-            // 3. صورة الباركوود (مع التخلص الآمن من الـ Memory Stream)
-            if (label.BarcodeImage != null && label.BarcodeImage.Length > 0)
+            y += 1;
+
+            // 3. Barcode
+            if (label.BarcodeImage != null &&
+                label.BarcodeImage.Length > 0)
             {
-                using var barcodeStream = new MemoryStream(label.BarcodeImage);
-                using var barcode = Image.FromStream(barcodeStream);
+                using var barcodeStream =
+                    new MemoryStream(label.BarcodeImage);
 
-                var maxBarcodeWidth = bounds.Width - (padding * 2);
-                var barcodeWidth = Math.Min(maxBarcodeWidth, barcode.Width);
+                using var barcode =
+                    Image.FromStream(barcodeStream);
 
-                // الحفاظ على النسبة والتناسب للباركوود
-                var barcodeHeight = (int)((double)barcode.Height / barcode.Width * barcodeWidth);
+                var barcodeWidth =
+                    (int)(bounds.Width * 0.85f);
 
-                // تقييم ارتفاع الباركوود عشان ما يخرجش برة الاستيكر
-                barcodeHeight = Math.Min(barcodeHeight, 40);
+                var barcodeHeight =
+                    MmToHundredthsOfInch(8f);
 
-                var barcodeX = centerX - barcodeWidth / 2;
+                var barcodeX =
+                    centerX - barcodeWidth / 2;
 
-                graphics.DrawImage(barcode, barcodeX, y, barcodeWidth, barcodeHeight);
+                graphics.DrawImage(
+                    barcode,
+                    new Rectangle(
+                        barcodeX,
+                        y,
+                        barcodeWidth,
+                        barcodeHeight));
 
-                y += barcodeHeight + 2;
+                y += barcodeHeight + 1;
             }
 
-            // 4. كود الـ SKU / الباركوود النصي
-            DrawCenteredText(graphics, label.Sku, skuFont, centerX, ref y, bounds.Right - padding);
-        }
+            // 4. SKU
+            var skuText =
+                label.Sku?
+                    .Trim()
+                    .ToUpperInvariant()
+                ?? string.Empty;
 
+            DrawCenteredText(
+                graphics,
+                skuText,
+                skuFont,
+                centerX,
+                ref y);
+
+            // 5. Price
+            var priceText = $"{label.Price:N2} EGP";
+
+            DrawCenteredText(
+                graphics,
+                priceText,
+                priceFont,
+                centerX,
+                ref y);
+        }
         private static void DrawCenteredText(
             Graphics graphics,
             string text,
             Font font,
             int centerX,
-            ref int y,
-            int rightLimit)
+            ref int y)
         {
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            var size = graphics.MeasureString(text, font);
-            var x = centerX - (int)(size.Width / 2);
+            var size = graphics.MeasureString(
+                text,
+                font);
 
-            if (x < 0) x = 0;
+            var x =
+                centerX - (int)(size.Width / 2f);
 
-            graphics.DrawString(text, font, Brushes.Black, x, y);
+            if (x < 0)
+                x = 0;
+
+            graphics.DrawString(
+                text,
+                font,
+                Brushes.Black,
+                x,
+                y);
 
             y += (int)size.Height;
         }

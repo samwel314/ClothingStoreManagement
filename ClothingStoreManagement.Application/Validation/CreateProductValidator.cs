@@ -16,19 +16,16 @@ namespace ClothingStoreManagement.Application.Validation
             RuleFor(x => x.SKU)
     .NotEmpty()
     .WithMessage("كود المنتج (SKU) مطلوب")
-    .Length(2, 8)
-    .WithMessage("كود المنتج يجب أن يكون بين 2 و 8 حروف أو أرقام")
+    .Length(1, 3)
+    .WithMessage("كود المنتج يجب أن يكون بين 1 و 3 حروف أو أرقام")
     .Matches("^[A-Za-z0-9]+$")
     .WithMessage("كود المنتج يجب أن يحتوي على حروف وأرقام فقط");
-            // قواعد فحص القسم
             RuleFor(x => x.CategoryId)
                 .GreaterThan(0).WithMessage("يجب اختيار القسم بشكل صحيح");
 
-            // قواعد فحص قائمة التنوعات
             RuleFor(x => x.Variants)
                 .NotEmpty().WithMessage("يجب إضافة تنوع واحد على الأقل (لون ومقاس) للمنتج");
 
-            // هذا السطر يخبر FluentValidation بالدخول داخل كل عنصر في القائمة وفحصه باستخدام الـ Validator الخاص به
             RuleForEach(x => x.Variants)
                 .SetValidator(new CreateProductVariantValidator());
         }
